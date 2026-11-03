@@ -1,0 +1,1182 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>JASA Extintores · Venta, recarga y mantenimiento en Piedras Negras</title>
+<meta name="description" content="Venta, recarga y mantenimiento de extintores, señalización y capacitación a brigadas en Piedras Negras, Coahuila. Más de 17 años de experiencia. Cotiza por WhatsApp.">
+<meta name="theme-color" content="#0d0d0d">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="image" href="img/galeria/oferta-noviembre-720.webp" imagesrcset="img/galeria/oferta-noviembre-720.webp 720w, img/galeria/oferta-noviembre.webp 1050w" imagesizes="(max-width:860px) 88vw, 400px" fetchpriority="high">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@600;800;900&family=Barlow+Condensed:wght@600&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<script>document.documentElement.classList.add("js")</script><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}
+/* Galería */
+.g-filter{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}
+.g-filter button{font-family:var(--display);font-weight:800;text-transform:uppercase;font-size:17px;letter-spacing:.03em;background:var(--panel-2);color:var(--ink);border:1px solid var(--line);border-radius:3px;padding:8px 14px;cursor:pointer;display:inline-flex;gap:8px;align-items:center}
+.g-filter button span{font-family:var(--mono);font-size:11px;font-weight:500;color:var(--muted)}
+.g-filter button[aria-pressed="true"]{background:var(--red);border-color:var(--red);color:#fff}
+.g-filter button[aria-pressed="true"] span{color:#ffd9d6}
+.gallery{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-auto-flow:dense;gap:10px}
+.g-item{margin:0;position:relative;border-radius:4px;overflow:hidden;background:var(--panel);aspect-ratio:1;max-width:100%}
+.g-item.wide{grid-column:span 2;aspect-ratio:2/1}
+.g-item.tall{grid-row:span 2;aspect-ratio:1/2}
+.g-open{all:unset;display:block;width:100%;height:100%;cursor:zoom-in}
+.g-open:focus-visible{outline:3px solid var(--amber);outline-offset:-3px}
+.g-item img{display:block;width:100%;height:100%;object-fit:cover;max-width:none}
+.g-item figcaption{position:absolute;left:0;right:0;bottom:0;padding:28px 12px 10px;background:linear-gradient(transparent,rgba(0,0,0,.82));color:#fff;font-size:14px;font-weight:500;line-height:1.3;pointer-events:none}
+.lb{position:fixed;inset:0;z-index:80;background:rgba(5,5,5,.94);display:flex;align-items:center;justify-content:center;gap:8px;padding:calc(56px + env(safe-area-inset-top,0px)) max(12px,env(safe-area-inset-right,0px)) calc(20px + env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px))}
+.lb figure{margin:0;display:flex;flex-direction:column;gap:10px;align-items:center;min-width:0;max-width:100%;max-height:100%}
+.lb img{max-width:100%;max-height:calc(100vh - 150px);object-fit:contain;border-radius:3px}
+.lb figcaption{color:var(--ink);font-size:15px;text-align:center}
+.lb-x,.lb-nav{background:var(--panel-2);color:var(--ink);border:1px solid var(--line);border-radius:3px;cursor:pointer;font:600 24px var(--body);line-height:1;padding:10px 14px}
+.lb-x{position:absolute;top:calc(10px + env(safe-area-inset-top,0px));right:max(12px,env(safe-area-inset-right,0px))}
+.lb-nav:hover,.lb-x:hover{border-color:var(--red)}
+@media (max-width:860px){.gallery{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:540px){.lb-nav{position:absolute;bottom:calc(14px + env(safe-area-inset-bottom,0px))}.lb-nav.prev{left:16px}.lb-nav.next{right:16px}.lb{padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))}}
+
+/* Renglones de extintores en el cotizador */
+.xt-block{gap:10px}
+.xt-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.xt-lbl{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.xt-total{font-family:var(--mono);font-size:12px;color:var(--red-hi);font-variant-numeric:tabular-nums}
+.xt-list{display:grid;gap:10px}
+.xt-row{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr) 92px 40px;gap:10px;align-items:end;background:var(--panel-2);border:1px solid var(--line);border-radius:4px;padding:12px}
+.xt-row .field{min-width:0}
+.xt-del{height:46px;background:none;border:1px solid var(--line);color:var(--muted);border-radius:3px;font:600 16px var(--body);cursor:pointer}
+.xt-del:hover{border-color:var(--red);color:var(--red-hi)}
+.xt-add{justify-self:start;font-family:var(--display);font-weight:800;text-transform:uppercase;font-size:16px;letter-spacing:.03em;background:none;color:var(--ink);border:2px dashed var(--red);border-radius:3px;padding:9px 14px;cursor:pointer}
+.xt-add:hover{background:rgba(225,15,15,.15)}
+@media (max-width:640px){.xt-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.xt-row .field:first-child{grid-column:1/-1}.xt-del{height:46px}}
+
+/* Oferta del mes (dentro de la portada) */
+.nav a.nav-offer{color:var(--amber)}
+.hero-offer{grid-area:offer;display:flex;flex-direction:column;gap:0;min-width:0;max-width:420px;justify-self:end;width:100%}
+.offer-pic{margin:0;border-radius:6px 6px 0 0;overflow:hidden;box-shadow:0 30px 70px rgba(0,0,0,.6);aspect-ratio:3/4;background:var(--panel)}
+.offer-pic img{display:block;width:100%;height:100%;object-fit:cover}
+.offer-bar{background:var(--panel-2);border:1px solid var(--line);border-top:3px solid var(--amber);border-radius:0 0 6px 6px;padding:16px 18px 18px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 14px;align-items:end}
+.offer-tag{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--amber)}
+.offer-bar strong{display:block;font-family:var(--display);font-weight:800;text-transform:uppercase;font-size:21px;line-height:1.05;margin-top:4px;text-wrap:balance}
+.offer-price{font-family:var(--display);font-weight:900;font-size:52px;line-height:.85;color:var(--amber);letter-spacing:-.01em;white-space:nowrap}
+.offer-price span{font-size:.42em;vertical-align:top}
+.offer-note{grid-column:1/-1;color:var(--muted);font-size:13px;margin-top:6px}
+.offer-bar .actions{grid-column:1/-1;margin-top:10px;gap:8px}
+.offer-bar .btn{padding:10px 16px;font-size:17px;flex:1 1 auto;justify-content:center}
+
+/* Cotizador en formato JASA */
+.cq{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:24px;align-items:start}
+.cq-form{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:24px;display:flex;flex-direction:column;gap:16px;min-width:0}
+.cq-step{display:flex;align-items:center;gap:12px;border-top:1px dashed var(--line);padding-top:16px}
+.cq-step:first-child{border-top:0;padding-top:0}
+.cq-step h3{font-size:26px;font-weight:800}
+.cq-n{font-family:var(--display);font-weight:900;font-size:18px;width:30px;height:30px;border-radius:50%;background:var(--red);color:#fff;display:grid;place-items:center;flex:none}
+.cq-count{margin-left:auto;font-family:var(--mono);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.cq-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.cq-form input[type=text],.cq-form input[type=number],.cq-form select,.cq-form textarea{font:500 16px var(--body);color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:3px;padding:10px 11px;width:100%;min-width:0}
+.cq-form textarea{min-height:76px;resize:vertical}
+.cq-form input:focus,.cq-form select:focus,.cq-form textarea:focus{border-color:var(--red);outline:none}
+.cq-rows{list-style:none;margin:0;padding:0;display:grid;gap:10px;counter-reset:part}
+.cq-row{background:var(--panel-2);border:1px solid var(--line);border-radius:4px;padding:12px;display:grid;grid-template-columns:30px minmax(0,1fr) 40px;gap:10px;align-items:start}
+.cq-row-n{font-family:var(--display);font-weight:900;font-size:22px;color:var(--red-hi);line-height:1;padding-top:26px;text-align:center}
+.cq-row-f{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}
+.cq-row-f .field{grid-column:span 3}
+.cq-row-f .f-concepto{grid-column:span 4}
+.cq-row-f .f-qty{grid-column:span 2}
+.cq-row-f .f-wide{grid-column:span 6}
+.cq-row-f label{font-size:11px}
+.cq-row-txt{grid-column:1/-1;font-family:var(--mono);font-size:12px;color:var(--muted);letter-spacing:.02em;overflow-wrap:anywhere}
+.cq-del{margin-top:22px;height:42px;background:none;border:1px solid var(--line);color:var(--muted);border-radius:3px;font:600 16px var(--body);cursor:pointer}
+.cq-del:hover{border-color:var(--red);color:var(--red-hi)}
+.cq-del:disabled{opacity:.35;cursor:not-allowed}
+.cq-add{align-self:flex-start;font-family:var(--display);font-weight:800;text-transform:uppercase;font-size:17px;letter-spacing:.03em;background:none;color:var(--ink);border:2px dashed var(--red);border-radius:3px;padding:10px 16px;cursor:pointer}
+.cq-add:hover{background:rgba(225,15,15,.15)}
+.cq-out{display:flex;flex-direction:column;gap:12px;min-width:0;position:sticky;top:calc(100px + env(safe-area-inset-top,0px))}
+.cq-out-head{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.cq-pill{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#0d0d0d;background:var(--amber);padding:4px 9px;border-radius:30px}
+.cq-paper-wrap{position:relative;overflow:hidden;border-radius:4px;box-shadow:0 20px 50px rgba(0,0,0,.5);max-width:100%}
+.cq-paper-scale{transform-origin:0 0;width:816px}
+.cq-actions{display:flex;flex-wrap:wrap;gap:10px}
+.btn.cq-wa{background:#25d366;border-color:#25d366;color:#0b2e17}
+.btn.cq-wa:hover{background:#3ee07a;border-color:#3ee07a}
+.cq-status{font-size:14px;color:var(--amber);min-height:1em}
+.cq-hint{color:var(--muted);font-size:13px}
+
+/* La hoja: copia del formato de cotización de JASA */
+.sheet{width:816px;box-sizing:border-box;background:#ffffff;color:#111111;padding:36px 40px 40px;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.3}
+.sheet *{box-sizing:border-box}
+.sh-top{display:flex;justify-content:space-between;align-items:center;border:1px solid #444;border-bottom:0;padding:10px 14px}
+.sh-logo img{display:block;width:210px;height:auto}
+.sh-co{display:flex;flex-direction:column;align-items:flex-end;text-align:right;gap:2px;font-weight:700;font-size:11.5px}
+.sh-co b{color:#c00000;font-size:16px}
+.sh-co .sh-tel{color:#777;font-weight:400}
+.sh-title-row{display:grid;grid-template-columns:1fr 210px;border:1px solid #444;border-bottom:0}
+.sh-title{text-align:center;color:#c00000;font-weight:700;font-size:30px;letter-spacing:.02em;padding:8px;border-right:1px solid #444}
+.sh-num{display:flex;flex-direction:column;justify-content:center;padding:6px 10px;color:#c00000;font-weight:700;gap:2px}
+.sh-num div{display:flex;justify-content:space-between;gap:8px}
+.sh-num b{color:#c00000}
+.sh-client-row{display:grid;grid-template-columns:1fr 210px;border:1px solid #444;border-bottom:0}
+.sh-client{margin:0;padding:10px 12px;display:grid;grid-template-columns:72px 1fr;gap:5px 8px;align-items:baseline;border-right:1px solid #444;min-height:120px}
+.sh-client dt{color:#999;font-size:10.5px;text-align:right}
+.sh-client dd{margin:0;font-size:13px;text-transform:uppercase;min-height:16px;border-bottom:1px solid #eee;overflow-wrap:anywhere}
+.sh-cond{padding:8px 10px;font-size:11px;display:flex;flex-direction:column;gap:6px}
+.sh-cond b{font-size:12px}
+.sh-cond div{text-transform:uppercase;overflow-wrap:anywhere;white-space:pre-line}
+.sh-table{width:100%;border-collapse:collapse;table-layout:fixed;border:1px solid #444}
+.sh-table th{background:#ffffff;color:#c00000;font-weight:400;font-size:11px;border:1px solid #aaa;border-top:2px solid #444;border-bottom:2px solid #444;padding:4px 6px}
+.sh-table th:first-child{text-align:left}
+.sh-table td{color:#111111;border:1px solid #bbb;padding:5px 6px;height:24px;font-size:11.5px;vertical-align:middle}
+.sh-table td:nth-child(2){text-transform:uppercase;overflow-wrap:anywhere}
+.sh-table td:nth-child(3){text-align:center}
+.sh-table td:nth-child(4),.sh-table td:nth-child(5){color:#999999;text-align:center}
+.sh-foot{display:grid;grid-template-columns:1fr 210px;border:1px solid #444;border-top:0}
+.sh-foot-l{padding:12px 30px;font-size:11px;border-right:1px solid #444}
+.sh-foot-l span{display:block;margin-top:4px;color:#888;font-size:10px}
+.sh-tot{padding:8px 10px;display:flex;flex-direction:column;gap:4px;font-weight:700;font-size:12.5px}
+.sh-tot div{display:flex;justify-content:space-between;gap:8px}
+.sh-tot b{color:#c00000;font-size:11px}
+.sh-total{border-top:1px solid #444;padding-top:4px}
+
+@media (max-width:1100px){.cq{grid-template-columns:1fr}.cq-out{position:static}}
+@media (max-width:540px){.cq-form{padding:18px}.cq-grid{grid-template-columns:1fr}.cq-row{grid-template-columns:minmax(0,1fr) 40px}.cq-row-n{display:none}.cq-row-f{grid-template-columns:repeat(2,minmax(0,1fr))}.cq-row-f .field,.cq-row-f .f-concepto,.cq-row-f .f-wide{grid-column:1/-1}.cq-row-f .f-qty,.cq-row-f .r-capw{grid-column:span 1;order:2}.cq-row-f .r-ext{grid-column:1/-1;order:1}.cq-row-f .r-senal,.cq-row-f .r-otro{order:1}.cq-row-txt{order:3}}
+</style>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: sala de exhibición industrial — fondo casi negro, franjas rojas de seguridad, secciones indexadas como un catálogo */
+:root{
+  --bg:#0d0d0d; --panel:#171514; --panel-2:#211d1c; --ink:#f3eeea; --muted:#a8a09b; --line:#2f2a28;
+  --red:#e10f0f; --red-hi:#ff3b30; --red-dark:#7d0505; --amber:#f2b01e; --paper:#ffffff; --paper-ink:#1a1716;
+  --display:"Saira Condensed","Arial Narrow",Impact,sans-serif;
+  --body:"Barlow","Helvetica Neue",Arial,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:calc(var(--hdr,96px) + 16px + env(safe-area-inset-top,0px))}
+html,body{overflow-x:clip}
+img{height:auto}
+button,a,summary,select,input{-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.55}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:60;background:var(--bg)}
+.wrap{max-width:1160px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--display);text-transform:uppercase;line-height:.95;margin:0;text-wrap:balance}
+p{margin:0}
+a{color:inherit}
+img{max-width:100%}
+.label{font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+
+/* Botones */
+.btn{font-family:var(--display);font-weight:800;text-transform:uppercase;font-size:19px;letter-spacing:.03em;text-decoration:none;padding:13px 22px;border-radius:3px;border:2px solid var(--red);display:inline-flex;align-items:center;gap:8px;cursor:pointer;background:none;color:var(--ink)}
+.btn.primary{background:var(--red);color:#fff}
+.btn.primary:hover{background:var(--red-hi);border-color:var(--red-hi)}
+.btn.ghost:hover{background:rgba(225,15,15,.15)}
+.btn.light{background:#fff;border-color:#fff;color:var(--red-dark)}
+.actions{display:flex;flex-wrap:wrap;gap:12px}
+
+/* Encabezado */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:50;background:rgba(13,13,13,.94);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;gap:20px;padding-block:10px}
+.logo{display:block;flex:none;line-height:0}
+.logo svg{display:block;height:74px;width:auto}
+footer .logo svg{height:96px}
+@media (max-width:540px){.top .logo svg{height:60px}}
+.nav{display:flex;gap:4px;margin-left:auto}
+.nav a{font-family:var(--display);font-weight:600;text-transform:uppercase;letter-spacing:.06em;font-size:16px;text-decoration:none;color:var(--muted);padding:8px 10px;border-radius:3px}
+.nav a:hover{color:var(--ink);background:var(--panel-2)}
+.top .btn{padding:8px 16px;font-size:16px}
+.menu-btn{display:none;margin-left:auto;background:none;border:1px solid var(--line);color:var(--ink);border-radius:3px;padding:8px 12px;font:600 14px var(--body);cursor:pointer}
+
+/* Portada */
+.hero{position:relative;overflow:hidden;border-bottom:1px solid var(--line)}
+.hero::after{content:"";position:absolute;right:-10%;top:-30%;width:70%;height:160%;background:radial-gradient(closest-side,rgba(225,15,15,.28),transparent);pointer-events:none}
+.hero .wrap{position:relative;z-index:1;display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,.8fr);grid-template-areas:"main offer" "explorer offer";gap:32px 56px;align-items:start;padding-block:56px 64px}
+.hero-main{grid-area:main;min-width:0;padding-top:12px}
+.hero .explorer{grid-area:explorer;align-self:end}
+.hero h1{font-size:clamp(46px,6.4vw,88px);font-weight:900;letter-spacing:-.005em;margin-top:14px}
+.hero h1 em{font-style:normal;color:var(--red-hi)}
+.hero .lead{margin-top:20px;font-size:19px;color:var(--muted);max-width:42ch}
+.hero .actions{margin-top:28px}
+.hero .label b{color:var(--red-hi);font-weight:500}
+
+/* Explorador de categorías */
+.explorer{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:20px;min-width:0}
+.explorer .label{display:block;margin-bottom:12px}
+.cats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.cat{font-family:var(--display);font-weight:800;text-transform:uppercase;font-size:17px;line-height:1.05;letter-spacing:.02em;text-align:left;background:var(--panel-2);color:var(--ink);border:1px solid var(--line);border-radius:4px;padding:12px 10px;min-height:62px;cursor:pointer;display:flex;align-items:flex-end;position:relative}
+.cat::before{content:attr(data-n);position:absolute;top:8px;left:10px;font-family:var(--mono);font-size:10px;font-weight:500;color:var(--muted)}
+.cat:hover{border-color:var(--red)}
+.cat[aria-pressed="true"]{background:var(--red);border-color:var(--red);color:#fff}
+.cat[aria-pressed="true"]::before{color:#ffd9d6}
+.cat-info{margin-top:14px;border-top:1px dashed var(--line);padding-top:14px;min-height:118px;display:flex;flex-direction:column;gap:8px}
+.cat-info h3{font-size:26px;font-weight:800;color:var(--red-hi)}
+.cat-info p{color:var(--muted);font-size:15px}
+.cat-info a{font-family:var(--display);font-weight:800;text-transform:uppercase;font-size:15px;color:var(--ink);text-decoration-color:var(--red);text-underline-offset:4px;align-self:flex-start}
+
+/* Franja de llamada */
+.band{background:linear-gradient(100deg,var(--red) 0%,var(--red-dark) 100%)}
+.band .wrap{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:20px;padding-block:28px}
+.band h2{font-size:clamp(30px,4.4vw,46px);font-weight:900;color:#fff;max-width:22ch}
+.band .side{display:flex;flex-wrap:wrap;align-items:center;gap:18px}
+.band .phone{font-family:var(--display);font-weight:800;font-size:26px;color:#fff;letter-spacing:.02em;user-select:all}
+.band .phone small{display:block;font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.1em;color:#ffd9d6}
+
+/* Secciones */
+section{padding-block:clamp(56px,8vw,88px);border-bottom:1px solid var(--line)}
+.sec-head{display:grid;grid-template-columns:auto 1fr;gap:6px 22px;align-items:end;margin-bottom:36px}
+.sec-num{grid-row:span 2;font-family:var(--display);font-weight:900;font-size:clamp(56px,8vw,96px);line-height:.8;color:transparent;-webkit-text-stroke:2px var(--red)}
+.sec-head .label{color:var(--red-hi)}
+.sec-head h2{font-size:clamp(38px,5.6vw,60px);font-weight:900}
+.sec-head p{grid-column:1/-1;color:var(--muted);max-width:60ch;margin-top:10px}
+
+/* 01 Servicios */
+.svcs{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.svc{background:var(--panel);padding:26px 24px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.svc .k{font-family:var(--mono);font-size:12px;color:var(--red-hi);letter-spacing:.08em}
+.svc h3{font-size:30px;font-weight:800}
+.svc p{color:var(--muted);flex:1}
+.svc a{font-family:var(--display);font-weight:800;text-transform:uppercase;font-size:16px;text-decoration:none;color:var(--ink);border-top:1px solid var(--line);padding-top:12px;display:flex;justify-content:space-between}
+.svc a::after{content:"→";color:var(--red-hi)}
+.svc a:hover{color:var(--red-hi)}
+
+/* 02 Productos */
+.feature{display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:28px;margin-bottom:20px}
+.feature .pic{background:var(--paper);border-radius:4px;padding:12px}
+.feature .pic img{display:block;width:100%;height:auto}
+.feature h3{font-size:clamp(34px,4.6vw,48px);font-weight:900;margin-top:8px}
+.feature p{color:var(--muted);margin-top:12px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.chip{font-family:var(--display);font-weight:800;font-size:20px;padding:5px 14px;border-radius:3px;background:var(--red);color:#fff}
+.types{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:32px}
+.type{background:var(--panel);border:1px solid var(--line);border-radius:6px;overflow:hidden;display:flex;flex-direction:column}
+.type .bar{height:8px;background:var(--red)}
+.type.co2 .bar{background:#9b9591}
+.type.k .bar{background:#c46a2b}
+.type.afff .bar{background:var(--amber)}
+.type.d .bar{background:#d9d2c5}
+.type.h2o .bar{background:#3b7fc4}
+.type .in{padding:18px;display:flex;flex-direction:column;gap:8px;flex:1}
+.type h3{font-size:24px;font-weight:800}
+.classes{display:flex;gap:6px}
+.cls{font-family:var(--display);font-weight:900;font-size:16px;width:28px;height:28px;display:grid;place-items:center;border:2px solid var(--ink);border-radius:3px}
+.type p{color:var(--muted);font-size:15px}
+.type .sizes{margin-top:auto;font-family:var(--mono);font-size:12px;padding-top:10px;border-top:1px dashed var(--line)}
+.prods{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.prod{background:var(--panel);border:1px solid var(--line);border-radius:6px;overflow:hidden;display:flex;flex-direction:column;min-width:0}
+.pimg{aspect-ratio:4/3;max-width:100%;position:relative;overflow:hidden}
+.prod.white .pimg{background:var(--paper)}
+.prod.dark .pimg{background:#151313}
+.pimg img{position:absolute;inset:0;width:100%;height:100%;max-width:none;object-fit:contain;padding:12px;display:block}
+.pin{padding:16px 18px 20px;display:flex;flex-direction:column;gap:8px;border-top:3px solid var(--red)}
+.pin h3{font-size:24px;font-weight:800}
+.pin p{color:var(--muted);font-size:15px}
+.prod.ask{background:linear-gradient(135deg,var(--red),var(--red-dark));border-color:var(--red);text-decoration:none;justify-content:center}
+.prod.ask .pin{border-top:0}
+.prod.ask p{color:#ffe4e1}
+.askbtn{margin-top:8px;align-self:flex-start;background:#fff;color:var(--red-dark);font-family:var(--display);font-weight:800;text-transform:uppercase;padding:8px 14px;border-radius:3px}
+.dist{display:grid;grid-template-columns:1.3fr 1fr;margin-top:32px;background:var(--panel);border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.dist img{width:100%;height:100%;object-fit:cover;display:block;min-height:240px}
+.dist-txt{padding:28px;display:flex;flex-direction:column;gap:14px;align-items:flex-start;min-width:0}
+.dist-txt h3{font-size:clamp(32px,4.4vw,44px);font-weight:900}
+.dist-txt p{color:var(--muted)}
+.catalog{margin-top:20px;background:var(--paper);border-radius:6px;padding:16px}
+.catalog img{display:block;width:100%;height:auto}
+
+/* 03 Capacitación */
+.train{display:grid;grid-template-columns:1.2fr 1fr;background:var(--panel);border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.train img{width:100%;height:100%;object-fit:cover;display:block;min-height:280px}
+.train-txt{padding:30px;display:flex;flex-direction:column;gap:16px;align-items:flex-start;min-width:0}
+.train-txt p{color:var(--muted)}
+.checks{margin:0;padding:0;list-style:none;display:grid;gap:8px}
+.checks li{padding-left:28px;position:relative}
+.checks li::before{content:"✓";position:absolute;left:0;font-weight:800;color:var(--red-hi)}
+
+/* 04 Normas */
+.norms{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.norm{background:var(--panel);border:1px solid var(--line);border-top:4px solid var(--red);border-radius:6px;padding:20px;display:flex;flex-direction:column;gap:10px}
+.norm h3{font-family:var(--mono);font-size:14px;font-weight:500;text-transform:none;letter-spacing:.02em;color:var(--red-hi);line-height:1.3}
+.norm strong{font-family:var(--display);text-transform:uppercase;font-size:21px;line-height:1.05}
+.norm p{color:var(--muted);font-size:15px}
+.note{margin-top:14px;font-size:14px;color:var(--muted)}
+.calc{margin-top:28px;background:linear-gradient(135deg,var(--red-dark),#2a0202);border-radius:6px;display:grid;grid-template-columns:1fr 1fr;gap:32px;padding:34px}
+.calc h3{font-size:clamp(34px,4.6vw,48px);font-weight:900}
+.calc h3 span{color:var(--amber)}
+.calc p{color:#f1d6d3;margin-top:12px}
+.calc form{display:flex;flex-direction:column;gap:14px}
+.calc label{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#f1d6d3}
+.calc input{font:500 18px var(--body);padding:12px;border-radius:3px;border:1px solid var(--line);background:var(--bg);color:var(--ink);width:100%}
+.result{border:2px solid var(--amber);border-radius:4px;padding:16px;min-height:96px}
+.result strong{font-family:var(--display);font-size:30px;text-transform:uppercase;display:block;line-height:1}
+.result.ok strong{color:#8fd694}
+.result.due strong{color:var(--amber)}
+.result.late strong{color:#ff8a7d}
+.result small{display:block;margin-top:6px;color:#f1d6d3}
+
+/* 05 Promoción */
+.flyer{display:grid;grid-template-columns:minmax(0,420px) 1fr;gap:40px;align-items:center}
+.flyer figure{margin:0;border:1px solid var(--line);border-radius:6px;overflow:hidden;box-shadow:0 24px 60px rgba(225,15,15,.18)}
+.flyer figure img{display:block;width:100%;height:auto}
+.flyer-txt{display:flex;flex-direction:column;gap:16px;align-items:flex-start;min-width:0}
+.flyer-txt h3{font-size:clamp(34px,5vw,54px);font-weight:900}
+.flyer-txt p{color:var(--muted);max-width:44ch}
+
+/* 06 Tienda */
+.store{display:grid;grid-template-columns:1.3fr 1fr;gap:0;background:var(--panel);border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.store img{display:block;width:100%;height:100%;object-fit:cover;min-height:260px}
+.store-txt{padding:28px;display:flex;flex-direction:column;gap:18px;min-width:0}
+.store-txt dl{margin:0;display:grid;gap:14px}
+.store-txt dt{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.store-txt dd{margin:2px 0 0;font-family:var(--display);font-weight:800;font-size:22px;letter-spacing:.01em;line-height:1.15;overflow-wrap:anywhere}
+
+/* 07 Preguntas */
+.faq{display:grid;gap:10px;max-width:860px}
+.faq details{background:var(--panel);border:1px solid var(--line);border-radius:6px}
+.faq summary{cursor:pointer;list-style:none;padding:18px 20px;font-family:var(--display);font-weight:800;text-transform:uppercase;font-size:21px;display:flex;justify-content:space-between;gap:16px}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"+";color:var(--red-hi);font-size:26px;line-height:.8}
+.faq details[open] summary::after{content:"–"}
+.faq details p{padding:0 20px 20px;color:var(--muted);max-width:68ch}
+
+/* Contacto y pie */
+.contact{background:linear-gradient(135deg,var(--red) 0%,var(--red-dark) 100%)}
+.contact .wrap{display:grid;grid-template-columns:1.1fr 1fr;gap:32px;padding-block:60px}
+.contact h2{font-size:clamp(44px,7vw,76px);font-weight:900;color:#fff}
+.contact p{margin-top:14px;font-size:19px;color:#ffe4e1;max-width:36ch}
+.cards{display:grid;gap:10px}
+.ccard{background:rgba(0,0,0,.25);border-radius:4px;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.ccard>div{min-width:0}
+.ccard .label{color:#ffd9d6}
+.ccard .val{display:block;font-family:var(--display);font-weight:800;font-size:24px;color:#fff;letter-spacing:.02em;user-select:all;overflow-wrap:anywhere;text-decoration:none}
+.fbbtn{font:600 14px var(--body);background:#fff;color:var(--red-dark);border-radius:3px;padding:8px 12px;text-decoration:none;white-space:nowrap}
+.ccard button{font:600 14px var(--body);background:#fff;color:var(--red-dark);border:0;border-radius:3px;padding:8px 12px;cursor:pointer}
+footer{background:#080808;color:var(--muted);font-size:15px}
+footer .cols{display:grid;grid-template-columns:1.3fr 1fr 1fr 1.3fr 1fr;gap:28px;padding-block:44px}
+footer h4{font-family:var(--display);text-transform:uppercase;font-size:18px;color:var(--ink);margin:0 0 12px;letter-spacing:.04em}
+footer ul{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+footer a{text-decoration:none}
+footer a:hover{color:var(--ink)}
+footer .logo{display:inline-block;margin-bottom:12px}
+footer .staff{color:#6f6864;text-decoration:underline;text-underline-offset:3px}
+footer .staff:hover{color:var(--ink)}
+footer .legal{border-top:1px solid var(--line);padding-block:18px;display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;font-size:13px}
+
+/* WhatsApp flotante */
+.wa-float{position:fixed;right:calc(16px + env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:40;background:#25d366;color:#0b2e17;font-family:var(--display);font-weight:800;text-transform:uppercase;font-size:17px;text-decoration:none;padding:12px 18px;border-radius:40px;box-shadow:0 10px 26px rgba(0,0,0,.45);display:flex;align-items:center;gap:8px}
+.wa-float svg{width:22px;height:22px;fill:currentColor}
+
+@media (max-width:1360px){
+  .nav{display:none}
+  .menu-btn{display:block}
+  .top .btn{display:none}
+  .nav.open{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:0 16px;position:absolute;left:0;right:0;top:100%;background:var(--bg);border-bottom:2px solid var(--red);padding:8px max(16px,env(safe-area-inset-right,0px)) 18px max(16px,env(safe-area-inset-left,0px));max-height:calc(100dvh - var(--hdr,96px));overflow-y:auto;overscroll-behavior:contain;box-shadow:0 24px 40px rgba(0,0,0,.5)}
+  .nav.open a{font-size:22px;padding:0 4px;min-height:52px;display:flex;align-items:center;border-bottom:1px solid var(--line);color:var(--ink);border-radius:0}
+  .menu-btn{min-height:44px;min-width:76px;font-size:15px}
+  .norms{grid-template-columns:1fr 1fr}
+  footer .cols{grid-template-columns:1fr 1fr}
+}
+@media (max-width:860px){
+  .hero .wrap{grid-template-columns:minmax(0,1fr);grid-template-areas:"main" "offer" "explorer";gap:32px}
+  .hero-offer{justify-self:center}
+  .feature,.dist,.train,.calc,.flyer,.store,.contact .wrap{grid-template-columns:1fr}
+  .svcs,.prods{grid-template-columns:1fr 1fr}
+  .types{grid-template-columns:1fr 1fr}
+  .flyer figure{max-width:440px;justify-self:center;width:100%}
+  .hero .wrap{padding-block:36px 48px}
+}
+@media (max-width:540px){
+  .svcs,.prods,.types,.norms,footer .cols{grid-template-columns:1fr}
+  .cats{grid-template-columns:1fr 1fr}
+  section{padding-block:52px}
+  .calc{padding:24px}
+  .wa-float span{display:none}
+  .wa-float{padding:14px}
+}
+@media (prefers-reduced-motion:no-preference){
+  .btn,.cat,.g-filter button,.prod,.svc a{transition:background-color .15s,border-color .15s,color .15s,transform .2s}
+  .btn:hover{transform:translateY(-2px)}
+  .btn:active,.cat:active{transform:scale(.97)}
+  a.prod:hover,.prod:hover{transform:translateY(-3px)}
+  .g-item img{transition:transform .5s cubic-bezier(.2,.7,.2,1),opacity .4s}
+  .g-open:hover img{transform:scale(1.04)}
+  .offer-pic img{transition:transform .6s cubic-bezier(.2,.7,.2,1)}
+  .hero-offer:hover .offer-pic img{transform:scale(1.02)}
+  .cat-info>*{animation:fadeUp .28s ease both}
+  .cat-info>*:nth-child(2){animation-delay:.04s}.cat-info>*:nth-child(3){animation-delay:.08s}
+  .nav.open{animation:fadeDown .22s ease both}
+  .lb:not([hidden]){animation:fade .2s ease both}
+  .lb:not([hidden]) figure{animation:zoomIn .25s cubic-bezier(.2,.7,.2,1) both}
+  .faq details[open] p{animation:fadeUp .25s ease both}
+  .js .rv{opacity:0;transform:translateY(22px);transition:opacity .6s ease,transform .7s cubic-bezier(.2,.7,.2,1);transition-delay:var(--d,0s)}
+  .js .rv.in{opacity:1;transform:none}
+  .wa-float{animation:fadeUp .4s .8s ease both;transition:transform .2s}
+  .wa-float:hover{transform:translateY(-3px)}
+}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes fadeDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+@keyframes zoomIn{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+
+/* Nosotros */
+.about{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1fr) minmax(0,1fr);gap:12px}
+.years{background:linear-gradient(135deg,var(--red),var(--red-dark));border-radius:6px;padding:28px;display:flex;flex-direction:column;justify-content:space-between;gap:16px;min-height:260px}
+.years .big{font-family:var(--display);font-weight:900;font-size:clamp(96px,12vw,150px);line-height:.8;color:#fff;letter-spacing:-.02em}
+.years .big sup{font-size:.45em;vertical-align:top;position:relative;top:.12em;margin-left:4px}
+.years p{font-family:var(--display);font-weight:800;text-transform:uppercase;font-size:28px;line-height:1;color:#fff}
+.years small{display:block;margin-top:8px;font-family:var(--body);text-transform:none;font-weight:500;font-size:15px;color:#ffe4e1;line-height:1.4}
+.mv{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:26px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.mv .k{font-family:var(--mono);font-size:12px;letter-spacing:.1em;color:var(--red-hi)}
+.mv h3{font-size:34px;font-weight:900}
+.mv p{color:var(--muted)}
+.values{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px}
+.values .label{margin-right:6px}
+.values span.v{font-family:var(--display);font-weight:800;text-transform:uppercase;font-size:18px;letter-spacing:.03em;border:1px solid var(--line);border-radius:3px;padding:6px 12px;background:var(--panel)}
+@media (max-width:860px){.about{grid-template-columns:1fr 1fr}.years{grid-column:1/-1;min-height:0}}
+@media (max-width:540px){.about{grid-template-columns:1fr}}
+
+/* Horario */
+.hours{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;margin:2px 0 0;font-family:var(--display);font-weight:800;font-size:20px;line-height:1.2}
+.hours span:nth-child(odd){color:var(--muted);font-weight:600}
+.status{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;padding:5px 10px;border-radius:30px;border:1px solid var(--line);margin-top:8px}
+.status::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--muted)}
+.status.open{color:#8fd694;border-color:#2f5a33}.status.open::before{background:#5fcf6a}
+.status.closed{color:#ff8a7d;border-color:#5a2a26}.status.closed::before{background:#ff5a4f}
+
+/* Cotizador */
+.quote{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:20px;align-items:start}
+.qform{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:26px;display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.field.full{grid-column:1/-1}
+.field label,.field legend{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.qform select,.qform input[type=text],.qform input[type=number],.qform textarea{font:500 17px var(--body);color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:3px;padding:11px 12px;width:100%}
+.qform textarea{min-height:84px;resize:vertical}
+.qform select:focus,.qform input:focus,.qform textarea:focus{border-color:var(--red)}
+.seg{display:flex;flex-wrap:wrap;gap:6px;border:0;padding:0;margin:0}
+.seg legend{margin-bottom:6px;padding:0}
+.seg label{font-family:var(--display);font-weight:800;text-transform:uppercase;font-size:16px;letter-spacing:.02em;color:var(--ink);border:1px solid var(--line);border-radius:3px;padding:9px 12px;cursor:pointer;background:var(--panel-2)}
+.seg input{position:absolute;opacity:0;pointer-events:none}
+.seg input:checked+span{color:#fff}
+.seg label:has(input:checked){background:var(--red);border-color:var(--red);color:#fff}
+.seg label:has(input:focus-visible){outline:3px solid var(--amber);outline-offset:2px}
+.check{display:flex;gap:10px;align-items:center;font-size:16px;color:var(--ink);text-transform:none;letter-spacing:0;font-family:var(--body)}
+.check input{width:20px;height:20px;accent-color:var(--red)}
+.preview{background:#0b2e17;border:1px solid #1d5a32;border-radius:6px;padding:22px;display:flex;flex-direction:column;gap:14px;position:sticky;top:calc(110px + env(safe-area-inset-top,0px))}
+.preview .label{color:#9fe0b0}
+.bubble{background:#1f6b3a;color:#f1fff4;border-radius:10px 10px 2px 10px;padding:14px 16px;white-space:pre-line;font-size:15px;line-height:1.5;overflow-wrap:anywhere}
+.preview .btn{border-color:#25d366;background:#25d366;color:#0b2e17;justify-content:center}
+.preview small{color:#9fe0b0;font-size:13px}
+@media (max-width:860px){.quote{grid-template-columns:1fr}.preview{position:static}}
+@media (max-width:540px){.qform{grid-template-columns:1fr;padding:20px}}
+</style>
+</head><body>
+<header class="top">
+  <div class="wrap">
+    <a class="logo" href="#inicio" aria-label="JASA Extintores, inicio"><svg viewBox="0 0 440 200" role="img" aria-label="JASA Extintores"><defs><clipPath id="bandHdr"><rect x="0" y="98" width="440" height="16"/></clipPath></defs><g transform="translate(10 24)"><path d="M30 18 L6 8" stroke="#ffffff" stroke-width="7" stroke-linecap="round" fill="none"/><rect x="26" y="14" width="22" height="20" rx="3" fill="#ffffff"/><path d="M48 20 L96 6 L96 34 L48 28 Z" fill="#E10F0F"/><rect x="10" y="32" width="54" height="120" rx="16" fill="#E10F0F"/><rect x="10" y="74" width="54" height="16" fill="#0d0d0d"/></g><text x="122" y="52" font-family="Barlow Condensed, Arial Narrow, sans-serif" font-weight="600" font-size="34" letter-spacing="7" fill="#ffffff">EXTINTORES</text><g transform="translate(26 0) skewX(-8)"><text x="96" y="176" font-family="Saira Condensed, Arial Narrow, Impact, sans-serif" font-weight="900" font-size="150" fill="#E10F0F">JASA</text><text x="96" y="176" font-family="Saira Condensed, Arial Narrow, Impact, sans-serif" font-weight="900" font-size="150" fill="#0d0d0d" clip-path="url(#bandHdr)">JASA</text></g></svg></a>
+    <nav class="nav" id="nav" aria-label="Secciones">
+      <a href="#oferta" class="nav-offer">Oferta</a>
+      <a href="#nosotros">Nosotros</a>
+      <a href="#servicios">Servicios</a>
+      <a href="#productos">Productos</a>
+      <a href="#capacitacion">Capacitación</a>
+      <a href="#galeria">Galería</a>
+      <a href="#normas">Normas</a>
+      <a href="#tienda">Tienda</a>
+      <a href="#cotizar">Cotizar</a>
+      <a href="#contacto">Contacto</a>
+    </nav>
+    <a class="btn primary" href="#cotizar">Cotizar</a>
+    <button class="menu-btn" id="menuBtn" type="button" aria-expanded="false" aria-controls="nav">Menú</button>
+  </div>
+</header>
+
+<div class="hero" id="inicio">
+  <div class="wrap">
+    <div class="hero-main">
+      <p class="label">Piedras Negras, Coahuila · <b>Más de 17 años de experiencia</b> · Distribuidor Extin-Flam</p>
+      <h1>Extintores y equipo <em>contra incendio</em></h1>
+      <p class="lead">Venta, recarga y mantenimiento de extintores, señalización y capacitación para brigadas. Atendemos empresas, comercios, industrias y hogares.</p>
+      <div class="actions">
+        <a class="btn primary" href="#cotizar">Solicitar cotización</a>
+        <a class="btn ghost" href="#productos">Ver productos</a>
+      </div>
+    </div>
+    <aside class="hero-offer" id="oferta" aria-label="Oferta del mes">
+      <figure class="offer-pic"><img fetchpriority="high" decoding="async" src="img/galeria/oferta-noviembre-720.webp" srcset="img/galeria/oferta-noviembre-720.webp 720w, img/galeria/oferta-noviembre.webp 1050w" sizes="(max-width:860px) 88vw, 400px" alt="Flyer: Oferta de noviembre, extintor nuevo 4.5 kg PQS con señalamiento por $850.00 pesos" width="1050" height="1400"></figure>
+      <div class="offer-bar">
+        <div><span class="offer-tag">Oferta de noviembre</span><strong>Extintor nuevo 4.5 kg PQS + señalamiento</strong></div>
+        <div class="offer-price">$850<span>.00</span></div>
+        <p class="offer-note">Para negocios y restaurantes. Válido todo noviembre o hasta agotar existencias.</p>
+        <div class="actions">
+          <a class="btn primary" href="https://wa.me/528781174728?text=Hola%2C%20me%20interesa%20la%20oferta%20de%20noviembre%3A%20extintor%20nuevo%204.5%20kg%20PQS%20con%20se%C3%B1alamiento%20por%20%24850.%20%C2%BFCu%C3%A1ntos%20tienen%20disponibles%3F" target="_blank" rel="noopener">Apartar por WhatsApp</a>
+          <a class="btn ghost" href="#cotizar">Cotizar varios</a>
+        </div>
+      </div>
+    </aside>
+    <div class="explorer">
+      <span class="label">Toca una categoría</span>
+      <div class="cats" id="cats" role="group" aria-label="Categorías de producto y servicio"></div>
+      <div class="cat-info" id="catInfo" aria-live="polite"></div>
+    </div>
+  </div>
+</div>
+
+<div class="band">
+  <div class="wrap">
+    <h2>Un extintor vencido no sirve en una emergencia</h2>
+    <div class="side">
+      <div class="phone"><small>Llámanos</small>878 783 3216</div>
+      <a class="btn light" href="https://wa.me/528781174728?text=Hola%2C%20quiero%20recargar%20mis%20extintores" target="_blank" rel="noopener">Agendar recarga</a>
+    </div>
+  </div>
+</div>
+
+<section id="nosotros">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="sec-num" aria-hidden="true">01</span>
+      <span class="label">Nosotros</span>
+      <h2>Quiénes somos</h2>
+      <p>JASA Extintores es una empresa de Piedras Negras dedicada a la venta, recarga y mantenimiento de extintores y equipo contra incendio. Somos distribuidores de Extin-Flam.</p>
+    </div>
+    <div class="about">
+      <div class="years">
+        <div class="big">17<sup>+</sup></div>
+        <p>Años de experiencia<small>Más de 17 años cuidando negocios, industrias y hogares de la región.</small></p>
+      </div>
+      <div class="mv">
+        <span class="k">MISIÓN</span>
+        <h3>Proteger lo que más importa</h3>
+        <p>Proteger la vida y el patrimonio de las familias, comercios e industrias de Piedras Negras y la región, con equipo contra incendio confiable, un servicio de recarga y mantenimiento honesto y capacitación que prepara a las personas para actuar.</p>
+      </div>
+      <div class="mv">
+        <span class="k">VISIÓN</span>
+        <h3>La empresa de confianza del norte de Coahuila</h3>
+        <p>Ser la empresa de protección contra incendios de mayor confianza en el norte de Coahuila, reconocida por su servicio puntual, su cumplimiento de las normas y su trato cercano con cada cliente.</p>
+      </div>
+      <div class="values">
+        <span class="label">Valores</span>
+        <span class="v">Seguridad</span><span class="v">Responsabilidad</span><span class="v">Honestidad</span><span class="v">Cumplimiento</span><span class="v">Servicio cercano</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="servicios">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="sec-num" aria-hidden="true">02</span>
+      <span class="label">Servicios</span>
+      <h2>Soluciones contra incendio</h2>
+      <p>Todo lo que necesitas para tener tus extintores listos y tu local en cumplimiento.</p>
+    </div>
+    <div class="svcs">
+      <div class="svc"><span class="k">VENTA</span><h3>Extintores nuevos</h3><p>Todos los tipos y capacidades, desde el de tu carro hasta unidades de 50 kg para industria.</p><a href="#productos">Ver línea</a></div>
+      <div class="svc"><span class="k">RECARGA</span><h3>Recarga anual</h3><p>Recargamos tu extintor, revisamos válvula, manómetro y manguera, y le ponemos su etiqueta de servicio.</p><a href="#recarga">¿Ya te toca?</a></div>
+      <div class="svc"><span class="k">MANTENIMIENTO</span><h3>Revisión preventiva</h3><p>Inspección de cada equipo, cambio de piezas dañadas y reporte por escrito para tu archivo.</p><a href="#contacto">Cotizar</a></div>
+      <div class="svc"><span class="k">PRUEBA HIDROSTÁTICA</span><h3>Cilindros seguros</h3><p>Probamos la resistencia del cilindro a presión, como lo marca la norma cada cinco años.</p><a href="#normas">Ver normas</a></div>
+      <div class="svc"><span class="k">SEÑALIZACIÓN</span><h3>Señales y soportes</h3><p>Instalamos letreros, soportes y la altura correcta para que pases tu inspección.</p><a href="#productos">Ver línea</a></div>
+      <div class="svc"><span class="k">CAPACITACIÓN</span><h3>Brigadas de emergencia</h3><p>Prácticas con fuego real para tu personal y tus brigadas de emergencia.</p><a href="#capacitacion">Ver curso</a></div>
+    </div>
+  </div>
+</section>
+
+<section id="productos">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="sec-num" aria-hidden="true">03</span>
+      <span class="label">Productos</span>
+      <h2>¿Cuál necesitas?</h2>
+      <p>Cada extintor sirve para ciertos tipos de fuego. Si no sabes cuál te conviene, te asesoramos sin costo.</p>
+    </div>
+    <div class="feature">
+      <div class="pic"><img width="700" height="700" decoding="async" loading="lazy" src="img/extintores-de-polvo-quimico-seco-de-4-5-.webp" alt="Extintores de polvo químico seco de 4.5, 6, 9 y 12 kg"></div>
+      <div>
+        <span class="label">Los más pedidos</span>
+        <h3>Polvo químico seco ABC</h3>
+        <p>El extintor que pide Protección Civil para comercios, oficinas y bodegas. Lo entregamos cargado, con su etiqueta y soporte para pared.</p>
+        <div class="chips"><span class="chip">4.5 kg</span><span class="chip">6 kg</span><span class="chip">9 kg</span><span class="chip">12 kg</span></div>
+      </div>
+    </div>
+    <div class="types">
+      <div class="type"><div class="bar"></div><div class="in"><h3>Polvo químico seco</h3><div class="classes"><span class="cls">A</span><span class="cls">B</span><span class="cls">C</span></div><p>El más común. Para oficinas, comercios, bodegas, casas y vehículos.</p><div class="sizes">1 · 2 · 4.5 · 6 · 9 · 12 · 50 kg</div></div></div>
+      <div class="type co2"><div class="bar"></div><div class="in"><h3>Bióxido de carbono (CO₂)</h3><div class="classes"><span class="cls">B</span><span class="cls">C</span></div><p>No deja residuo. Ideal para equipo eléctrico, sites y cuartos de máquinas.</p><div class="sizes">2.3 · 4.5 · 6.8 · 9 kg</div></div></div>
+      <div class="type k"><div class="bar"></div><div class="in"><h3>Tipo K</h3><div class="classes"><span class="cls">K</span></div><p>Para cocinas de restaurantes: fuego de aceites y grasas.</p><div class="sizes">6 · 9 L</div></div></div>
+      <div class="type h2o"><div class="bar"></div><div class="in"><h3>Agua a presión</h3><div class="classes"><span class="cls">A</span></div><p>Para madera, papel, tela y cartón. Escuelas y almacenes.</p><div class="sizes">9.5 L</div></div></div>
+      <div class="type afff"><div class="bar"></div><div class="in"><h3>Espuma AFFF</h3><div class="classes"><span class="cls">A</span><span class="cls">B</span></div><p>Forma una película que sofoca el fuego de líquidos inflamables. Para gasolineras, talleres y almacenes de combustible.</p><div class="sizes">Pregunta por capacidades</div></div></div>
+      <div class="type d"><div class="bar"></div><div class="in"><h3>Tipo D</h3><div class="classes"><span class="cls">D</span></div><p>Polvo especial para metales combustibles como magnesio, aluminio en polvo, titanio y sodio. Para industria y maquinado.</p><div class="sizes">Pregunta por capacidades</div></div></div>
+    </div>
+    <div class="prods">
+      <article class="prod white"><div class="pimg"><img width="300" height="300" decoding="async" src="img/gabinete-para-extintor.webp" alt="Gabinete para extintor" loading="lazy"></div><div class="pin"><h3>Gabinete para extintor</h3><p>Gabinete metálico rojo con puerta de cristal y chapa. Protege el extintor y lo deja a la vista.</p></div></article>
+      <article class="prod dark"><div class="pimg"><img width="335" height="597" decoding="async" src="img/kit-de-alarma-de-emergencia.webp" alt="Kit de alarma de emergencia" loading="lazy"></div><div class="pin"><h3>Kit de alarma de emergencia</h3><p>Torreta, sirena, botón de activación manual y letrero luminoso. Kit Extin-Flam.</p></div></article>
+      <article class="prod dark"><div class="pimg"><img width="512" height="640" decoding="async" src="img/senalizacion.webp" alt="Señalización" loading="lazy"></div><div class="pin"><h3>Señalización</h3><p>Señales de extintor, salida de emergencia, ruta de evacuación y precaución. Fotoluminiscentes.</p></div></article>
+      <article class="prod dark"><div class="pimg"><img width="399" height="501" decoding="async" src="img/extintor-de-agua-a-presion.webp" alt="Extintor de agua a presión" loading="lazy"></div><div class="pin"><h3>Extintor de agua a presión</h3><p>Para fuego clase A: madera, papel, tela y cartón. Portátil y con ruedas.</p></div></article>
+      <article class="prod white"><div class="pimg"><img width="512" height="640" decoding="async" src="img/extintor-tipo-k.webp" alt="Extintor tipo K" loading="lazy"></div><div class="pin"><h3>Extintor tipo K</h3><p>Agente húmedo para cocinas comerciales con fuego de aceite y grasa. Clase A y K, de 6 y 9 L.</p></div></article>
+      <a class="prod ask" href="https://wa.me/528781174728" target="_blank" rel="noopener"><div class="pin"><h3>¿Buscas otro equipo?</h3><p>Mangueras, hidrantes, trajes, botiquines y refacciones. Escríbenos y te lo conseguimos.</p><span class="askbtn">Preguntar por WhatsApp</span></div></a>
+    </div>
+    <div class="dist">
+      <img width="1000" height="563" decoding="async" src="img/exhibicion-de-equipo-contra-incendio-ext.webp" alt="Exhibición de equipo contra incendio Extin-Flam en la Expo Fire &amp; Safety" loading="lazy">
+      <div class="dist-txt">
+        <span class="label">Distribuidor Extin-Flam</span>
+        <h3>Equipo hecho en México</h3>
+        <p>Vendemos equipo Extin-Flam: extintores de todos los tipos, unidades móviles con ruedas, gabinetes, señalización y equipo para brigadas.</p>
+        <a class="btn primary" href="https://wa.me/528781174728" target="_blank" rel="noopener">Pregunta por un producto</a>
+      </div>
+    </div>
+    <div class="catalog">
+      <img width="1200" height="492" decoding="async" src="img/equipo-contra-incendio-extintores-unidad.webp" alt="Equipo contra incendio: extintores, unidades móviles, mangueras, señalización, traje de bombero y marcas Giacomini, Key Hose, FEM, Buckeye, First Alert, BRK y Akron" loading="lazy">
+    </div>
+  </div>
+</section>
+
+<section id="capacitacion">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="sec-num" aria-hidden="true">04</span>
+      <span class="label">Capacitación</span>
+      <h2>Capacitación a brigadas de emergencia</h2>
+    </div>
+    <div class="train">
+      <img width="960" height="720" decoding="async" src="img/brigada-de-emergencia-practicando-con-ma.webp" alt="Brigada de emergencia practicando con manguera para apagar fuego real durante una capacitación" loading="lazy">
+      <div class="train-txt">
+        <p>Preparamos a tu personal con prácticas de fuego real para que sepa actuar con calma y rapidez ante un incendio.</p>
+        <ul class="checks">
+          <li>Uso y manejo de extintores</li>
+          <li>Prácticas con fuego real y manguera</li>
+          <li>Formación de brigadas contra incendio</li>
+        </ul>
+        <a class="btn primary" href="https://wa.me/528781174728?text=Hola%2C%20me%20interesa%20la%20capacitaci%C3%B3n%20para%20brigadas" target="_blank" rel="noopener">Cotiza tu capacitación</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="galeria">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="sec-num" aria-hidden="true">05</span>
+      <span class="label">Galería</span>
+      <h2>Nuestro trabajo</h2>
+      <p>Stands en ferias y semanas de seguridad, y capacitaciones con fuego real y primeros auxilios para brigadas de empresas de la región.</p>
+    </div>
+    <div class="g-filter" role="group" aria-label="Filtrar fotos">
+      <button type="button" data-f="all" aria-pressed="true">Todas <span>13</span></button>
+      <button type="button" data-f="cap" aria-pressed="false">Capacitación <span>5</span></button>
+      <button type="button" data-f="feria" aria-pressed="false">Ferias y stands <span>8</span></button>
+    </div>
+    <div class="gallery" id="gallery"><figure class="g-item" data-cat="feria"><button type="button" class="g-open" data-i="0" aria-label="Ampliar: Stand JASA con extintores y señalización"><img decoding="async" src="img/galeria/thumb/jasa-01.webp" srcset="img/galeria/thumb/jasa-01.webp 600w, img/galeria/jasa-01.webp 1400w" sizes="(max-width:860px) 50vw, 290px" data-full="img/galeria/jasa-01.webp" alt="Stand JASA con extintores y señalización" width="1400" height="935" loading="lazy"></button><figcaption>Stand JASA con extintores y señalización</figcaption></figure><figure class="g-item" data-cat="feria"><button type="button" class="g-open" data-i="1" aria-label="Ampliar: Asesoría a visitantes en feria de seguridad"><img decoding="async" src="img/galeria/thumb/jasa-02.webp" srcset="img/galeria/thumb/jasa-02.webp 600w, img/galeria/jasa-02.webp 1400w" sizes="(max-width:860px) 50vw, 290px" data-full="img/galeria/jasa-02.webp" alt="Asesoría a visitantes en feria de seguridad" width="1400" height="935" loading="lazy"></button><figcaption>Asesoría a visitantes en feria de seguridad</figcaption></figure><figure class="g-item" data-cat="feria"><button type="button" class="g-open" data-i="2" aria-label="Ampliar: Atención en stand de equipo contra incendio"><img decoding="async" src="img/galeria/thumb/jasa-03.webp" srcset="img/galeria/thumb/jasa-03.webp 600w, img/galeria/jasa-03.webp 1400w" sizes="(max-width:860px) 50vw, 290px" data-full="img/galeria/jasa-03.webp" alt="Atención en stand de equipo contra incendio" width="1400" height="1400" loading="lazy"></button><figcaption>Atención en stand de equipo contra incendio</figcaption></figure><figure class="g-item" data-cat="feria"><button type="button" class="g-open" data-i="3" aria-label="Ampliar: Exhibición de extintores, gabinete y señales"><img decoding="async" src="img/galeria/thumb/jasa-04.webp" srcset="img/galeria/thumb/jasa-04.webp 600w, img/galeria/jasa-04.webp 1400w" sizes="(max-width:860px) 50vw, 290px" data-full="img/galeria/jasa-04.webp" alt="Exhibición de extintores, gabinete y señales" width="1050" height="1400" loading="lazy"></button><figcaption>Exhibición de extintores, gabinete y señales</figcaption></figure><figure class="g-item" data-cat="feria"><button type="button" class="g-open" data-i="4" aria-label="Ampliar: Demostración de equipo en semana de seguridad"><img decoding="async" src="img/galeria/thumb/jasa-05.webp" srcset="img/galeria/thumb/jasa-05.webp 600w, img/galeria/jasa-05.webp 1400w" sizes="(max-width:860px) 50vw, 290px" data-full="img/galeria/jasa-05.webp" alt="Demostración de equipo en semana de seguridad" width="1050" height="1400" loading="lazy"></button><figcaption>Demostración de equipo en semana de seguridad</figcaption></figure><figure class="g-item" data-cat="feria"><button type="button" class="g-open" data-i="5" aria-label="Ampliar: Stand de JASA como proveedor en planta"><img decoding="async" src="img/galeria/thumb/jasa-06.webp" srcset="img/galeria/thumb/jasa-06.webp 600w, img/galeria/jasa-06.webp 1400w" sizes="(max-width:860px) 50vw, 290px" data-full="img/galeria/jasa-06.webp" alt="Stand de JASA como proveedor en planta" width="1400" height="1050" loading="lazy"></button><figcaption>Stand de JASA como proveedor en planta</figcaption></figure><figure class="g-item" data-cat="feria"><button type="button" class="g-open" data-i="6" aria-label="Ampliar: Explicando el uso correcto del extintor"><img decoding="async" src="img/galeria/thumb/jasa-07.webp" srcset="img/galeria/thumb/jasa-07.webp 600w, img/galeria/jasa-07.webp 1400w" sizes="(max-width:860px) 50vw, 290px" data-full="img/galeria/jasa-07.webp" alt="Explicando el uso correcto del extintor" width="1050" height="1400" loading="lazy"></button><figcaption>Explicando el uso correcto del extintor</figcaption></figure><figure class="g-item" data-cat="feria"><button type="button" class="g-open" data-i="7" aria-label="Ampliar: Asesoría sobre tipos de extintor"><img decoding="async" src="img/galeria/thumb/jasa-08.webp" srcset="img/galeria/thumb/jasa-08.webp 600w, img/galeria/jasa-08.webp 1400w" sizes="(max-width:860px) 50vw, 290px" data-full="img/galeria/jasa-08.webp" alt="Asesoría sobre tipos de extintor" width="1050" height="1400" loading="lazy"></button><figcaption>Asesoría sobre tipos de extintor</figcaption></figure><figure class="g-item" data-cat="cap"><button type="button" class="g-open" data-i="8" aria-label="Ampliar: Práctica de brigada con fuego real"><img decoding="async" src="img/galeria/thumb/jasa-09.webp" srcset="img/galeria/thumb/jasa-09.webp 600w, img/galeria/jasa-09.webp 1400w" sizes="(max-width:860px) 50vw, 290px" data-full="img/galeria/jasa-09.webp" alt="Práctica de brigada con fuego real" width="1280" height="720" loading="lazy"></button><figcaption>Práctica de brigada con fuego real</figcaption></figure><figure class="g-item" data-cat="cap"><button type="button" class="g-open" data-i="9" aria-label="Ampliar: Brigada controlando fuego con manguera"><img decoding="async" src="img/galeria/thumb/jasa-10.webp" srcset="img/galeria/thumb/jasa-10.webp 600w, img/galeria/jasa-10.webp 1400w" sizes="(max-width:860px) 50vw, 290px" data-full="img/galeria/jasa-10.webp" alt="Brigada controlando fuego con manguera" width="1280" height="720" loading="lazy"></button><figcaption>Brigada controlando fuego con manguera</figcaption></figure><figure class="g-item" data-cat="cap"><button type="button" class="g-open" data-i="10" aria-label="Ampliar: Ataque a fuego de gas en práctica"><img decoding="async" src="img/galeria/thumb/jasa-11.webp" srcset="img/galeria/thumb/jasa-11.webp 600w, img/galeria/jasa-11.webp 1400w" sizes="(max-width:860px) 50vw, 290px" data-full="img/galeria/jasa-11.webp" alt="Ataque a fuego de gas en práctica" width="1400" height="788" loading="lazy"></button><figcaption>Ataque a fuego de gas en práctica</figcaption></figure><figure class="g-item" data-cat="cap"><button type="button" class="g-open" data-i="11" aria-label="Ampliar: Curso de primeros auxilios"><img decoding="async" src="img/galeria/thumb/jasa-12.webp" srcset="img/galeria/thumb/jasa-12.webp 600w, img/galeria/jasa-12.webp 1400w" sizes="(max-width:860px) 50vw, 290px" data-full="img/galeria/jasa-12.webp" alt="Curso de primeros auxilios" width="1400" height="1050" loading="lazy"></button><figcaption>Curso de primeros auxilios</figcaption></figure><figure class="g-item" data-cat="cap"><button type="button" class="g-open" data-i="12" aria-label="Ampliar: Plática de prevención al personal de planta"><img decoding="async" src="img/galeria/thumb/jasa-13.webp" srcset="img/galeria/thumb/jasa-13.webp 600w, img/galeria/jasa-13.webp 1400w" sizes="(max-width:860px) 50vw, 290px" data-full="img/galeria/jasa-13.webp" alt="Plática de prevención al personal de planta" width="1400" height="1050" loading="lazy"></button><figcaption>Plática de prevención al personal de planta</figcaption></figure></div>
+  </div>
+</section>
+<div class="lb" id="lb" hidden role="dialog" aria-modal="true" aria-label="Foto ampliada">
+  <button type="button" class="lb-x" id="lbX" aria-label="Cerrar">✕</button>
+  <button type="button" class="lb-nav prev" id="lbP" aria-label="Foto anterior">‹</button>
+  <figure><img decoding="async" id="lbImg" alt=""><figcaption id="lbCap"></figcaption></figure>
+  <button type="button" class="lb-nav next" id="lbN" aria-label="Foto siguiente">›</button>
+</div>
+
+<section id="normas">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="sec-num" aria-hidden="true">06</span>
+      <span class="label">Normatividad</span>
+      <h2>En regla</h2>
+      <p>Trabajamos conforme a las normas mexicanas que te piden en una inspección.</p>
+    </div>
+    <div class="norms">
+      <div class="norm"><h3>NOM-002-STPS-2010</h3><strong>Centros de trabajo</strong><p>Prevención y protección contra incendios. Define cuántos extintores necesitas y dónde van.</p></div>
+      <div class="norm"><h3>NOM-154-SCFI-2005</h3><strong>Recarga y mantenimiento</strong><p>Reglas para el servicio a extintores y para su etiqueta de servicio.</p></div>
+      <div class="norm"><h3>NOM-100-STPS-1994</h3><strong>Polvo químico seco</strong><p>Especificaciones de los extintores de polvo químico seco con presión contenida.</p></div>
+      <div class="norm"><h3>NOM-003-SEGOB-2011</h3><strong>Señalización</strong><p>Señales y avisos de protección civil, incluida la señal de ubicación del extintor.</p></div>
+    </div>
+    <p class="note">La norma que aplica depende del tipo de equipo y de tu giro. Pregúntanos y te orientamos.</p>
+    <div class="calc" id="recarga">
+      <div>
+        <h3>¿Ya te toca <span>recarga?</span></h3>
+        <p>Los extintores se recargan o revisan una vez al año. Busca la fecha en la etiqueta de tu equipo y revisa aquí si ya está vencido.</p>
+      </div>
+      <form id="calcForm">
+        <label for="lastDate">Fecha del último servicio (en la etiqueta)</label>
+        <input type="month" id="lastDate" value="2025-10">
+        <div class="result" id="result" aria-live="polite"></div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<section id="promo">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="sec-num" aria-hidden="true">07</span>
+      <span class="label">Promoción</span>
+      <h2>Tu seguridad, nuestra prioridad</h2>
+    </div>
+    <div class="flyer">
+      <figure><img width="1024" height="1536" decoding="async" src="img/flyer-de-jasa-extintores-recarga-y-mante.webp" alt="Flyer de JASA Extintores: recarga y mantenimiento, venta de equipos nuevos y señalamientos. Calle Mutualista 412, Col. Buena Vista Sur, Piedras Negras. Tel. 878 783 3216, WhatsApp 878 117 4728" loading="lazy"></figure>
+      <div class="flyer-txt">
+        <h3>Recarga y mantenimiento de extintores</h3>
+        <p>Servicio profesional, equipos certificados, revisión y prueba hidrostática. También vendemos equipo nuevo y señalamientos.</p>
+        <ul class="checks">
+          <li>Atención a empresas, comercios e industrias</li>
+          <li>Cumplimiento de normas oficiales</li>
+        </ul>
+        <div class="actions">
+          <a class="btn primary" href="https://wa.me/528781174728?text=Hola%2C%20quiero%20recargar%20mis%20extintores" target="_blank" rel="noopener">Agenda tu recarga</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="tienda">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="sec-num" aria-hidden="true">08</span>
+      <span class="label">Tienda</span>
+      <h2>Visítanos</h2>
+      <p>También damos servicio a domicilio para negocios e industria.</p>
+    </div>
+    <div class="store">
+      <img width="1200" height="900" decoding="async" src="img/fachada-del-local-de-jasa-extintores-en-.webp" alt="Fachada del local de JASA Extintores en Mutualista 412, con su camioneta de servicio" loading="lazy">
+      <div class="store-txt">
+        <dl>
+          <div><dt>Dirección</dt><dd>Calle Mutualista 412, Col. Buena Vista Sur, C.P. 26040, Piedras Negras, Coah.</dd></div>
+          <div><dt>Teléfono</dt><dd>878 783 3216</dd></div>
+          <div><dt>WhatsApp</dt><dd>878 117 4728</dd></div>
+          <div><dt>Horario</dt><dd><span class="hours"><span>Lun a Vie</span><span>8:00 a 13:00 y 14:00 a 18:00</span><span>Sábado</span><span>8:00 a 14:00</span></span><span class="status" id="status">Horario de atención</span></dd></div>
+        </dl>
+        <a class="btn primary" href="https://www.google.com/maps/search/?api=1&amp;query=Mutualista+412,+Buena+Vista+Sur,+26040+Piedras+Negras,+Coahuila" target="_blank" rel="noopener">Cómo llegar</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="preguntas">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="sec-num" aria-hidden="true">09</span>
+      <span class="label">Preguntas frecuentes</span>
+      <h2>Lo que más nos preguntan</h2>
+    </div>
+    <div class="faq">
+      <details><summary>¿Cada cuánto se recarga un extintor?</summary><p>Se le da servicio una vez al año, aunque no se haya usado. Si ya se disparó, aunque sea poco, hay que recargarlo de inmediato.</p></details>
+      <details><summary>¿Qué extintor necesito para mi negocio?</summary><p>Para la mayoría de comercios y oficinas, el de polvo químico seco ABC. Si tienes cocina comercial necesitas además uno tipo K, para equipo eléctrico conviene uno de CO₂, donde hay combustibles líquidos uno de espuma AFFF y si trabajas metales combustibles uno tipo D.</p></details>
+      <details><summary>¿Cuántos extintores debo tener?</summary><p>Depende del tamaño del local, del giro y del riesgo de incendio, según la NOM-002-STPS-2010. Te ayudamos a calcularlo.</p></details>
+      <details><summary>¿Qué es la prueba hidrostática?</summary><p>Es una prueba que revisa que el cilindro aguante la presión sin fugas ni deformaciones. Se hace cada cinco años.</p></details>
+      <details><summary>¿Van a domicilio?</summary><p>Sí. Damos servicio a domicilio para negocios e industria en Piedras Negras.</p></details>
+    </div>
+  </div>
+</section>
+
+<section id="cotizar">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="sec-num" aria-hidden="true">10</span>
+      <span class="label">Cotizador</span>
+      <h2>Arma tu cotización</h2>
+      <p>Agrega cada partida que necesitas y se arma tu hoja de cotización en el formato de JASA. Envíala por WhatsApp y te respondemos con precios y tiempo de entrega.</p>
+    </div>
+    <div class="cq">
+      <form class="cq-form" id="cqForm" novalidate>
+        <div class="cq-step"><span class="cq-n">1</span><h3>Tus datos</h3></div>
+        <div class="cq-grid">
+          <div class="field full"><label for="cqCliente">Cliente (empresa o nombre)</label><input type="text" id="cqCliente" autocomplete="organization" placeholder="Ej. Restaurante El Norteño" value=""></div>
+          <div class="field"><label for="cqDirigido">Dirigido a</label><input type="text" id="cqDirigido" autocomplete="name" placeholder="Ej. Lic. Laura Treviño"></div>
+          <div class="field"><label for="cqTel">Teléfono / WhatsApp</label><input type="text" id="cqTel" autocomplete="tel" inputmode="tel" placeholder="Ej. 878 123 4567"></div>
+          <div class="field full"><label for="cqDir">Dirección (calle, número y colonia)</label><input type="text" id="cqDir" autocomplete="street-address" placeholder="Ej. Av. Carranza 1500, Col. Centro"></div>
+          <div class="field"><label for="cqCiudad">Ciudad</label><input type="text" id="cqCiudad" autocomplete="address-level2" value="Piedras Negras, Coahuila"></div>
+          <div class="field"><label for="cqRfc">RFC (opcional)</label><input type="text" id="cqRfc" autocapitalize="characters" maxlength="13" placeholder="Para facturar"></div>
+        </div>
+
+        <div class="cq-step"><span class="cq-n">2</span><h3>Partidas</h3><span class="cq-count" id="cqCount"></span></div>
+        <ol class="cq-rows" id="cqRows"></ol>
+        <button type="button" class="cq-add" id="cqAdd">+ Agregar partida</button>
+
+        <div class="cq-step"><span class="cq-n">3</span><h3>Condiciones</h3></div>
+        <div class="cq-grid">
+          <div class="field full"><label class="check" for="cqDomicilio"><input type="checkbox" id="cqDomicilio">Quiero servicio a domicilio</label></div>
+          <div class="field full"><label for="cqNotas">Comentarios (opcional)</label><textarea id="cqNotas" placeholder="Ej. Los necesito antes de la inspección de Protección Civil"></textarea></div>
+        </div>
+      </form>
+
+      <div class="cq-out">
+        <div class="cq-out-head"><span class="label">Tu hoja de cotización</span><span class="cq-pill">Precios por cotizar</span></div>
+        <div class="cq-paper-wrap" id="cqWrap"><div class="cq-paper-scale" id="cqScale">
+          <div class="sheet" id="cqSheet">
+            <div class="sh-top">
+              <div class="sh-logo"><img decoding="async" loading="lazy" id="cqLogo" alt="JASA Extintores" width="300" height="136"></div>
+              <div class="sh-co">
+                <b>JASA EXTINTORES SA DE CV</b>
+                <span>MUTUALISTA 412 COL. BUENA VISTA SUR</span>
+                <span>PIEDRAS NEGRAS, COAHUILA</span>
+                <span>JEX180118NA0</span>
+                <span class="sh-tel">878 783 3216 · WhatsApp 878 117 4728</span>
+              </div>
+            </div>
+            <div class="sh-title-row">
+              <div class="sh-title">COTIZACIÓN</div>
+              <div class="sh-num">
+                <div><span>NÚMERO:</span><b id="shNum"></b></div>
+                <div><span>FECHA:</span><b id="shFecha"></b></div>
+              </div>
+            </div>
+            <div class="sh-client-row">
+              <dl class="sh-client">
+                <dt>Cliente:</dt><dd id="shCliente"></dd>
+                <dt>Dirigido A:</dt><dd id="shDirigido"></dd>
+                <dt>Dirección:</dt><dd id="shDir"></dd>
+                <dt>Ciudad:</dt><dd id="shCiudad"></dd>
+                <dt>RFC:</dt><dd id="shRfc"></dd>
+                <dt>Tel.:</dt><dd id="shTel"></dd>
+              </dl>
+              <div class="sh-cond"><b>CONDICIONES</b><div id="shCond"></div></div>
+            </div>
+            <table class="sh-table">
+              <colgroup><col style="width:9%"><col style="width:55%"><col style="width:10%"><col style="width:13%"><col style="width:13%"></colgroup>
+              <thead><tr><th>PARTIDAS</th><th>Artículo</th><th>Unidades</th><th>Precio Un.</th><th>Subtotal</th></tr></thead>
+              <tbody id="shBody"></tbody>
+            </table>
+            <div class="sh-foot">
+              <div class="sh-foot-l">TIEMPO DE ENTREGA POR CONFIRMAR<br><span>Solicitud enviada desde la página web. Los precios se envían por WhatsApp.</span></div>
+              <div class="sh-tot">
+                <div><span>SUB TOTAL</span><b>Por cotizar</b></div>
+                <div><span>I.V.A. 8%</span><b>Por cotizar</b></div>
+                <div class="sh-total"><span>TOTAL</span><b>Por cotizar</b></div>
+              </div>
+            </div>
+          </div>
+        </div></div>
+        <div class="cq-actions">
+          <a class="btn cq-wa" id="cqSend" href="https://wa.me/528781174728" target="_blank" rel="noopener">Enviar por WhatsApp</a>
+          <button type="button" class="btn ghost" id="cqPdf">Descargar PDF</button>
+          <button type="button" class="btn ghost" id="cqPng">Descargar imagen</button>
+        </div>
+        <p class="cq-status" id="cqStatus" aria-live="polite"></p>
+        <small class="cq-hint">WhatsApp se abre con tu lista de partidas lista para enviar. Si descargas la hoja, puedes adjuntarla en el mismo chat.</small>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="contact" id="contacto">
+  <div class="wrap">
+    <div>
+      <h2>Pide tu cotización</h2>
+      <p>Mándanos un mensaje con cuántos extintores tienes o necesitas, y te respondemos con precio y fecha de servicio.</p>
+    </div>
+    <div class="cards">
+      <div class="ccard"><div><div class="label">WhatsApp</div><a class="val" id="wa" href="https://wa.me/528781174728" target="_blank" rel="noopener">878 117 4728</a></div><button type="button" data-copy="wa">Copiar</button></div>
+      <div class="ccard"><div><div class="label">Teléfono</div><div class="val" id="tel">878 783 3216</div></div><button type="button" data-copy="tel">Copiar</button></div>
+      <div class="ccard"><div><div class="label">Correo</div><div class="val" id="mail">jasa-extintores@live.com.mx</div></div><button type="button" data-copy="mail">Copiar</button></div>
+      <div class="ccard"><div><div class="label">Facebook</div><a class="val" href="https://www.facebook.com/p/Jasa-extintores-100063838651097/" target="_blank" rel="noopener">JASA Extintores</a></div><a class="fbbtn" href="https://www.facebook.com/p/Jasa-extintores-100063838651097/" target="_blank" rel="noopener">Ver página</a></div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap cols">
+    <div>
+      <a class="logo" href="#inicio"><svg viewBox="0 0 440 200" role="img" aria-label="JASA Extintores"><defs><clipPath id="bandFtr"><rect x="0" y="98" width="440" height="16"/></clipPath></defs><g transform="translate(10 24)"><path d="M30 18 L6 8" stroke="#ffffff" stroke-width="7" stroke-linecap="round" fill="none"/><rect x="26" y="14" width="22" height="20" rx="3" fill="#ffffff"/><path d="M48 20 L96 6 L96 34 L48 28 Z" fill="#E10F0F"/><rect x="10" y="32" width="54" height="120" rx="16" fill="#E10F0F"/><rect x="10" y="74" width="54" height="16" fill="#0d0d0d"/></g><text x="122" y="52" font-family="Barlow Condensed, Arial Narrow, sans-serif" font-weight="600" font-size="34" letter-spacing="7" fill="#ffffff">EXTINTORES</text><g transform="translate(26 0) skewX(-8)"><text x="96" y="176" font-family="Saira Condensed, Arial Narrow, Impact, sans-serif" font-weight="900" font-size="150" fill="#E10F0F">JASA</text><text x="96" y="176" font-family="Saira Condensed, Arial Narrow, Impact, sans-serif" font-weight="900" font-size="150" fill="#0d0d0d" clip-path="url(#bandFtr)">JASA</text></g></svg></a>
+      <p>Más de 17 años en venta, recarga y mantenimiento de extintores en Piedras Negras, Coahuila. Distribuidor Extin-Flam.</p>
+    </div>
+    <div>
+      <h4>Productos</h4>
+      <ul><li><a href="#productos">Extintores</a></li><li><a href="#productos">Gabinetes</a></li><li><a href="#productos">Señalización</a></li><li><a href="#productos">Alarmas</a></li></ul>
+    </div>
+    <div>
+      <h4>Empresa</h4>
+      <ul><li><a href="#nosotros">Nosotros</a></li><li><a href="#servicios">Servicios</a></li><li><a href="#capacitacion">Capacitación</a></li><li><a href="#galeria">Galería</a></li><li><a href="#normas">Normas</a></li><li><a href="#preguntas">Preguntas</a></li></ul>
+    </div>
+    <div>
+      <h4>Contacto</h4>
+      <ul><li>Mutualista 412, Col. Buena Vista Sur, Piedras Negras</li><li>Tel. 878 783 3216</li><li>WhatsApp 878 117 4728</li><li>jasa-extintores@live.com.mx</li><li><a href="https://www.facebook.com/p/Jasa-extintores-100063838651097/" target="_blank" rel="noopener">Facebook: JASA Extintores</a></li></ul>
+    </div>
+    <div>
+      <h4>Horario</h4>
+      <ul><li>Lunes a viernes</li><li>8:00 a 13:00 y 14:00 a 18:00</li><li>Sábado</li><li>8:00 a 14:00</li></ul>
+    </div>
+  </div>
+  <div class="wrap legal"><span>© 2026 JASA Extintores · <a class="staff" href="https://claude.ai/artifact/DXAWKTfAwiNB8pq7nHyVsE" target="_blank" rel="noopener">Acceso interno: taller</a> · <a class="staff" href="https://claude.ai/artifact/XnATMGuVm1ZM5uhpiyyxi1" target="_blank" rel="noopener">cotizaciones</a></span><span>NOM-002-STPS · NOM-154-SCFI · NOM-100-STPS · NOM-003-SEGOB</span></div>
+</footer>
+
+<a class="wa-float" href="https://wa.me/528781174728" target="_blank" rel="noopener" aria-label="Escríbenos por WhatsApp"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.1 5.1 0 0 0 1.1 2.7 11.6 11.6 0 0 0 4.4 3.9c1.6.7 2.3.8 3.1.6a2.7 2.7 0 0 0 1.7-1.2 2.2 2.2 0 0 0 .2-1.2c-.1-.1-.3-.2-.5-.3z"/></svg><span>WhatsApp</span></a>
+
+<script>
+(function(){
+  var WA="https://wa.me/528781174728?text=";
+  var CATS=[
+    ["Extintores","PQS, CO₂, tipo K, agua a presión, espuma AFFF y tipo D. Nuevos, cargados y con etiqueta.","#productos","Ver extintores"],
+    ["Recarga","Servicio anual con revisión de válvula, manómetro y manguera, y etiqueta de servicio.","#recarga","¿Ya te toca?"],
+    ["Mantenimiento","Revisión preventiva, cambio de piezas y reporte por escrito para tu archivo.","#servicios","Ver servicio"],
+    ["Gabinetes","Gabinetes metálicos con puerta de cristal para proteger el extintor y tenerlo a la vista.","#productos","Ver gabinetes"],
+    ["Señalización","Señales fotoluminiscentes de extintor, ruta de evacuación, salida y precaución.","#productos","Ver señales"],
+    ["Alarmas","Kits con torreta, sirena, botón manual y letrero luminoso.","#productos","Ver alarmas"],
+    ["Mangueras e hidrantes","Mangueras, hidrantes y conexiones de las mejores marcas, sobre pedido.","#productos","Ver catálogo"],
+    ["Equipo de bombero","Trajes y equipo para brigadas. Te lo conseguimos con Extin-Flam.","#productos","Ver catálogo"],
+    ["Capacitación","Prácticas con fuego real para tu personal y tus brigadas de emergencia.","#capacitacion","Ver capacitación"]
+  ];
+  var box=document.getElementById("cats"), info=document.getElementById("catInfo");
+  function show(i){
+    box.querySelectorAll(".cat").forEach(function(b,j){b.setAttribute("aria-pressed",j===i?"true":"false");});
+    var c=CATS[i];
+    info.innerHTML="";
+    var h=document.createElement("h3");h.textContent=c[0];
+    var p=document.createElement("p");p.textContent=c[1];
+    var a=document.createElement("a");a.href=c[2];a.textContent=c[3]+" →";
+    info.append(h,p,a);
+  }
+  CATS.forEach(function(c,i){
+    var b=document.createElement("button");b.type="button";b.className="cat";
+    b.setAttribute("data-n",String(i+1).padStart(2,"0"));b.textContent=c[0];
+    b.addEventListener("click",function(){show(i);});
+    b.addEventListener("mouseenter",function(){if(matchMedia("(hover:hover)").matches)show(i);});
+    box.appendChild(b);
+  });
+  show(0);
+
+  var menuBtn=document.getElementById("menuBtn"), nav=document.getElementById("nav");
+  menuBtn.addEventListener("click",function(){var o=nav.classList.toggle("open");menuBtn.setAttribute("aria-expanded",o?"true":"false");});
+  function closeNav(){nav.classList.remove("open");menuBtn.setAttribute("aria-expanded","false");}
+  nav.querySelectorAll("a").forEach(function(a){a.addEventListener("click",closeNav);});
+  document.addEventListener("keydown",function(e){if(e.key==="Escape"&&nav.classList.contains("open")){closeNav();menuBtn.focus();}});
+  document.addEventListener("click",function(e){if(nav.classList.contains("open")&&!e.target.closest(".top"))closeNav();});
+  var top=document.querySelector(".top");
+  function hdr(){document.documentElement.style.setProperty("--hdr",top.offsetHeight+"px");}
+  hdr(); if(window.ResizeObserver) new ResizeObserver(hdr).observe(top); else window.addEventListener("resize",hdr);
+
+  var MESES=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+  var input=document.getElementById("lastDate"), out=document.getElementById("result");
+  function render(){
+    var v=input.value;
+    if(!/^\d{4}-\d{2}$/.test(v)){out.className="result";out.innerHTML="<strong>Elige una fecha</strong><small>Mes y año del último servicio.</small>";return;}
+    var y=+v.slice(0,4), m=+v.slice(5,7)-1;
+    var due=new Date(y+1,m,1), now=new Date(), cur=new Date(now.getFullYear(),now.getMonth(),1);
+    var diff=(due.getFullYear()-cur.getFullYear())*12+(due.getMonth()-cur.getMonth());
+    var dueTxt=MESES[due.getMonth()]+" de "+due.getFullYear();
+    if(diff<0){out.className="result late";out.innerHTML="<strong>Vencido</strong><small>Debió recargarse en "+dueTxt+". Pide tu servicio cuanto antes.</small>";}
+    else if(diff<=1){out.className="result due";out.innerHTML="<strong>Te toca ya</strong><small>Le corresponde servicio en "+dueTxt+".</small>";}
+    else{out.className="result ok";out.innerHTML="<strong>Al corriente</strong><small>Próximo servicio: "+dueTxt+" (faltan "+diff+" meses).</small>";}
+  }
+  input.addEventListener("input",render);
+  document.getElementById("calcForm").addEventListener("submit",function(e){e.preventDefault();});
+  render();
+
+
+  // Cotizador en formato JASA
+  (function(){
+    var CONCEPTOS=[
+      ["recarga","Recarga de extintor","RECARGA DE EXTINTOR","ext"],
+      ["nuevo","Extintor nuevo","EXTINTOR NUEVO","ext"],
+      ["oferta","Oferta noviembre: extintor 4.5 kg PQS + señalamiento","EXTINTOR NUEVO 4.5 KG PQS + SEÑALAMIENTO (OFERTA NOVIEMBRE)","none"],
+      ["mant","Mantenimiento de extintor","MANTENIMIENTO DE EXTINTOR","ext"],
+      ["hidro","Prueba hidrostática","PRUEBA HIDROSTÁTICA DE EXTINTOR","ext"],
+      ["senal","Señalamiento","SEÑALAMIENTO DE","senal"],
+      ["gabinete","Gabinete para extintor","GABINETE PARA EXTINTOR","cap"],
+      ["capacit","Capacitación a brigadas","CAPACITACIÓN A BRIGADAS CON FUEGO REAL","none"],
+      ["otro","Otro (escribir)","","otro"]
+    ];
+    var TIPOS=[["PQS","PQS (polvo químico)"],["CO2","CO₂"],["TIPO K","Tipo K (cocina)"],["AGUA","Agua"],["AFFF","Espuma AFFF"],["TIPO D","Tipo D (metales)"],["","No sé"]];
+    var CAPS=["1 KG","2 KG","4.5 KG","6 KG","9 KG","12 KG","50 KG (UNIDAD MÓVIL)"];
+    var SENALES=["EXTINTOR","RUTA DE EVACUACIÓN DERECHA","RUTA DE EVACUACIÓN IZQUIERDA","ESCALERAS","PUNTO DE REUNIÓN","SALIDA DE EMERGENCIA","BOTIQUÍN","ALTO VOLTAJE","PROHIBIDO EL PASO","NO FUMAR"];
+    var form=document.getElementById("cqForm"), list=document.getElementById("cqRows");
+    if(!form) return;
+    var seq=0;
+    function cap(s){return s.charAt(0)+s.slice(1).toLowerCase();}
+    function opts(arr,sel){return arr.map(function(o){var v=Array.isArray(o)?o[0]:o, t=Array.isArray(o)?o[1]:cap(o); return '<option value="'+v+'"'+(v===sel?' selected':'')+'>'+t+'</option>';}).join("");}
+    function addRow(c,t,k,s,q,focus){
+      seq++; var id="p"+seq, li=document.createElement("li"); li.className="cq-row";
+      li.innerHTML='<span class="cq-row-n" aria-hidden="true"></span>'+
+        '<div class="cq-row-f">'+
+          '<div class="field f-concepto"><label for="'+id+'c">Concepto</label><select id="'+id+'c" class="r-c">'+CONCEPTOS.map(function(x){return '<option value="'+x[0]+'"'+(x[0]===c?' selected':'')+'>'+x[1]+'</option>';}).join("")+'</select></div>'+
+          '<div class="field f-qty"><label for="'+id+'q">Unidades</label><input type="number" id="'+id+'q" class="r-q" min="1" max="9999" inputmode="numeric" value="'+(q||1)+'"></div>'+
+          '<div class="field f-half r-ext"><label for="'+id+'t">Tipo</label><select id="'+id+'t" class="r-t">'+opts(TIPOS,t||"PQS")+'</select></div>'+
+          '<div class="field f-half r-capw"><label for="'+id+'k">Capacidad</label><select id="'+id+'k" class="r-k">'+opts(CAPS,k||"6 KG")+'</select></div>'+
+          '<div class="field f-wide r-senal"><label for="'+id+'s">Señal</label><select id="'+id+'s" class="r-s">'+opts(SENALES,s||"EXTINTOR")+'</select></div>'+
+          '<div class="field f-wide r-otro"><label for="'+id+'o">Descripción</label><input type="text" id="'+id+'o" class="r-o" maxlength="90" placeholder="Ej. Manguera para hidrante 15 m"></div>'+
+          '<p class="cq-row-txt"></p>'+
+        '</div>'+
+        '<button type="button" class="cq-del" aria-label="Quitar partida">✕</button>';
+      list.appendChild(li); syncRows(); render();
+      if(focus) li.querySelector(".r-c").focus();
+    }
+    function concept(id){for(var i=0;i<CONCEPTOS.length;i++) if(CONCEPTOS[i][0]===id) return CONCEPTOS[i]; return CONCEPTOS[0];}
+    function rowText(li){
+      var c=concept(li.querySelector(".r-c").value), kind=c[3], t=li.querySelector(".r-t").value, k=li.querySelector(".r-k").value;
+      if(kind==="ext") return c[2]+" "+k+(t?" "+t:" (TIPO POR DEFINIR)");
+      if(kind==="cap") return c[2]+" DE "+k.replace(" (UNIDAD MÓVIL)","");
+      if(kind==="senal") return c[2]+" "+li.querySelector(".r-s").value;
+      if(kind==="otro") return li.querySelector(".r-o").value.trim().toUpperCase();
+      return c[2];
+    }
+    function syncRows(){
+      var rows=list.querySelectorAll(".cq-row");
+      [].forEach.call(rows,function(li,i){
+        var kind=concept(li.querySelector(".r-c").value)[3];
+        li.querySelector(".cq-row-n").textContent=i+1;
+        li.querySelector(".r-ext").hidden=kind!=="ext";
+        li.querySelector(".r-capw").hidden=!(kind==="ext"||kind==="cap");
+        li.querySelector(".r-senal").hidden=kind!=="senal";
+        li.querySelector(".r-otro").hidden=kind!=="otro";
+        li.querySelector(".cq-del").disabled=rows.length<2;
+      });
+    }
+    function pad(n){return (n<10?"0":"")+n;}
+    var now=new Date(), fecha=pad(now.getDate())+"/"+pad(now.getMonth()+1)+"/"+now.getFullYear();
+    var folio="WEB-"+String(now.getFullYear()).slice(2)+pad(now.getMonth()+1)+pad(now.getDate())+"-"+String(Math.floor(100+Math.random()*900));
+    document.getElementById("shNum").textContent=folio;
+    document.getElementById("shFecha").textContent=fecha;
+    function val(id){return document.getElementById(id).value.trim();}
+    function render(){
+      var items=[], piezas=0;
+      [].forEach.call(list.querySelectorAll(".cq-row"),function(li){
+        var txt=rowText(li), q=parseInt(li.querySelector(".r-q").value,10)||0;
+        li.querySelector(".cq-row-txt").textContent=txt?("En la hoja: "+txt):"Escribe la descripción";
+        if(txt&&q>0){items.push([txt,q]); piezas+=q;}
+      });
+      var body="", n=Math.max(items.length,12);
+      for(var i=0;i<n;i++){var it=items[i]; body+="<tr><td>"+(it?i+1:"")+"</td><td></td><td>"+(it?it[1]:"")+"</td><td>"+(it?"—":"")+"</td><td>"+(it?"—":"")+"</td></tr>";}
+      var tb=document.getElementById("shBody"); tb.innerHTML=body;
+      items.forEach(function(it,i){tb.rows[i].cells[1].textContent=it[0];});
+      var cli=val("cqCliente"), dir=val("cqDirigido"), domi=val("cqDir"), ciu=val("cqCiudad"), rfc=val("cqRfc").toUpperCase(), tel=val("cqTel"), dom=document.getElementById("cqDomicilio").checked, notas=val("cqNotas");
+      document.getElementById("shCliente").textContent=cli;
+      document.getElementById("shDirigido").textContent=dir;
+      document.getElementById("shDir").textContent=domi;
+      document.getElementById("shCiudad").textContent=ciu;
+      document.getElementById("shRfc").textContent=rfc;
+      document.getElementById("shTel").textContent=tel;
+      var cond=[]; if(dom) cond.push("SERVICIO A DOMICILIO"); if(notas) cond.push(notas);
+      document.getElementById("shCond").textContent=cond.join("\n");
+      document.getElementById("cqCount").textContent=items.length+(items.length===1?" partida · ":" partidas · ")+piezas+(piezas===1?" pieza":" piezas");
+      var L=["*SOLICITUD DE COTIZACIÓN · JASA EXTINTORES*","Número: "+folio,"Fecha: "+fecha];
+      if(cli) L.push("Cliente: "+cli); if(dir) L.push("Dirigido a: "+dir); if(domi) L.push("Dirección: "+domi); if(ciu) L.push("Ciudad: "+ciu); if(rfc) L.push("RFC: "+rfc); if(tel) L.push("Tel.: "+tel);
+      L.push("","*PARTIDAS*");
+      if(items.length) items.forEach(function(it,i){L.push((i+1)+". "+it[0]+" — "+it[1]+(it[1]===1?" unidad":" unidades"));}); else L.push("(sin partidas)");
+      if(items.length>1) L.push("Total: "+piezas+" unidades");
+      if(dom||notas){L.push("","*CONDICIONES*"); if(dom) L.push("Servicio a domicilio"); if(notas) L.push(notas);}
+      L.push("","Quedo atento a los precios. ¡Gracias!");
+      document.getElementById("cqSend").href="https://wa.me/528781174728?text="+encodeURIComponent(L.join("\n"));
+    }
+    document.getElementById("cqAdd").addEventListener("click",function(){addRow("recarga","PQS","6 KG","",1,true);});
+    list.addEventListener("click",function(e){var b=e.target.closest(".cq-del"); if(!b||b.disabled) return; var li=b.closest(".cq-row"), nx=li.nextElementSibling||li.previousElementSibling; li.remove(); syncRows(); render(); if(nx) nx.querySelector(".r-c").focus();});
+    form.addEventListener("input",function(){syncRows(); render();});
+    form.addEventListener("change",function(){syncRows(); render();});
+    form.addEventListener("submit",function(e){e.preventDefault();});
+    addRow("recarga","PQS","6 KG","",2,false);
+    addRow("senal","PQS","6 KG","EXTINTOR",2,false);
+
+    // Escalar la hoja al ancho disponible
+    var wrap=document.getElementById("cqWrap"), scaleEl=document.getElementById("cqScale"), sheet=document.getElementById("cqSheet");
+    function fit(){var w=wrap.clientWidth||816, s=Math.min(1,w/816); scaleEl.style.transform="scale("+s+")"; wrap.style.height=Math.ceil(sheet.offsetHeight*s)+"px";}
+    if(window.ResizeObserver) new ResizeObserver(fit).observe(wrap); window.addEventListener("resize",fit); fit();
+    new MutationObserver(fit).observe(sheet,{childList:true,subtree:true,characterData:true});
+
+    // Logo dibujado en canvas (así sale igual en pantalla y en la descarga)
+    function drawLogo(){
+      var cv=document.createElement("canvas"), S=3; cv.width=440*S; cv.height=200*S;
+      var x=cv.getContext("2d"); x.scale(S,S);
+      x.save(); x.translate(10,24);
+      x.strokeStyle="#1a1716"; x.lineWidth=7; x.lineCap="round"; x.beginPath(); x.moveTo(30,18); x.lineTo(6,8); x.stroke();
+      x.fillStyle="#1a1716"; rr(x,26,14,22,20,3);
+      x.fillStyle="#E10F0F"; x.beginPath(); x.moveTo(48,20); x.lineTo(96,6); x.lineTo(96,34); x.lineTo(48,28); x.closePath(); x.fill();
+      rr(x,10,32,54,120,16);
+      x.fillStyle="#ffffff"; x.fillRect(10,74,54,16); x.restore();
+      x.fillStyle="#1a1716"; x.font='600 34px "Barlow Condensed","Arial Narrow",sans-serif';
+      if("letterSpacing" in x) x.letterSpacing="7px"; x.fillText("EXTINTORES",122,52); if("letterSpacing" in x) x.letterSpacing="0px";
+      var F='900 150px "Saira Condensed","Arial Narrow",Impact,sans-serif'; x.font=F;
+      var tw=x.measureText("JASA").width, sx=Math.min(1,300/tw);
+      function jasa(col){x.transform(1,0,Math.tan(-8*Math.PI/180),1,26,0); x.translate(96,176); x.scale(sx,1); x.font=F; x.fillStyle=col; x.fillText("JASA",0,0);}
+      x.save(); jasa("#E10F0F"); x.restore();
+      x.save(); x.beginPath(); x.rect(0,98,440,16); x.clip(); jasa("#ffffff"); x.restore();
+      document.getElementById("cqLogo").src=cv.toDataURL("image/png");
+    }
+    function rr(x,a,b,w,h,r){x.beginPath(); x.moveTo(a+r,b); x.arcTo(a+w,b,a+w,b+h,r); x.arcTo(a+w,b+h,a,b+h,r); x.arcTo(a,b+h,a,b,r); x.arcTo(a,b,a+w,b,r); x.closePath(); x.fill();}
+    drawLogo();
+    if(document.fonts){
+      document.fonts.load('900 150px "Saira Condensed"').then(drawLogo,function(){});
+      document.fonts.load('600 34px "Barlow Condensed"').then(drawLogo,function(){});
+      if(document.fonts.ready) document.fonts.ready.then(drawLogo);
+    }
+
+    // Descargas (PDF / imagen) con html2canvas + jsPDF
+    var st=document.getElementById("cqStatus"), bPdf=document.getElementById("cqPdf"), bPng=document.getElementById("cqPng"), dl=null;
+    function load(src){return new Promise(function(ok,no){var s=document.createElement("script"); s.src=src; s.onload=ok; s.onerror=function(){no(new Error("load"));}; document.head.appendChild(s);});}
+    var libs=null;
+    function getLibs(need){
+      libs=libs||load("https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js");
+      return need==="pdf"?libs.then(function(){return window.jspdf?0:load("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js");}):libs;
+    }
+    function snap(){
+      var holder=document.createElement("div"); holder.style.cssText="position:fixed;left:-10000px;top:0;width:816px;background:#fff";
+      var c=sheet.cloneNode(true); holder.appendChild(c); document.body.appendChild(holder);
+      return window.html2canvas(c,{scale:2,backgroundColor:"#ffffff",logging:false}).then(function(cv){holder.remove(); return cv;},function(e){holder.remove(); throw e;});
+    }
+    function saveBlob(name,blob){
+      if(dl) return dl.save({filename:name,data:blob});
+      var u=URL.createObjectURL(blob), a=document.createElement("a"); a.href=u; a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(function(){URL.revokeObjectURL(u);},4000); return Promise.resolve();
+    }
+    function fname(ext){return "Cotizacion-JASA-"+folio+"."+ext;}
+    function busy(on,msg){bPdf.disabled=bPng.disabled=on; st.textContent=msg||"";}
+    function save(kind){
+      busy(true,"Preparando tu hoja…");
+      getLibs(kind).then(snap).then(function(cv){
+        if(kind==="png") return new Promise(function(ok){cv.toBlob(ok,"image/png");}).then(function(b){return saveBlob(fname("png"),b);});
+        var pdf=new window.jspdf.jsPDF({unit:"pt",format:"letter"}), W=612, H=792, r=Math.min(W/cv.width,H/cv.height), w=cv.width*r, h=cv.height*r;
+        pdf.addImage(cv.toDataURL("image/jpeg",0.92),"JPEG",(W-w)/2,0,w,h);
+        return saveBlob(fname("pdf"),pdf.output("blob"));
+      }).then(function(){busy(false,"Listo. Adjunta el archivo en tu chat de WhatsApp con JASA.");},function(e){
+        var c=e&&e.code; busy(false,c==="declined"?"":(c==="rate_limited"?"Espera un momento e inténtalo otra vez.":"No se pudo generar el archivo aquí. Envía tu solicitud por WhatsApp."));
+      });
+    }
+    bPdf.addEventListener("click",function(){save("pdf");});
+    bPng.addEventListener("click",function(){save("png");});
+    try{ if(window.claude&&window.claude.use){ window.claude.use("downloads").then(function(d){ if(d){dl=d;} },function(){}); } }catch(e){}
+  })();
+
+  // Abierto / cerrado (hora de Piedras Negras)
+  var st=document.getElementById("status");
+  try{
+    var parts=new Intl.DateTimeFormat("en-US",{timeZone:"America/Matamoros",weekday:"short",hour:"numeric",minute:"numeric",hour12:false}).formatToParts(new Date());
+    var get=function(t){return (parts.find(function(p){return p.type===t;})||{}).value;};
+    var d=get("weekday"), m=(parseInt(get("hour"),10)%24)*60+parseInt(get("minute"),10);
+    var open=false;
+    if(["Mon","Tue","Wed","Thu","Fri"].indexOf(d)>=0) open=(m>=480&&m<780)||(m>=840&&m<1080);
+    else if(d==="Sat") open=(m>=480&&m<840);
+    st.textContent=open?"Abierto ahora":"Cerrado en este momento";
+    st.className="status "+(open?"open":"closed");
+  }catch(e){}
+
+  document.querySelectorAll("[data-copy]").forEach(function(b){
+    b.addEventListener("click",function(){
+      var el=document.getElementById(b.getAttribute("data-copy")), t=el.textContent;
+      function sel(){var r=document.createRange();r.selectNodeContents(el);var s=getSelection();s.removeAllRanges();s.addRange(r);}
+      if(navigator.clipboard){navigator.clipboard.writeText(t).then(function(){b.textContent="Copiado";setTimeout(function(){b.textContent="Copiar"},1500)},sel);}else sel();
+    });
+  });
+})();
+</script>
+<script>
+(()=>{const g=document.getElementById('gallery');if(!g)return;
+const figs=[...g.querySelectorAll('.g-item')];
+figs.forEach(f=>{const i=f.querySelector('img');const r=i.width/i.height;if(r>1.6)f.classList.add('wide');else if(r<.8)f.classList.add('tall')});
+document.querySelectorAll('.g-filter button').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.g-filter button').forEach(x=>x.setAttribute('aria-pressed',x===b));const v=b.dataset.f;figs.forEach(f=>f.hidden=!(v==='all'||f.dataset.cat===v))}));
+const lb=document.getElementById('lb'),im=document.getElementById('lbImg'),cap=document.getElementById('lbCap');let cur=0,last=null;
+const vis=()=>figs.filter(f=>!f.hidden);
+function show(f){const i=f.querySelector('img');im.src=i.dataset.full||i.src;im.alt=i.alt;cap.textContent=i.alt;cur=vis().indexOf(f)}
+function open(f){last=document.activeElement;show(f);lb.hidden=false;document.getElementById('lbX').focus()}
+function close(){lb.hidden=true;last&&last.focus()}
+function step(d){const v=vis();show(v[(cur+d+v.length)%v.length])}
+figs.forEach(f=>f.querySelector('.g-open').addEventListener('click',()=>open(f)));
+document.getElementById('lbX').onclick=close;document.getElementById('lbP').onclick=()=>step(-1);document.getElementById('lbN').onclick=()=>step(1);
+lb.addEventListener('click',e=>{if(e.target===lb)close()});
+document.addEventListener('keydown',e=>{if(lb.hidden)return;if(e.key==='Escape')close();if(e.key==='ArrowLeft')step(-1);if(e.key==='ArrowRight')step(1)});
+let x0=null;lb.addEventListener('touchstart',e=>{x0=e.touches[0].clientX},{passive:true});lb.addEventListener('touchend',e=>{if(x0==null)return;const dx=e.changedTouches[0].clientX-x0;if(Math.abs(dx)>50)step(dx<0?1:-1);x0=null});
+})();
+</script>
+<script>
+(function(){
+  if(!("IntersectionObserver" in window)||matchMedia("(prefers-reduced-motion:reduce)").matches){document.documentElement.classList.remove("js");return;}
+  var sel=".sec-head,.svc,.type,.prod,.norm,.mv,.years,.values,.g-item,.feature,.dist,.catalog,.train,.flyer,.store,.faq details,.calc,.cq-form,.cq-out,.contact .wrap>*";
+  var els=[].slice.call(document.querySelectorAll(sel));
+  els.forEach(function(el){
+    var sib=el.parentElement?[].indexOf.call(el.parentElement.children,el):0;
+    el.style.setProperty("--d",(Math.min(sib,5)*0.06)+"s"); el.classList.add("rv");
+  });
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add("in");io.unobserve(e.target);}});},{rootMargin:"0px 0px -8% 0px",threshold:0.06});
+  els.forEach(function(el){io.observe(el);});
+  addEventListener("beforeprint",function(){els.forEach(function(el){el.classList.add("in");});});
+})();
+</script>
+</body></html>
