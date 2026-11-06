@@ -163,6 +163,17 @@ textarea.inp{resize:vertical;min-height:120px;font-family:var(--mono);font-size:
 .sh-sign div:last-child{border-right:0}
 .sh-sign span{display:block;border-top:1px solid #444;padding-top:4px;font-weight:700}
 .sh-sign small{display:block;color:#666;font-size:10px;margin-top:2px;min-height:12px}
+.task{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:4px 12px;align-items:start;padding:10px 18px;border-bottom:1px solid var(--line)}
+.task:last-child{border-bottom:0}
+.task input[type=checkbox]{width:22px;height:22px;accent-color:var(--green);margin-top:1px}
+.task b{font-weight:600;overflow-wrap:anywhere}
+.task.ok b{text-decoration:line-through;color:var(--muted)}
+.task small{display:block;color:var(--muted);font-size:12px;margin-top:2px;overflow-wrap:anywhere}
+.task.late b{color:var(--rose)}
+.tg{font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--line);border-radius:20px;padding:1px 7px;color:var(--blue);margin-right:6px;white-space:nowrap}
+.day-h{display:flex;justify-content:space-between;align-items:center;padding:10px 18px;background:var(--panel-2);border-bottom:1px solid var(--line);font-family:var(--display);font-weight:800;text-transform:uppercase;font-size:16px}
+.kpis.sm{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+.kpis.sm .kpi .v{font-size:30px}
 .eq-chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
 .eq-chip{font-family:var(--mono);font-size:11px;border:1px solid var(--line);border-radius:3px;padding:1px 6px;color:var(--ink);white-space:nowrap}
 @media (max-width:1100px){.kanban{grid-template-columns:repeat(2,minmax(0,1fr))}.grid2,.q-layout{grid-template-columns:minmax(0,1fr)}}
@@ -214,7 +225,7 @@ textarea.inp{resize:vertical;min-height:120px;font-family:var(--mono);font-size:
 <script>
 (function(){
 "use strict";
-var COLS=["quotes","clientes","proveedores","movs","ordenes","inventario","precios"];
+var COLS=["quotes","clientes","proveedores","movs","ordenes","inventario","precios","pendientes"];
 var S={screen:"panel",data:{},ready:{},sel:null,finTab:"todos",finMes:null,search:"",paste:"",pasteMsg:"",drawer:null,otSel:null,dlv:{},confirm:null,readOnly:false,dbState:"loading"};
 COLS.forEach(function(c){S.data[c]=[];S.ready[c]=false;});
 var db=null, dl=null;
@@ -294,14 +305,17 @@ function eqRowHTML(e){
     (sv?'<select class="inp eq-svc" aria-label="Servicio">'+EXT_SERV.map(function(o){return '<option'+(o===(e.servicio||"Recarga")?" selected":"")+'>'+esc(o)+'</option>';}).join("")+'</select>':"")+'</div>';
 }
 function eqSummary(){var rows=document.querySelectorAll("#eqList .eq-row"),n=0;rows.forEach(function(r){n+=parseInt(r.querySelector(".eq-qty").value,10)||0;});var el=document.getElementById("eqSum");if(el)el.textContent=n?("Total: "+n+(n===1?" extintor":" extintores")):"Sin extintores registrados";}
+var PN_CATS=["Visita a cliente","Compra de material","Banco","Cobranza","Entrega / recolección","Administrativo","Otro"];
+var PN_REP=[["no","Solo una vez"],["lunsab","Diario (lunes a sábado)"],["diario","Todos los días"],["semanal","Cada semana, mismo día"],["mensual","Cada mes, mismo día"]];
 var CAT_ING=["Ventas","Servicios","Capacitación","Otros ingresos"],CAT_EGR=["Insumos","Vehículo","Gastos fijos","Nómina","Impuestos","Otros gastos"];
 var STAGES=[["Recibido","var(--muted)"],["En servicio","var(--amber)"],["Listo para entregar","var(--green)"],["Entregado","var(--faint)"]];
 var FORMS={
   clientes:{t:"cliente",f:[["nombre","Nombre o razón social","text",1],["contacto","Contacto","text"],["tel","Teléfono (10 dígitos)","tel"],["ciudad","Ciudad","text"],["equiposDet","Extintores del cliente","equipos"],["proximaRecarga","Próxima recarga","month"],["saldo","Por cobrar ($)","number"],["notas","Notas","textarea"]]},
   proveedores:{t:"proveedor",f:[["nombre","Proveedor","text",1],["contacto","Contacto","text"],["tel","Teléfono","tel"],["ciudad","Ciudad","text"],["surte","Qué surte","text"],["saldo","Por pagar ($)","number"]]},
   movs:{t:"movimiento",f:[["tipo","Tipo","select",1,[["ingreso","Ingreso"],["egreso","Egreso"]]],["fecha","Fecha","date",1],["concepto","Concepto","text",1],["quien","Cliente o proveedor","text"],["categoria","Categoría","select",0,CAT_ING.concat(CAT_EGR).map(function(c){return [c,c];})],["monto","Monto ($)","number",1]]},
-  ordenes:{t:"orden de taller",f:[["cliente","Cliente","text",1],["equiposDet","Equipos a recibir","equipos"],["recibio","Recibió en JASA","text",0,null,"Nombre de quien recibe los equipos"],["notas","Notas","text",0,null,"Ej. Uno trae la manguera rota"],["entrega","Fecha de entrega","date"],["etapa","Etapa","select",1,STAGES.map(function(s,i){return [String(i),s[0]];})]]},
-  inventario:{t:"artículo",f:[["nombre","Artículo","text",1],["unidad","Unidad","text",0,null,"kg, pzas, rollos…"],["stock","Existencia","number",1],["min","Mínimo","number",1],["optimo","Óptimo (para pedir)","number",1],["consumo","Se descuenta al entregar una orden","select",0,[["","No"],["PQS","Sí: polvo PQS (kg recargados)"],["CO2","Sí: CO₂ (kg recargados)"],["ETIQUETA","Sí: 1 etiqueta por extintor"]]]]},
+  ordenes:{t:"orden de taller",f:[["cliente","Cliente","text",1],["contacto","Contacto","text"],["tel","Teléfono / WhatsApp","tel"],["recibido","Fecha de ingreso","date",1],["entrega","Entrega programada","date"],["equiposDet","Equipos recibidos","equipos"],["recibio","Recibió en JASA","text",0,null,"Nombre de quien recibe los equipos"],["notas","Notas","textarea",0,null,"Estado del equipo, piezas a cambiar, planta…"],["etapa","Etapa","select",1,STAGES.map(function(s,i){return [String(i),s[0]];})]]},
+  inventario:{t:"artículo",f:[["nombre","Artículo","text",1],["categoria","Categoría","select",0,[["Extintores","Extintores"],["Señalamientos","Señalamientos"],["Refacciones","Refacciones"],["Agentes y polvo","Agentes y polvo"],["Otros","Otros"]]],["unidad","Unidad","text",0,null,"kg, pza, rollos…"],["ubicacion","Ubicación","text",0,null,"Ej. Anaquel 2"],["stock","Existencia","number",1],["min","Mínimo","number",1],["optimo","Óptimo (para pedir)","number",1],["consumo","Se descuenta al entregar una orden","select",0,[["","No"],["PQS","Sí: polvo PQS (kg recargados)"],["CO2","Sí: CO₂ (kg recargados)"],["ETIQUETA","Sí: 1 etiqueta por extintor"]]]]},
+  pendientes:{t:"pendiente",f:[["titulo","Actividad","text",1],["cat","Tipo","select",1,PN_CATS.map(function(c){return [c,c];})],["fecha","Fecha","date",1],["hora","Hora (opcional)","time"],["repite","Repetir","select",1,PN_REP],["hasta","Repetir hasta (opcional)","date",0,null,"Vacío = se repite siempre"],["notas","Notas","textarea",0,null,"Dirección, contacto, montos…"]]},
   quotes:{t:"cotización",f:[["cliente","Cliente","text",1],["dirigido","Dirigido a","text"],["tel","Teléfono (WhatsApp)","tel"],["direccion","Dirección","text"],["ciudad","Ciudad","text"],["rfc","RFC","text"],["cond","Condiciones","text",0,null,"Ej. Servicio a domicilio"],["entregaTxt","Tiempo de entrega","text",0,null,"Ej. 2 días hábiles"],["vigencia","Vigencia de precios","text",0,null,"Ej. 15 días"]]}
 };
 function openForm(kind,id){
@@ -309,7 +323,8 @@ function openForm(kind,id){
   var def={};
   if(!rec){
     if(kind==="movs")def={tipo:"ingreso",fecha:today(),categoria:"Ventas"};
-    if(kind==="ordenes")def={etapa:"0"};
+    if(kind==="ordenes"){var t0=today();def={etapa:"0",recibido:t0,entrega:addWorkDays(t0,3)};}
+    if(kind==="pendientes")def={fecha:S.pnDay||today(),repite:"no",cat:"Administrativo"};
     if(kind==="inventario")def={stock:0,min:0,optimo:0};
   }
   S.drawer={kind:kind,id:id||null,vals:Object.assign({},def,rec||{})};
@@ -344,6 +359,7 @@ function submitDrawer(form){
   F.f.forEach(function(f){
     if(f[2]==="equipos"){var det=[];document.querySelectorAll("#eqList .eq-row").forEach(function(r){var q=parseInt(r.querySelector(".eq-qty").value,10)||0;var sv=r.querySelector(".eq-svc");if(q>0){var o={tipo:r.querySelector(".eq-tipo").value,cap:r.querySelector(".eq-cap").value,qty:q};if(sv)o.servicio=sv.value;det.push(o);}});body.equiposDet=det;body.equipos=det.reduce(function(a,e){return a+e.qty;},0);return;}
     var el=form.elements[f[0]];var x=el.value.trim();if(f[2]==="number")x=x===""?0:(parseFloat(x)||0);body[f[0]]=x;});
+  if(d.kind==="inventario")body.porCapturar=false;
   if(d.kind==="ordenes"){
     body.etapa=+body.etapa;
     var prev=d.id?byId("ordenes",d.id):null;
@@ -357,11 +373,13 @@ function submitDrawer(form){
     if(d.kind==="ordenes"){body.folio=nextOT();body.creado=Date.now();}
     if(d.kind==="quotes"){body.folio="MAN-"+Date.now().toString().slice(-6);body.fecha=today();body.status="Nueva";body.creado=Date.now();body.lines=[];}
     if(d.kind==="clientes")body.desde=today();
+    if(d.kind==="pendientes"){body.hechos=[];body.creado=Date.now();}
     p=write(d.kind,null,body).then(function(id){if(d.kind==="quotes"){S.sel=id;S.screen="quotes";}});
   }
   p.then(function(){S.drawer=null;renderDrawer();toast(d.id?"Cambios guardados":"Agregado");render();},function(){});
 }
-function nextOT(){var n=S.data.ordenes.reduce(function(a,o){var m=String(o.folio||"").match(/(\d+)/);return m?Math.max(a,+m[1]):a;},0);return "OT-"+String(n+1).padStart(4,"0");}
+function nextOT(){var n=S.data.ordenes.reduce(function(a,o){var m=String(o.folio||"").match(/^OT-(\d+)$/);return m?Math.max(a,+m[1]):a;},0);return "OT-"+String(n+1).padStart(4,"0");}
+function addWorkDays(iso,n){var p=iso.split("-").map(Number),d=new Date(p[0],p[1]-1,p[2]);while(n>0){d.setDate(d.getDate()+1);if(d.getDay()!==0)n--;}return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());}
 
 /* ---------- lista de precios ---------- */
 function normArt(t){return String(t||"").toUpperCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^A-Z0-9.]+/g," ").trim();}
@@ -476,7 +494,7 @@ function orderSheetHTML(o){
   return '<div class="sheet"><div class="sh-top"><div class="sh-logo"><img alt="JASA Extintores" width="300" height="136" src="'+LOGO+'"></div>'+
    '<div class="sh-co"><b>JASA EXTINTORES SA DE CV</b><span>MUTUALISTA 412 COL. BUENA VISTA SUR</span><span>PIEDRAS NEGRAS, COAHUILA</span><span>JEX180118NA0</span><span class="sh-tel">878 783 3216 · WhatsApp 878 117 4728</span></div></div>'+
    '<div class="sh-row"><div class="sh-title">ORDEN DE SERVICIO</div><div class="sh-num"><div><span>FOLIO:</span><b>'+esc(o.folio)+'</b></div><div><span>RECIBIDO:</span><b>'+fmtDate(rec)+'</b></div><div><span>ENTREGA:</span><b>'+(o.entregado?fmtDate(o.entregado):o.entrega?fmtDate(o.entrega):"POR CONFIRMAR")+'</b></div></div></div>'+
-   '<div class="sh-row"><dl class="sh-client"><dt>Cliente:</dt><dd>'+esc(o.cliente)+'</dd><dt>Contacto:</dt><dd>'+esc(cli.contacto||"")+'</dd><dt>Tel.:</dt><dd>'+esc(cli.tel||"")+'</dd><dt>Ciudad:</dt><dd>'+esc(cli.ciudad||"")+'</dd><dt>Equipos:</dt><dd>'+us.length+'</dd><dt>Cotización:</dt><dd>'+esc(o.cotizacion||"")+'</dd></dl>'+
+   '<div class="sh-row"><dl class="sh-client"><dt>Cliente:</dt><dd>'+esc(o.cliente)+'</dd><dt>Contacto:</dt><dd>'+esc(o.contacto||cli.contacto||"")+'</dd><dt>Tel.:</dt><dd>'+esc(o.tel||cli.tel||"")+'</dd><dt>Ciudad:</dt><dd>'+esc(cli.ciudad||"")+'</dd><dt>Equipos:</dt><dd>'+us.length+'</dd><dt>Cotización:</dt><dd>'+esc(o.cotizacion||"")+'</dd></dl>'+
    '<div class="sh-cond"><b>OBSERVACIONES</b><div>'+esc(o.notas||"")+'</div></div></div>'+
    '<table class="sh-table"><colgroup><col style="width:7%"><col style="width:30%"><col style="width:23%"><col style="width:20%"><col style="width:20%"></colgroup><thead><tr><th>#</th><th>Equipo</th><th>Servicio</th><th>No. de serie</th><th>Etiqueta NOM-154</th></tr></thead><tbody>'+rows+'</tbody></table>'+
    '<div class="sh-sign"><div><span>RECIBIÓ (JASA)</span><small>'+esc(o.recibio||"")+'</small></div><div><span>ENTREGÓ (JASA)</span><small>'+esc(o.entrego||"")+'</small></div><div><span>RECIBE DE CONFORMIDAD (CLIENTE)</span><small>'+esc(o.recibioCliente||"")+'</small></div></div></div>';
@@ -485,7 +503,7 @@ function vOrden(o){
   var ro=S.readOnly||!db,us=unitsOf(o),pg=progress(o),si=o.etapa||0,pct=pg.t?Math.round(pg.n/pg.t*100):0,cli=findClient(o.cliente),cm=today().slice(0,7);
   var out='<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><button type="button" class="btn ghost sm" data-act="otBack">← Tablero</button><div style="display:flex;gap:8px;flex-wrap:wrap">'+(ro?"":'<button type="button" class="btn ghost sm" data-act="edit:ordenes" data-id="'+o.id+'">Editar orden</button>')+'<button type="button" class="btn sm" data-act="otPdf">Descargar orden PDF</button></div></div><span class="hint" id="otStatus" aria-live="polite"></span>';
   out+='<div class="box"><div class="box-h"><div style="display:flex;flex-direction:column;gap:2px;min-width:0"><span class="mono" style="color:var(--muted)">'+esc(o.folio)+(o.cotizacion?" · cotización "+esc(o.cotizacion):"")+'</span><h2 style="overflow-wrap:anywhere">'+esc(o.cliente)+'</h2></div><span class="pill" style="color:'+STAGES[si][1]+'">'+STAGES[si][0]+'</span></div>'+
-    '<div class="q-meta">'+[["Recibido",fmtDate(o.recibido||tsISO(o.creado))],["Recibió en JASA",o.recibio||"—"],["Entrega estimada",o.entrega?fmtDate(o.entrega):"—"],["Teléfono",cli&&cli.tel?cli.tel:"—"],["Notas",o.notas||"—"]].map(function(m){return '<div><span class="eyebrow">'+m[0]+'</span><span>'+esc(m[1])+'</span></div>';}).join("")+'</div></div>';
+    '<div class="q-meta">'+[["Recibido",fmtDate(o.recibido||tsISO(o.creado))],["Recibió en JASA",o.recibio||"—"],["Entrega estimada",o.entrega?fmtDate(o.entrega):"—"],["Contacto",o.contacto||(cli&&cli.contacto)||"—"],["Teléfono",o.tel||(cli&&cli.tel)||"—"],["Notas",o.notas||"—"]].map(function(m){return '<div><span class="eyebrow">'+m[0]+'</span><span>'+esc(m[1])+'</span></div>';}).join("")+'</div></div>';
   out+='<div class="box"><div class="box-h"><h2>Extintores</h2><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span class="mono" style="color:'+(pg.t&&pg.n===pg.t?"var(--green)":"var(--muted)")+'">'+pg.n+' de '+pg.t+' listos</span>'+(ro||!pg.t||pg.n===pg.t?"":'<button type="button" class="btn ghost sm" data-act="allReady">Marcar todos listos</button>')+'</div></div>'+
     (pg.t?'<div style="padding:12px 18px 0"><div class="bar"><i style="width:'+pct+'%;background:var(--green)"></i></div></div><div class="tbl-wrap" style="padding-top:8px"><table class="unit-tbl"><thead><tr><th>#</th><th>EQUIPO</th><th>NO. DE SERIE</th><th>FABRICACIÓN</th><th>PRÓX. HIDROSTÁTICA</th><th>ETIQUETA NOM-154</th><th>LISTO</th></tr></thead><tbody>'+
       us.map(function(u,i){var k=u.key.replace("-","_"),dis=ro?" disabled":"",phLate=u.ph&&u.ph<cm;
@@ -510,8 +528,48 @@ function vOrden(o){
   return out;
 }
 
+/* ---------- pendientes (agenda) ---------- */
+function isoD(d){return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());}
+function parseD(s){var p=String(s).split("-").map(Number);return new Date(p[0],p[1]-1,p[2]);}
+function addDays(s,n){var d=parseD(s);d.setDate(d.getDate()+n);return isoD(d);}
+var DOW=["dom","lun","mar","mié","jue","vie","sáb"];
+function niceDay(s){var d=parseD(s);return DOW[d.getDay()]+" "+d.getDate()+" "+MESES[d.getMonth()].slice(0,3);}
+function hora12(h){if(!h)return "";var p=h.split(":"),H=+p[0];return (H%12||12)+":"+p[1]+(H<12?" am":" pm");}
+function applies(t,d){
+  if(!t.fecha||d<t.fecha)return false;if(t.hasta&&d>t.hasta)return false;
+  var r=t.repite||"no";if(r==="no")return d===t.fecha;if(r==="diario")return true;
+  var x=parseD(d);if(r==="lunsab")return x.getDay()!==0;
+  if(r==="semanal")return x.getDay()===parseD(t.fecha).getDay();
+  if(r==="mensual")return x.getDate()===parseD(t.fecha).getDate();
+  return false;
+}
+function isDone(t,d){return (t.hechos||[]).indexOf(d)>=0;}
+function dayTasks(d){return S.data.pendientes.filter(function(t){return applies(t,d)&&match(t);}).sort(function(a,b){return (a.hora||"99").localeCompare(b.hora||"99")||String(a.titulo).localeCompare(String(b.titulo),"es");});}
+function overdue(){var out=[],t0=today();for(var i=30;i>=1;i--){var d=addDays(t0,-i);dayTasks(d).forEach(function(t){if(!isDone(t,d))out.push({t:t,d:d});});}return out;}
+function taskRow(t,d,late){
+  var ok=isDone(t,d),ro=S.readOnly||!db,meta=[];
+  if(t.hora)meta.push(hora12(t.hora));if(late)meta.push(niceDay(d));if(t.repite&&t.repite!=="no")meta.push(({lunsab:"Lun a sáb",diario:"Diario",semanal:"Semanal",mensual:"Mensual"})[t.repite]);
+  return '<div class="task'+(ok?" ok":"")+(late&&!ok?" late":"")+'"><input type="checkbox" data-act="pnToggle" data-id="'+t.id+'" data-v="'+d+'"'+(ok?" checked":"")+(ro?" disabled":"")+' aria-label="Marcar como hecho: '+esc(t.titulo)+'">'+
+    '<div><b>'+esc(t.titulo)+'</b><small><span class="tg">'+esc(t.cat||"Otro")+'</span>'+esc(meta.join(" · "))+'</small>'+(t.notas?'<small>'+esc(t.notas)+'</small>':"")+'</div>'+
+    (ro?"<span></span>":'<button type="button" class="link" style="color:var(--muted)" data-act="edit:pendientes" data-id="'+t.id+'">Editar</button>')+'</div>';
+}
+function vPend(){
+  var t0=today(),hoy=dayTasks(t0),ov=overdue(),okHoy=hoy.filter(function(t){return isDone(t,t0);}).length;
+  var ro=S.readOnly||!db,out="";
+  out+='<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><span class="hint">Tu agenda: visitas, compras, banco, cobranza y la rutina de cada día. Marca la casilla cuando concluyas cada actividad.</span>'+(ro?"":'<button type="button" class="btn sm" data-act="new:pendientes">+ Nuevo pendiente</button>')+'</div>';
+  out+='<div class="kpis sm">'+[["Para hoy",String(hoy.length-okHoy),"var(--amber)"],["Concluidos hoy",String(okHoy),"var(--green)"],["Vencidos",String(ov.length),"var(--red)"]].map(function(k){return '<div class="kpi" style="--k:'+k[2]+'"><span class="eyebrow">'+k[0]+'</span><span class="v">'+k[1]+'</span></div>';}).join("")+'</div>';
+  out+='<div class="grid2"><div style="display:flex;flex-direction:column;gap:16px;min-width:0">';
+  out+='<div class="box"><div class="box-h"><h2>Hoy · '+niceDay(t0)+'</h2></div>'+(hoy.length?hoy.map(function(t){return taskRow(t,t0,false);}).join(""):emptyBox("Nada para hoy","Agrega visitas, cobros o compras con “Nuevo pendiente”.","new:pendientes","Nuevo pendiente"))+'</div>';
+  if(ov.length)out+='<div class="box"><div class="box-h"><h2>Vencidos</h2><span class="mono" style="color:var(--rose)">últimos 30 días</span></div>'+ov.map(function(x){return taskRow(x.t,x.d,true);}).join("")+'</div>';
+  out+='</div><div class="box"><div class="box-h"><h2>Próximos 14 días</h2></div>';
+  var any=false;for(var i=1;i<=14;i++){var d=addDays(t0,i),l=dayTasks(d);if(!l.length)continue;any=true;out+='<div class="day-h"><span>'+niceDay(d)+'</span><span class="mono" style="color:var(--muted)">'+l.length+'</span></div>'+l.map(function(t){return taskRow(t,d,false);}).join("");}
+  if(!any)out+='<div class="empty"><span>No hay nada programado en las próximas dos semanas.</span></div>';
+  out+='</div></div>';
+  return out;
+}
+
 /* ---------- vistas ---------- */
-var TITLES={panel:["Resumen","Panel"],quotes:["Bandeja","Cotizaciones"],clientes:["Cartera","Clientes"],proveedores:["Compras","Proveedores"],finanzas:["Contabilidad","Ingresos y egresos"],taller:["Taller JASA","Órdenes de taller"],inventario:["Taller JASA","Inventario"]};
+var TITLES={panel:["Resumen","Panel"],quotes:["Bandeja","Cotizaciones"],clientes:["Cartera","Clientes"],proveedores:["Compras","Proveedores"],finanzas:["Contabilidad","Ingresos y egresos"],taller:["Taller JASA","Órdenes de taller"],inventario:["Taller JASA","Inventario"],pendientes:["Agenda","Pendientes"]};
 function lowStock(){return S.data.inventario.filter(function(i){return (+i.stock||0)<(+i.min||0);});}
 function dueClients(){
   var lim=addMonths(today().slice(0,7),2);
@@ -520,7 +578,7 @@ function dueClients(){
 function renderNav(){
   var pend=S.data.quotes.filter(function(q){return q.status==="Nueva";}).length;
   var open=S.data.ordenes.filter(function(o){return (o.etapa||0)<3;}).length;
-  var items=[["panel","Panel",""],["quotes","Cotizaciones",pend||""],["clientes","Clientes",""],["proveedores","Proveedores",""],["finanzas","Finanzas",""],["taller","Taller",open||""],["inventario","Inventario",lowStock().length||""]];
+  var items=[["panel","Panel",""],["quotes","Cotizaciones",pend||""],["clientes","Clientes",""],["proveedores","Proveedores",""],["finanzas","Finanzas",""],["taller","Taller",open||""],["inventario","Inventario",lowStock().length||""],["pendientes","Pendientes",(function(){var t0=today();var n=dayTasks(t0).filter(function(t){return !isDone(t,t0);}).length+overdue().length;return n||"";})()]];
   document.getElementById("nav").innerHTML=items.map(function(n){return '<button type="button" class="nav-b" data-act="go" data-v="'+n[0]+'"'+(S.screen===n[0]?' aria-current="page"':"")+'><span>'+n[1]+'</span><span class="cnt">'+n[2]+'</span></button>';}).join("");
 }
 function statusNote(){
@@ -548,7 +606,7 @@ function vPanel(){
   (pend.length?pend.slice(0,8).map(function(q){return '<button type="button" class="row" data-act="openQuote" data-id="'+q.id+'"><span class="t">'+esc(q.cliente)+'</span><span class="mono" style="color:var(--amber)">'+ago(q.creado)+'</span><span class="s">'+esc(q.folio)+' · '+(q.lines||[]).length+((q.lines||[]).length===1?" partida":" partidas")+'</span></button>';}).join(""):emptyBox("Nada pendiente","Cuando llegue una solicitud por WhatsApp, cópiala y pégala con el botón “Pegar solicitud”.","goPaste","Pegar solicitud"))+
   '</div><div style="display:flex;flex-direction:column;gap:16px;min-width:0"><div class="box"><div class="box-h"><h2>Recargas por vencer</h2><span class="eyebrow">próximos 2 meses</span></div>'+
   (due.length?due.slice(0,8).map(function(c){var late=c.proximaRecarga<cur;return '<div class="row"><span class="t">'+esc(c.nombre)+'</span>'+(c.tel?'<a class="btn wa sm" target="_blank" rel="noopener" href="'+esc(waLink(c.tel,"Hola, le escribimos de JASA Extintores. Sus extintores "+(eqText(c)?"("+eqText(c)+") ":"")+(late?"ya vencieron":"están por vencer")+" ("+fmtMonth(c.proximaRecarga)+"). ¿Agendamos su recarga?"))+'">Avisar</a>':'<span></span>')+'<span class="s">'+(eqTotal(c)?eqTotal(c)+" extintores · ":"")+'<span style="color:'+(late?"var(--rose)":"var(--amber)")+'">'+(late?"vencido ":"vence ")+fmtMonth(c.proximaRecarga)+'</span></span></div>';}).join(""):emptyBox("Sin recargas próximas","Registra la próxima recarga de cada cliente y aquí verás a quién avisar.","new:clientes","Nuevo cliente"))+
-  '</div>'+(low.length?'<div class="box"><div class="box-h"><h2>Bajo mínimo</h2><button type="button" class="link" data-act="go" data-v="inventario">Inventario →</button></div>'+low.map(function(i){return '<div class="row"><span class="t">'+esc(i.nombre)+'</span><span class="mono" style="color:var(--rose)">'+esc(i.stock)+' / mín '+esc(i.min)+'</span></div>';}).join("")+'</div>':"")+'</div></div>';
+  '</div>'+(function(){var t0=today(),l=dayTasks(t0).filter(function(t){return !isDone(t,t0);});return l.length?'<div class="box"><div class="box-h"><h2>Pendientes de hoy</h2><button type="button" class="link" data-act="go" data-v="pendientes">Agenda →</button></div>'+l.slice(0,6).map(function(t){return taskRow(t,t0,false);}).join("")+'</div>':"";})()+(low.length?'<div class="box"><div class="box-h"><h2>Bajo mínimo</h2><button type="button" class="link" data-act="go" data-v="inventario">Inventario →</button></div>'+low.map(function(i){return '<div class="row"><span class="t">'+esc(i.nombre)+'</span><span class="mono" style="color:var(--rose)">'+esc(i.stock)+' / mín '+esc(i.min)+'</span></div>';}).join("")+'</div>':"")+'</div></div>';
 }
 
 function vQuotes(){
@@ -620,24 +678,25 @@ function vFin(){
 }
 
 function vTaller(){
-  var list=S.data.ordenes.filter(match);
-  return '<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><span class="s" style="color:var(--muted);font-size:14px">Mueve cada orden conforme avanza. Al aceptar una cotización se abre su orden aquí.</span>'+(S.readOnly||!db?"":'<button type="button" class="btn sm" data-act="new:ordenes">+ Nueva orden</button>')+'</div>'+
+  var list=S.data.ordenes.filter(match),t0=today(),op=S.data.ordenes.filter(function(o){return (o.etapa||0)<3;});
+  var k=[["En taller",String(op.reduce(function(a,o){return a+eqTotal(o);},0)),"extintores sin entregar","var(--blue)"],["Órdenes abiertas",String(op.length),"recibidas o en servicio","var(--muted)"],["Entregar hoy",String(op.filter(function(o){return o.entrega===t0;}).length),"programadas para hoy","var(--amber)"],["Atrasadas",String(op.filter(function(o){return o.entrega&&o.entrega<t0;}).length),"pasó su fecha","var(--red)"],["Listas",String(op.filter(function(o){return (o.etapa||0)===2;}).length),"esperando al cliente","var(--green)"]];
+  return '<div class="kpis sm">'+k.map(function(x){return '<div class="kpi" style="--k:'+x[3]+'"><span class="eyebrow">'+x[0]+'</span><span class="v">'+x[1]+'</span><span class="n">'+x[2]+'</span></div>';}).join("")+'</div>'+'<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><span class="s" style="color:var(--muted);font-size:14px">Mueve cada orden conforme avanza. Al aceptar una cotización se abre su orden aquí.</span>'+(S.readOnly||!db?"":'<button type="button" class="btn sm" data-act="new:ordenes">+ Nueva orden</button>')+'</div>'+
   '<div class="kanban">'+STAGES.map(function(st,si){
     var items=list.filter(function(o){return (o.etapa||0)===si;}).sort(function(a,b){return String(a.entrega||"9")<String(b.entrega||"9")?-1:1;});
     if(si===3)items=items.slice(-8).reverse();
     return '<div class="col" style="--k:'+st[1]+'"><div class="col-h"><h2>'+st[0]+'</h2><span class="mono" style="color:var(--muted)">'+list.filter(function(o){return (o.etapa||0)===si;}).length+'</span></div>'+
-      (items.length?items.map(function(o){var late=si<3&&o.entrega&&o.entrega<today();return '<div class="card"><div style="display:flex;justify-content:space-between;gap:8px"><button type="button" class="link" style="padding:0;font-family:var(--mono);font-size:12px" data-act="otOpen" data-id="'+o.id+'">'+esc(o.folio)+' →</button><span class="mono" style="color:'+(late?"var(--rose)":"var(--muted)")+'">'+(o.entrega?"entrega "+fmtDate(o.entrega).slice(0,5):"sin fecha")+'</span></div><b style="font-weight:600;overflow-wrap:anywhere">'+esc(o.cliente)+'</b>'+(function(){var pg=progress(o);return pg.t?'<span class="mono" style="color:'+(pg.n===pg.t?"var(--green)":"var(--amber)")+'">'+pg.n+'/'+pg.t+' listos</span><div class="bar"><i style="width:'+Math.round(pg.n/pg.t*100)+'%;background:var(--green)"></i></div>':"";})()+'<span class="s" style="color:var(--muted);font-size:13px;overflow-wrap:anywhere">'+esc(o.detalle)+'</span>'+
+      (items.length?items.map(function(o){var late=si<3&&o.entrega&&o.entrega<today();return '<div class="card"><div style="display:flex;justify-content:space-between;gap:8px"><button type="button" class="link" style="padding:0;font-family:var(--mono);font-size:12px" data-act="otOpen" data-id="'+o.id+'">'+esc(o.folio)+' →</button><span class="mono" style="color:'+(late?"var(--rose)":"var(--muted)")+'">'+(o.entrega?"entrega "+fmtDate(o.entrega).slice(0,5):"sin fecha")+'</span></div><b style="font-weight:600;overflow-wrap:anywhere">'+esc(o.cliente)+'</b>'+(function(){var pg=progress(o);return pg.t&&si<3?'<span class="mono" style="color:'+(pg.n===pg.t?"var(--green)":"var(--amber)")+'">'+pg.n+'/'+pg.t+' listos</span><div class="bar"><i style="width:'+Math.round(pg.n/pg.t*100)+'%;background:var(--green)"></i></div>':"";})()+'<span class="s" style="color:var(--muted);font-size:13px;overflow-wrap:anywhere">'+esc(o.detalle)+'</span>'+
         (S.readOnly||!db?"":'<div class="card-a">'+(si>0?'<button type="button" class="btn ghost sm" data-act="otMove" data-id="'+o.id+'" data-v="-1" aria-label="Regresar etapa">←</button>':"")+(si<2?'<button type="button" class="btn sm" data-act="otMove" data-id="'+o.id+'" data-v="1">Avanzar →</button>':si===2?'<button type="button" class="btn sm" data-act="otOpen" data-id="'+o.id+'" data-v="entrega">Entregar</button>':"")+'<button type="button" class="btn ghost sm" data-act="otOpen" data-id="'+o.id+'">Control</button></div>')+'</div>';}).join(""):'<div class="empty" style="padding:14px"><span>'+(si===0?"Sin órdenes nuevas.":"Vacío.")+'</span></div>')+'</div>';
   }).join("")+'</div>';
 }
 
 function vInv(){
-  var list=S.data.inventario.filter(match).sort(function(a,b){return String(a.nombre).localeCompare(String(b.nombre),"es");});
+  var CORD=["Extintores","Agentes y polvo","Refacciones","Señalamientos","Otros"];var list=S.data.inventario.filter(match).sort(function(a,b){var ca=CORD.indexOf(a.categoria||"Otros"),cb=CORD.indexOf(b.categoria||"Otros");return (ca<0?9:ca)-(cb<0?9:cb)||String(a.nombre).localeCompare(String(b.nombre),"es");});
   var shop=S.data.inventario.filter(function(i){return (+i.stock||0)<(+i.min||0);}).map(function(i){return {n:i.nombre,u:i.unidad,q:Math.max(0,(+i.optimo||0)-(+i.stock||0))};});
   var shopTxt="Pedido JASA Extintores:\n"+shop.map(function(x){return "• "+x.n+": "+x.q+(x.u?" "+x.u:"");}).join("\n");
   return '<div class="grid2"><div class="box"><div class="box-h"><h2>Existencias</h2>'+(S.readOnly||!db?"":'<button type="button" class="btn sm" data-act="new:inventario">+ Nuevo artículo</button>')+'</div>'+
   (list.length?'<div class="tbl-wrap"><table><thead><tr><th>ARTÍCULO</th><th class="num">EXISTENCIA</th><th>NIVEL</th><th></th></tr></thead><tbody>'+list.map(function(i){var s=+i.stock||0,mn=+i.min||0,op=+i.optimo||0,pct=op?Math.min(100,Math.round(s/op*100)):0,col=s<mn?"var(--red-2)":s<mn*1.3?"var(--amber)":"var(--green)";
-    return '<tr><td><b style="font-weight:600">'+esc(i.nombre)+'</b><div style="color:var(--muted);font-size:12px">mín '+mn+' · ópt '+op+(i.unidad?" "+esc(i.unidad):"")+(i.consumo?' · <span style="color:var(--blue)">se descuenta al entregar</span>':"")+'</div></td><td class="num">'+(S.readOnly||!db?'<span class="mono">'+s+'</span>':'<span class="stepper"><button type="button" data-act="stock" data-id="'+i.id+'" data-v="-1" aria-label="Restar uno">−</button><span class="mono" style="min-width:36px;text-align:center">'+s+'</span><button type="button" data-act="stock" data-id="'+i.id+'" data-v="1" aria-label="Sumar uno">+</button></span>')+'</td><td style="min-width:110px"><div class="bar"><i style="width:'+pct+'%;background:'+col+'"></i></div></td><td class="num">'+(S.readOnly||!db?"":'<button type="button" class="link" data-act="edit:inventario" data-id="'+i.id+'">Editar</button>')+'</td></tr>';}).join("")+'</tbody></table></div>':emptyBox("Inventario vacío","Agrega polvo PQS, CO₂, manómetros, válvulas, etiquetas y extintores nuevos con su mínimo y óptimo.","new:inventario","Nuevo artículo"))+
+    return '<tr><td><b style="font-weight:600">'+esc(i.nombre)+'</b>'+(i.porCapturar?' <span class="pill" style="color:var(--blue)">por capturar</span>':"")+'<div style="color:var(--muted);font-size:12px">'+(i.categoria?esc(i.categoria)+' · ':"")+(i.ubicacion?esc(i.ubicacion)+' · ':"")+'mín '+mn+' · ópt '+op+(i.unidad?" "+esc(i.unidad):"")+(i.consumo?' · <span style="color:var(--blue)">se descuenta al entregar</span>':"")+'</div></td><td class="num">'+(S.readOnly||!db?'<span class="mono">'+s+'</span>':'<span class="stepper"><button type="button" data-act="stock" data-id="'+i.id+'" data-v="-1" aria-label="Restar uno">−</button><span class="mono" style="min-width:36px;text-align:center">'+s+'</span><button type="button" data-act="stock" data-id="'+i.id+'" data-v="1" aria-label="Sumar uno">+</button></span>')+'</td><td style="min-width:110px"><div class="bar"><i style="width:'+pct+'%;background:'+col+'"></i></div></td><td class="num">'+(S.readOnly||!db?"":'<button type="button" class="link" data-act="edit:inventario" data-id="'+i.id+'">Editar</button>')+'</td></tr>';}).join("")+'</tbody></table></div>':emptyBox("Inventario vacío","Agrega polvo PQS, CO₂, manómetros, válvulas, etiquetas y extintores nuevos con su mínimo y óptimo.","new:inventario","Nuevo artículo"))+
   '</div><div class="box"><div class="box-h"><h2>Lista de compras</h2></div>'+(shop.length?shop.map(function(x){return '<div class="row"><span class="t">'+esc(x.n)+'</span><span class="mono" style="color:var(--amber)">+'+x.q+(x.u?" "+esc(x.u):"")+'</span></div>';}).join("")+'<div class="actions"><a class="btn wa" target="_blank" rel="noopener" href="'+esc("https://wa.me/?text="+encodeURIComponent(shopTxt))+'">Enviar pedido por WhatsApp</a></div>':'<div class="empty"><span>Todo está arriba del mínimo. Lo que baje del mínimo aparece aquí con la cantidad para llegar al óptimo.</span></div>')+'</div></div>';
 }
 
@@ -650,6 +709,7 @@ function render(){
   else if(S.screen==="clientes"||S.screen==="proveedores")html+=vDir(S.screen);
   else if(S.screen==="finanzas")html+=vFin();
   else if(S.screen==="taller"){var oo=S.otSel&&byId("ordenes",S.otSel);html+=oo?vOrden(oo):vTaller();}
+  else if(S.screen==="pendientes")html+=vPend();
   else html+=vInv();
   var view=document.getElementById("view"),ae=document.activeElement,keep=ae&&view.contains(ae)&&ae.id?ae.id:null;
   view.innerHTML=html;
@@ -706,6 +766,7 @@ document.addEventListener("click",function(e){
   if(a==="savePrices"&&q){savePrices(q);return;}
   if((a==="sheetPdf"||a==="sheetPng")&&q){exportSheet(a==="sheetPdf"?"pdf":"png",q);return;}
   if(a==="delPrice"){remove("precios",id).then(function(){toast("Precio quitado de tu lista");});return;}
+  if(a==="pnToggle"){var tk=byId("pendientes",id);if(!tk)return;var h=(tk.hechos||[]).slice(),ix=h.indexOf(v);if(ix>=0)h.splice(ix,1);else h.push(v);patch("pendientes",id,{hechos:h});return;}
   if(a==="otOpen"){S.otSel=id;S.dlv={};render();if(v==="entrega"){var en=document.getElementById("entrega");if(en)en.scrollIntoView();}else window.scrollTo(0,0);return;}
   if(a==="otBack"){S.otSel=null;render();window.scrollTo(0,0);return;}
   var oc=S.otSel&&byId("ordenes",S.otSel);
@@ -741,6 +802,7 @@ document.addEventListener("change",function(e){
   }
   if(t.classList&&t.classList.contains("eq-tipo")){var cs=t.closest(".eq-row").querySelector(".eq-cap");var caps=EXT_CAPS[t.value]||[];cs.innerHTML=caps.map(function(c){return '<option value="'+esc(c)+'">'+esc(c.charAt(0)+c.slice(1).toLowerCase())+'</option>';}).join("");return;}
   if(t.classList&&t.classList.contains("eq-qty")){eqSummary();return;}
+  if(S.drawer&&S.drawer.kind==="ordenes"&&t.id==="f_cliente"){var cl=findClient(t.value);if(cl){var fc=document.getElementById("f_contacto"),ft=document.getElementById("f_tel");if(fc&&!fc.value)fc.value=cl.contacto||"";if(ft&&!ft.value)ft.value=cl.tel||"";}}
   if(S.drawer&&t.name==="tipo"){var c=document.getElementById("f_categoria");if(c)c.value=t.value==="ingreso"?"Ventas":"Insumos";}
 });
 document.addEventListener("submit",function(e){e.preventDefault();if(e.target.id==="drawerForm")submitDrawer(e.target);});
