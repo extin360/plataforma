@@ -103,7 +103,8 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
 var SUPA_URL="https://psggoagcdokwrkykgufr.supabase.co",SUPA_KEY="sb_publishable_jwx2IRxOqdCW-SjmKcYW2A_lrJTFJa3";
 var KEY="jasaPortalCode",DATA=null,CODE="",LOGO="";
 var MESES=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
-var STAGES=[["Recibido","#a8a09b"],["En servicio","#f2b01e"],["Listo para entregar","#5fcf6a"],["Entregado","#6f6864"]];
+var STAGES=[["Por recoger","#7fb2e5"],["Recibido","#a8a09b"],["En reparación","#f2b01e"],["En entrega","#5fcf6a"],["Entregado","#6f6864"]];
+function stg(o){return o.etapaV?(+o.etapa||0):(+o.etapa||0)+1;}
 function $(id){return document.getElementById(id);}
 function esc(v){return String(v==null?"":v).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
 function pad(n){return String(n).padStart(2,"0");}
@@ -152,7 +153,7 @@ function enter(code,silent){
 function render(){
   var c=DATA.cliente||{},ords=DATA.ordenes||[],eq=(c.equiposDet||[]).filter(function(e){return (+e.qty||0)>0;});
   var tot=eq.reduce(function(a,e){return a+(+e.qty||0);},0),cur=today().slice(0,7),pr=c.proximaRecarga||"";
-  var open=ords.filter(function(o){return (+o.etapa||0)<3;}).length;
+  var open=ords.filter(function(o){return stg(o)<4;}).length;
   var prCol=!pr?"var(--muted)":pr<cur?"var(--rose)":pr<=addM(cur,2)?"var(--amber)":"var(--green)";
   var prNote=!pr?"Te avisamos cuando se registre":pr<cur?"Ya venció: agenda tu recarga":pr<=addM(cur,2)?"Se acerca: agenda tu recarga":"Al día";
   var h='<div><span class="eyebrow">Cliente</span><h1>'+esc(c.nombre)+'</h1></div>'+
@@ -161,9 +162,9 @@ function render(){
     '<div class="kpi" style="--k:var(--amber)"><span class="eyebrow">En taller ahora</span><span class="v">'+open+'</span><span class="n">'+(open===1?"orden en servicio":"órdenes en servicio")+'</span></div></div>'+
     '<div><a class="btn wa" target="_blank" rel="noopener" href="https://wa.me/528781174728?text='+encodeURIComponent("Hola, soy de "+(c.nombre||"")+" y quiero agendar la recarga de mis extintores.")+'">Agendar recarga por WhatsApp</a></div>';
   h+='<div class="box"><div class="box-h"><h2>Tus extintores</h2></div>'+(eq.length?'<div class="tbl"><table><thead><tr><th>TIPO</th><th>CAPACIDAD</th><th class="num">CANTIDAD</th></tr></thead><tbody>'+eq.map(function(e){return '<tr><td>'+esc(tl(e.tipo))+'</td><td>'+esc(String(e.cap||"").toLowerCase())+'</td><td class="num">'+esc(e.qty)+'</td></tr>';}).join("")+'</tbody></table></div>':'<div class="empty">Aún no tenemos tus equipos registrados.</div>')+'</div>';
-  h+='<div class="box"><div class="box-h"><h2>Órdenes y reportes</h2><span class="eyebrow">'+ords.length+'</span></div>'+(ords.length?ords.map(function(o,i){var st=STAGES[+o.etapa||0]||STAGES[0];var n=(o.equiposDet||[]).reduce(function(a,e){return a+(+e.qty||0);},0);
-      return '<div class="ord"><div><b style="font-weight:600">Orden '+esc(o.folio)+'</b><span class="pill" style="color:'+st[1]+'">'+st[0]+'</span><div class="s">Recibida '+fd(o.recibido)+((+o.etapa||0)===3?" · Entregada "+fd(o.entregado):(o.entrega?" · Entrega estimada "+fd(o.entrega):""))+' · '+n+(n===1?" extintor":" extintores")+'</div></div>'+
-        '<button type="button" class="btn sm'+((+o.etapa||0)===3?"":" ghost")+'" data-i="'+i+'">Reporte PDF</button></div>';}).join(""):'<div class="empty">Todavía no hay órdenes registradas.</div>')+'</div>'+
+  h+='<div class="box"><div class="box-h"><h2>Órdenes y reportes</h2><span class="eyebrow">'+ords.length+'</span></div>'+(ords.length?ords.map(function(o,i){var st=STAGES[stg(o)]||STAGES[0];var n=(o.equiposDet||[]).reduce(function(a,e){return a+(+e.qty||0);},0);
+      return '<div class="ord"><div><b style="font-weight:600">Orden '+esc(o.folio)+'</b><span class="pill" style="color:'+st[1]+'">'+st[0]+'</span><div class="s">Recibida '+fd(o.recibido)+(stg(o)===4?" · Entregada "+fd(o.entregado):(o.entrega?" · Entrega estimada "+fd(o.entrega):""))+' · '+n+(n===1?" extintor":" extintores")+'</div></div>'+
+        '<button type="button" class="btn sm'+(stg(o)===4?"":" ghost")+'" data-i="'+i+'">Reporte PDF</button></div>';}).join(""):'<div class="empty">Todavía no hay órdenes registradas.</div>')+'</div>'+
     '<p class="err" id="pdfMsg" role="status" style="color:var(--muted)"></p>';
   $("view").innerHTML=h;$("view").hidden=false;$("login").hidden=true;$("logout").hidden=false;window.scrollTo(0,0);
 }

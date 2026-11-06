@@ -16,7 +16,7 @@ function jasaReportHTML(o, cli, logo) {
       rows.push({ eq: tl(r.tipo) + " " + String(r.cap || "").toLowerCase(), svc: r.servicio || "Recarga", serie: u.serie || "", fab: u.fab || "", ph: u.ph || "", et: u.etiqueta || "", ok: !!u.listo });
     }
   });
-  var entregada = (+o.etapa || 0) === 3;
+  var entregada = o.etapaV ? (+o.etapa || 0) === 4 : (+o.etapa || 0) === 3;
   var fecha = o.entregado || o.recibido || "";
   var prox = entregada && o.entregado ? addM(o.entregado.slice(0, 7), 12) : (cli.proximaRecarga || "");
   var n = Math.max(rows.length, 8), body = "";

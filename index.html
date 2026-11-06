@@ -858,12 +858,13 @@ footer .legal{border-top:1px solid var(--line);padding-block:18px;display:flex;f
           </div>
         </div></div>
         <div class="cq-actions">
-          <a class="btn cq-wa" id="cqSend" href="https://wa.me/528781174728" target="_blank" rel="noopener">Enviar por WhatsApp</a>
+          <button type="button" class="btn primary" id="cqSubmit">Enviar solicitud</button>
+          <a class="btn cq-wa" id="cqSend" href="https://wa.me/528781174728" target="_blank" rel="noopener">También por WhatsApp</a>
           <button type="button" class="btn ghost" id="cqPdf">Descargar PDF</button>
           <button type="button" class="btn ghost" id="cqPng">Descargar imagen</button>
         </div>
         <p class="cq-status" id="cqStatus" aria-live="polite"></p>
-        <small class="cq-hint">WhatsApp se abre con tu lista de partidas lista para enviar. Si descargas la hoja, puedes adjuntarla en el mismo chat.</small>
+        <small class="cq-hint">“Enviar solicitud” la manda directo a JASA y te respondemos por WhatsApp con los precios. Si prefieres, también puedes mandarla por WhatsApp.</small>
       </div>
     </div>
   </div>
@@ -1067,7 +1068,21 @@ footer .legal{border-top:1px solid var(--line);padding-block:18px;display:flex;f
       if(dom||notas){L.push("","*CONDICIONES*"); if(dom) L.push("Servicio a domicilio"); if(notas) L.push(notas);}
       L.push("","Quedo atento a los precios. ¡Gracias!");
       document.getElementById("cqSend").href="https://wa.me/528781174728?text="+encodeURIComponent(L.join("\n"));
+      window.__cq={folio:folio,cliente:cli,dirigido:dir,direccion:domi,ciudad:ciu,rfc:rfc,tel:tel,cond:cond.join(" · ").replace(/SERVICIO A DOMICILIO/,"Servicio a domicilio"),lines:items.map(function(it){return {art:it[0],qty:it[1]};})};
     }
+    var sent=false;
+    document.getElementById("cqSubmit").addEventListener("click",function(){
+      var b=this, st=document.getElementById("cqStatus"), d=window.__cq||{};
+      if(sent){st.textContent="Tu solicitud "+sent+" ya fue enviada. Te contactamos pronto.";return;}
+      if(!d.cliente){st.textContent="Escribe el nombre del cliente o empresa.";document.getElementById("cqCliente").focus();return;}
+      if(String(d.tel||"").replace(/\D/g,"").length<10){st.textContent="Escribe un teléfono de 10 dígitos para enviarte los precios.";document.getElementById("cqTel").focus();return;}
+      if(!d.lines||!d.lines.length){st.textContent="Agrega al menos una partida.";return;}
+      b.disabled=true; st.textContent="Enviando…";
+      fetch("https://psggoagcdokwrkykgufr.supabase.co/rest/v1/rpc/solicitar_cotizacion",{method:"POST",headers:{"apikey":"sb_publishable_jwx2IRxOqdCW-SjmKcYW2A_lrJTFJa3","Content-Type":"application/json"},body:JSON.stringify({datos:d})})
+        .then(function(r){return r.json().then(function(j){if(!r.ok)throw new Error(j&&j.message||"error");return j;});})
+        .then(function(f){sent=f; b.textContent="Solicitud enviada"; st.textContent="¡Listo! Recibimos tu solicitud "+f+". Te respondemos por WhatsApp con los precios.";},
+              function(e){b.disabled=false; st.textContent=(e&&e.message&&!/fetch|network/i.test(e.message)?e.message+". ":"No se pudo enviar. ")+"Si prefieres, mándala por WhatsApp.";});
+    });
     document.getElementById("cqAdd").addEventListener("click",function(){addRow("recarga","PQS","6 KG","",1,true);});
     list.addEventListener("click",function(e){var b=e.target.closest(".cq-del"); if(!b||b.disabled) return; var li=b.closest(".cq-row"), nx=li.nextElementSibling||li.previousElementSibling; li.remove(); syncRows(); render(); if(nx) nx.querySelector(".r-c").focus();});
     form.addEventListener("input",function(){syncRows(); render();});
