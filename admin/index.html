@@ -596,6 +596,7 @@ function statusNote(){
   if(S.dbState==="nodb")return '<div class="notice"><b>No se pudo conectar con la base de datos.</b> Recarga la página.</div>';
   if(S.dbState==="slow")return '<div class="notice"><b>La base de datos aún no responde.</b> Lo que ves puede no estar al día. Sigue intentando sola.</div>';
   if(S.dbState==="error"||S.dbState==="revoked")return '<div class="notice"><b>Se perdió la conexión con la base de datos.</b> Recarga la página para volver a conectar.</div>';
+  if(S.legacy)return '<div class="notice"><b>Este panel ya no se usa.</b> Desde el 6 de noviembre de 2026 todo se captura en <a href="https://jasaextintores.com/admin" target="_blank" rel="noopener" style="color:var(--amber)">jasaextintores.com/admin</a>. Aquí solo puedes consultar y descargar el respaldo.</div>';
   if(S.readOnly)return '<div class="notice"><b>Acceso de solo lectura.</b> Puedes consultar, pero no registrar cambios.</div>';
   return "";
 }
@@ -980,6 +981,7 @@ drawLogo();
 if(document.fonts){document.fonts.load('900 150px "Saira Condensed"').then(drawLogo,function(){});document.fonts.load('600 34px "Barlow Condensed"').then(drawLogo,function(){});if(document.fonts.ready)document.fonts.ready.then(function(){drawLogo();fitSheet();});}
 render();
 if(window.claude&&window.claude.use){
+  S.legacy=true;S.readOnly=true;
   window.claude.use("db").then(function(d){
     if(!d){S.dbState="nodb";render();return;}
     db=d;startDb();
