@@ -149,6 +149,20 @@ textarea.inp{resize:vertical;min-height:120px;font-family:var(--mono);font-size:
 .eq-sum{font-size:13px;color:var(--muted)}
 .eq-row.svc{grid-template-areas:"t c q x" "s s s s";padding-bottom:8px;border-bottom:1px solid var(--line)}
 .eq-row.svc .eq-tipo{grid-area:t}.eq-row.svc .eq-cap{grid-area:c}.eq-row.svc .eq-qty{grid-area:q}.eq-row.svc .eq-x{grid-area:x}.eq-row.svc .eq-svc{grid-area:s}
+.unit-tbl input.inp{padding:6px 8px;font-size:13px}
+.unit-tbl td{padding:6px 8px}
+.unit-tbl input[type=checkbox]{width:20px;height:20px;accent-color:var(--green)}
+.unit-tbl tr.done td{background:rgba(95,207,106,.06)}
+.inp.warn{border-color:var(--rose)}
+.check{display:flex;gap:10px;align-items:flex-start;font-size:14px}
+.check input{width:18px;height:18px;margin-top:2px;accent-color:var(--red)}
+.plan{display:flex;flex-direction:column;gap:12px;padding:16px 18px}
+.plan ul{margin:6px 0 0;padding-left:18px;color:var(--muted);font-size:13px;display:flex;flex-direction:column;gap:3px}
+.sh-sign{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid #444;border-top:0}
+.sh-sign div{padding:46px 10px 8px;text-align:center;font-size:10.5px;border-right:1px solid #444}
+.sh-sign div:last-child{border-right:0}
+.sh-sign span{display:block;border-top:1px solid #444;padding-top:4px;font-weight:700}
+.sh-sign small{display:block;color:#666;font-size:10px;margin-top:2px;min-height:12px}
 .eq-chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
 .eq-chip{font-family:var(--mono);font-size:11px;border:1px solid var(--line);border-radius:3px;padding:1px 6px;color:var(--ink);white-space:nowrap}
 @media (max-width:1100px){.kanban{grid-template-columns:repeat(2,minmax(0,1fr))}.grid2,.q-layout{grid-template-columns:minmax(0,1fr)}}
@@ -201,7 +215,7 @@ textarea.inp{resize:vertical;min-height:120px;font-family:var(--mono);font-size:
 (function(){
 "use strict";
 var COLS=["quotes","clientes","proveedores","movs","ordenes","inventario","precios"];
-var S={screen:"panel",data:{},ready:{},sel:null,finTab:"todos",finMes:null,search:"",paste:"",pasteMsg:"",drawer:null,confirm:null,readOnly:false,dbState:"loading"};
+var S={screen:"panel",data:{},ready:{},sel:null,finTab:"todos",finMes:null,search:"",paste:"",pasteMsg:"",drawer:null,otSel:null,dlv:{},confirm:null,readOnly:false,dbState:"loading"};
 COLS.forEach(function(c){S.data[c]=[];S.ready[c]=false;});
 var db=null, dl=null;
 
@@ -286,8 +300,8 @@ var FORMS={
   clientes:{t:"cliente",f:[["nombre","Nombre o razón social","text",1],["contacto","Contacto","text"],["tel","Teléfono (10 dígitos)","tel"],["ciudad","Ciudad","text"],["equiposDet","Extintores del cliente","equipos"],["proximaRecarga","Próxima recarga","month"],["saldo","Por cobrar ($)","number"],["notas","Notas","textarea"]]},
   proveedores:{t:"proveedor",f:[["nombre","Proveedor","text",1],["contacto","Contacto","text"],["tel","Teléfono","tel"],["ciudad","Ciudad","text"],["surte","Qué surte","text"],["saldo","Por pagar ($)","number"]]},
   movs:{t:"movimiento",f:[["tipo","Tipo","select",1,[["ingreso","Ingreso"],["egreso","Egreso"]]],["fecha","Fecha","date",1],["concepto","Concepto","text",1],["quien","Cliente o proveedor","text"],["categoria","Categoría","select",0,CAT_ING.concat(CAT_EGR).map(function(c){return [c,c];})],["monto","Monto ($)","number",1]]},
-  ordenes:{t:"orden de taller",f:[["cliente","Cliente","text",1],["equiposDet","Equipos a recibir","equipos"],["notas","Notas","text",0,null,"Ej. Uno trae la manguera rota"],["entrega","Fecha de entrega","date"],["etapa","Etapa","select",1,STAGES.map(function(s,i){return [String(i),s[0]];})]]},
-  inventario:{t:"artículo",f:[["nombre","Artículo","text",1],["unidad","Unidad","text",0,null,"kg, pzas, rollos…"],["stock","Existencia","number",1],["min","Mínimo","number",1],["optimo","Óptimo (para pedir)","number",1]]},
+  ordenes:{t:"orden de taller",f:[["cliente","Cliente","text",1],["equiposDet","Equipos a recibir","equipos"],["recibio","Recibió en JASA","text",0,null,"Nombre de quien recibe los equipos"],["notas","Notas","text",0,null,"Ej. Uno trae la manguera rota"],["entrega","Fecha de entrega","date"],["etapa","Etapa","select",1,STAGES.map(function(s,i){return [String(i),s[0]];})]]},
+  inventario:{t:"artículo",f:[["nombre","Artículo","text",1],["unidad","Unidad","text",0,null,"kg, pzas, rollos…"],["stock","Existencia","number",1],["min","Mínimo","number",1],["optimo","Óptimo (para pedir)","number",1],["consumo","Se descuenta al entregar una orden","select",0,[["","No"],["PQS","Sí: polvo PQS (kg recargados)"],["CO2","Sí: CO₂ (kg recargados)"],["ETIQUETA","Sí: 1 etiqueta por extintor"]]]]},
   quotes:{t:"cotización",f:[["cliente","Cliente","text",1],["dirigido","Dirigido a","text"],["tel","Teléfono (WhatsApp)","tel"],["direccion","Dirección","text"],["ciudad","Ciudad","text"],["rfc","RFC","text"],["cond","Condiciones","text",0,null,"Ej. Servicio a domicilio"],["entregaTxt","Tiempo de entrega","text",0,null,"Ej. 2 días hábiles"],["vigencia","Vigencia de precios","text",0,null,"Ej. 15 días"]]}
 };
 function openForm(kind,id){
@@ -301,7 +315,7 @@ function openForm(kind,id){
   S.drawer={kind:kind,id:id||null,vals:Object.assign({},def,rec||{})};
   if(kind==="ordenes"&&rec)S.drawer.vals.etapa=String(rec.etapa||0);
   renderDrawer();eqSummary();
-  setTimeout(function(){var i=document.querySelector("#drawerRoot .inp");if(i)i.focus();},30);
+  var fi=document.querySelector("#drawerRoot .inp");if(fi)fi.focus();
 }
 function renderDrawer(){
   var root=document.getElementById("drawerRoot");
@@ -407,18 +421,18 @@ function saveBlob(name,blob){
   if(dl)return dl.save({filename:name,data:blob});
   var u=URL.createObjectURL(blob),a=document.createElement("a");a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(u);},4000);return Promise.resolve();
 }
-function exportSheet(kind,q){
-  var st=document.getElementById("shStatus");if(st)st.textContent="Preparando el archivo…";
+function exportSheet(kind,q){exportDoc(kind,sheetHTML(q),"Cotizacion-JASA-"+String(q.folio).replace(/[^A-Za-z0-9-]/g,"")+"."+kind,"shStatus","Adjúntalo en el chat de WhatsApp del cliente.");}
+function exportDoc(kind,html,name,statusId,okMsg){
+  var st=document.getElementById(statusId);if(st)st.textContent="Preparando el archivo…";
   var holder=document.createElement("div");holder.style.cssText="position:fixed;left:-10000px;top:0;width:816px;background:#fff";
-  holder.innerHTML=sheetHTML(q);document.body.appendChild(holder);
-  var name="Cotizacion-JASA-"+String(q.folio).replace(/[^A-Za-z0-9-]/g,"")+"."+kind;
+  holder.innerHTML=html;document.body.appendChild(holder);
   getLibs(kind).then(function(){return window.html2canvas(holder.firstChild,{scale:2,backgroundColor:"#ffffff",logging:false});}).then(function(cv){
     holder.remove();
     if(kind==="png")return new Promise(function(ok){cv.toBlob(ok,"image/png");}).then(function(b){return saveBlob(name,b);});
     var pdf=new window.jspdf.jsPDF({unit:"pt",format:"letter"}),W=612,H=792,r=Math.min(W/cv.width,H/cv.height),w=cv.width*r,h=cv.height*r;
     pdf.addImage(cv.toDataURL("image/jpeg",0.92),"JPEG",(W-w)/2,0,w,h);
     return saveBlob(name,pdf.output("blob"));
-  }).then(function(){if(st)st.textContent="Listo: "+name+". Adjúntalo en el chat de WhatsApp del cliente.";},function(e){
+  }).then(function(){st=document.getElementById(statusId);if(st)st.textContent="Listo: "+name+". "+okMsg;},function(e){st=document.getElementById(statusId);
     holder.remove();var c=e&&e.code;if(st)st.textContent=c==="declined"?"":c==="rate_limited"?"Espera un momento e inténtalo otra vez.":"No se pudo generar el archivo. Revisa tu conexión e inténtalo otra vez.";
   });
 }
@@ -431,6 +445,69 @@ function replyText(q){
   if(q.vigencia)L.push("Precios válidos "+q.vigencia);
   L.push("","Le comparto la cotización en PDF. Para confirmar su pedido responda este mensaje.","Gracias por su preferencia. JASA Extintores · 878 783 3216");
   return L.join("\n");
+}
+
+/* ---------- control de taller ---------- */
+var SVC_ETIQ=["Recarga","Mantenimiento","Prueba hidrostática","Revisión"];
+function capNum(c){var m=String(c||"").match(/([\d.]+)\s*KG/i);return m?parseFloat(m[1]):0;}
+function tsISO(ts){if(!ts)return "";var d=new Date(ts);return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());}
+function unitsOf(o){var old={};(o.unidades||[]).forEach(function(u){old[u.key]=u;});var out=[];eqList(o).forEach(function(r,i){for(var k=0;k<(+r.qty||0);k++){var key=i+"-"+k;var u=Object.assign({key:key,serie:"",fab:"",ph:"",etiqueta:"",listo:false},old[key]||{});u.row=r;out.push(u);}});return out;}
+function cleanUnits(us){return us.map(function(u){return {key:u.key,serie:u.serie||"",fab:u.fab||"",ph:u.ph||"",etiqueta:u.etiqueta||"",listo:!!u.listo};});}
+function progress(o){var us=unitsOf(o);return {n:us.filter(function(u){return u.listo;}).length,t:us.length};}
+function findClient(name){var nm=String(name||"").trim().toLowerCase();if(!nm)return null;return S.data.clientes.find(function(c){return String(c.nombre||"").trim().toLowerCase()===nm;})||null;}
+function deliveryPlan(o){
+  var c={PQS:0,CO2:0,ETIQUETA:0};
+  eqList(o).forEach(function(e){var q=+e.qty||0,svc=e.servicio||"Recarga";if(svc==="Recarga"&&(e.tipo==="PQS"||e.tipo==="CO2"))c[e.tipo]+=q*capNum(e.cap);if(SVC_ETIQ.indexOf(svc)>=0)c.ETIQUETA+=q;});
+  var inv=[];[["PQS","Polvo PQS","kg"],["CO2","CO₂","kg"],["ETIQUETA","Etiquetas de servicio","pzas"]].forEach(function(k){if(!c[k[0]])return;inv.push({key:k[0],label:k[1],qty:Math.round(c[k[0]]*100)/100,unit:k[2],item:S.data.inventario.find(function(i){return i.consumo===k[0];})||null});});
+  var renew=eqList(o).some(function(e){return ["Recarga","Mantenimiento","Venta (nuevo)"].indexOf(e.servicio||"Recarga")>=0;});
+  return {inv:inv,cli:findClient(o.cliente),next:renew?addMonths(today().slice(0,7),12):null};
+}
+function deliver(o){
+  var pl=deliveryPlan(o),uc=document.getElementById("dCli"),ui=document.getElementById("dInv"),done=[];
+  var chain=patch("ordenes",o.id,{etapa:3,entregado:today(),entrego:(S.dlv.entrego||"").trim(),recibioCliente:(S.dlv.recibe||"").trim()});
+  if(pl.cli&&pl.next&&uc&&uc.checked)chain=chain.then(function(){return patch("clientes",pl.cli.id,{proximaRecarga:pl.next});}).then(function(){done.push("próxima recarga "+fmtMonth(pl.next));});
+  if(ui&&ui.checked)pl.inv.forEach(function(x){if(!x.item)return;chain=chain.then(function(){var cur=byId("inventario",x.item.id)||x.item;return patch("inventario",x.item.id,{stock:Math.max(0,Math.round(((+cur.stock||0)-x.qty)*100)/100)});}).then(function(){done.push("−"+x.qty+" "+x.unit+" de "+x.item.nombre);});});
+  chain.then(function(){S.dlv={};toast("Orden "+o.folio+" entregada"+(done.length?": "+done.join(" · "):""));},function(){});
+}
+function orderSheetHTML(o){
+  var us=unitsOf(o),cli=findClient(o.cliente)||{},n=Math.max(us.length,10),rows="";
+  for(var i=0;i<n;i++){var u=us[i];rows+="<tr><td>"+(u?i+1:"")+"</td><td>"+(u?esc(tipoLabel(u.row.tipo)+" "+u.row.cap):"")+"</td><td>"+(u?esc(u.row.servicio||""):"")+"</td><td>"+(u?esc(u.serie):"")+"</td><td>"+(u?esc(u.etiqueta):"")+"</td></tr>";}
+  var rec=o.recibido||tsISO(o.creado);
+  return '<div class="sheet"><div class="sh-top"><div class="sh-logo"><img alt="JASA Extintores" width="300" height="136" src="'+LOGO+'"></div>'+
+   '<div class="sh-co"><b>JASA EXTINTORES SA DE CV</b><span>MUTUALISTA 412 COL. BUENA VISTA SUR</span><span>PIEDRAS NEGRAS, COAHUILA</span><span>JEX180118NA0</span><span class="sh-tel">878 783 3216 · WhatsApp 878 117 4728</span></div></div>'+
+   '<div class="sh-row"><div class="sh-title">ORDEN DE SERVICIO</div><div class="sh-num"><div><span>FOLIO:</span><b>'+esc(o.folio)+'</b></div><div><span>RECIBIDO:</span><b>'+fmtDate(rec)+'</b></div><div><span>ENTREGA:</span><b>'+(o.entregado?fmtDate(o.entregado):o.entrega?fmtDate(o.entrega):"POR CONFIRMAR")+'</b></div></div></div>'+
+   '<div class="sh-row"><dl class="sh-client"><dt>Cliente:</dt><dd>'+esc(o.cliente)+'</dd><dt>Contacto:</dt><dd>'+esc(cli.contacto||"")+'</dd><dt>Tel.:</dt><dd>'+esc(cli.tel||"")+'</dd><dt>Ciudad:</dt><dd>'+esc(cli.ciudad||"")+'</dd><dt>Equipos:</dt><dd>'+us.length+'</dd><dt>Cotización:</dt><dd>'+esc(o.cotizacion||"")+'</dd></dl>'+
+   '<div class="sh-cond"><b>OBSERVACIONES</b><div>'+esc(o.notas||"")+'</div></div></div>'+
+   '<table class="sh-table"><colgroup><col style="width:7%"><col style="width:30%"><col style="width:23%"><col style="width:20%"><col style="width:20%"></colgroup><thead><tr><th>#</th><th>Equipo</th><th>Servicio</th><th>No. de serie</th><th>Etiqueta NOM-154</th></tr></thead><tbody>'+rows+'</tbody></table>'+
+   '<div class="sh-sign"><div><span>RECIBIÓ (JASA)</span><small>'+esc(o.recibio||"")+'</small></div><div><span>ENTREGÓ (JASA)</span><small>'+esc(o.entrego||"")+'</small></div><div><span>RECIBE DE CONFORMIDAD (CLIENTE)</span><small>'+esc(o.recibioCliente||"")+'</small></div></div></div>';
+}
+function vOrden(o){
+  var ro=S.readOnly||!db,us=unitsOf(o),pg=progress(o),si=o.etapa||0,pct=pg.t?Math.round(pg.n/pg.t*100):0,cli=findClient(o.cliente),cm=today().slice(0,7);
+  var out='<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><button type="button" class="btn ghost sm" data-act="otBack">← Tablero</button><div style="display:flex;gap:8px;flex-wrap:wrap">'+(ro?"":'<button type="button" class="btn ghost sm" data-act="edit:ordenes" data-id="'+o.id+'">Editar orden</button>')+'<button type="button" class="btn sm" data-act="otPdf">Descargar orden PDF</button></div></div><span class="hint" id="otStatus" aria-live="polite"></span>';
+  out+='<div class="box"><div class="box-h"><div style="display:flex;flex-direction:column;gap:2px;min-width:0"><span class="mono" style="color:var(--muted)">'+esc(o.folio)+(o.cotizacion?" · cotización "+esc(o.cotizacion):"")+'</span><h2 style="overflow-wrap:anywhere">'+esc(o.cliente)+'</h2></div><span class="pill" style="color:'+STAGES[si][1]+'">'+STAGES[si][0]+'</span></div>'+
+    '<div class="q-meta">'+[["Recibido",fmtDate(o.recibido||tsISO(o.creado))],["Recibió en JASA",o.recibio||"—"],["Entrega estimada",o.entrega?fmtDate(o.entrega):"—"],["Teléfono",cli&&cli.tel?cli.tel:"—"],["Notas",o.notas||"—"]].map(function(m){return '<div><span class="eyebrow">'+m[0]+'</span><span>'+esc(m[1])+'</span></div>';}).join("")+'</div></div>';
+  out+='<div class="box"><div class="box-h"><h2>Extintores</h2><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span class="mono" style="color:'+(pg.t&&pg.n===pg.t?"var(--green)":"var(--muted)")+'">'+pg.n+' de '+pg.t+' listos</span>'+(ro||!pg.t||pg.n===pg.t?"":'<button type="button" class="btn ghost sm" data-act="allReady">Marcar todos listos</button>')+'</div></div>'+
+    (pg.t?'<div style="padding:12px 18px 0"><div class="bar"><i style="width:'+pct+'%;background:var(--green)"></i></div></div><div class="tbl-wrap" style="padding-top:8px"><table class="unit-tbl"><thead><tr><th>#</th><th>EQUIPO</th><th>NO. DE SERIE</th><th>FABRICACIÓN</th><th>PRÓX. HIDROSTÁTICA</th><th>ETIQUETA NOM-154</th><th>LISTO</th></tr></thead><tbody>'+
+      us.map(function(u,i){var k=u.key.replace("-","_"),dis=ro?" disabled":"",phLate=u.ph&&u.ph<cm;
+        return '<tr'+(u.listo?' class="done"':"")+'><td class="mono">'+(i+1)+'</td><td style="min-width:150px"><b style="font-weight:600">'+esc(tipoLabel(u.row.tipo))+' '+esc(String(u.row.cap).toLowerCase())+'</b><div style="color:var(--muted);font-size:12px">'+esc(u.row.servicio||"")+'</div></td>'+
+        '<td><input class="inp" style="min-width:110px" id="u_'+k+'_serie" data-unit="'+u.key+'" data-uk="serie" value="'+esc(u.serie)+'" aria-label="Serie del extintor '+(i+1)+'"'+dis+'></td>'+
+        '<td><input class="inp" type="month" id="u_'+k+'_fab" data-unit="'+u.key+'" data-uk="fab" value="'+esc(u.fab)+'" aria-label="Fabricación del extintor '+(i+1)+'"'+dis+'></td>'+
+        '<td><input class="inp'+(phLate?" warn":"")+'" type="month" id="u_'+k+'_ph" data-unit="'+u.key+'" data-uk="ph" value="'+esc(u.ph)+'" aria-label="Próxima prueba hidrostática del extintor '+(i+1)+'"'+dis+'>'+(phLate?'<div style="color:var(--rose);font-size:11px;margin-top:2px">Prueba vencida</div>':"")+'</td>'+
+        '<td><input class="inp" style="min-width:100px" id="u_'+k+'_etiqueta" data-unit="'+u.key+'" data-uk="etiqueta" value="'+esc(u.etiqueta)+'" aria-label="Etiqueta del extintor '+(i+1)+'"'+dis+'></td>'+
+        '<td style="text-align:center"><input type="checkbox" id="u_'+k+'_listo" data-unit="'+u.key+'" data-uk="listo"'+(u.listo?" checked":"")+' aria-label="Extintor '+(i+1)+' listo"'+dis+'></td></tr>';}).join("")+'</tbody></table></div>'
+    :'<div class="empty"><b>Esta orden no tiene extintores capturados.</b><span>Toca “Editar orden” y agrega los extintores por tipo y capacidad.</span></div>')+'</div>';
+  if(si===3){
+    out+='<div class="box"><div class="box-h"><h2>Entregada</h2><span class="mono" style="color:var(--green)">'+fmtDate(o.entregado)+'</span></div><div class="q-meta">'+[["Entregó (JASA)",o.entrego||"—"],["Recibió (cliente)",o.recibioCliente||"—"]].map(function(m){return '<div><span class="eyebrow">'+m[0]+'</span><span>'+esc(m[1])+'</span></div>';}).join("")+'</div></div>';
+  }else if(!ro){
+    var pl=deliveryPlan(o),miss=pg.t-pg.n;
+    out+='<div class="box" id="entrega"><div class="box-h"><h2>Entrega</h2></div><div class="plan">'+
+      '<div class="f2"><div class="field"><label for="dEntrego">Entregó (JASA)</label><input class="inp" id="dEntrego" value="'+esc(S.dlv.entrego||"")+'"></div><div class="field"><label for="dRecibe">Recibe (cliente)</label><input class="inp" id="dRecibe" value="'+esc(S.dlv.recibe||"")+'"></div></div>'+
+      (pl.next?(pl.cli?'<label class="check"><input type="checkbox" id="dCli" checked><span>Actualizar la próxima recarga de <b>'+esc(pl.cli.nombre)+'</b> a <b>'+fmtMonth(pl.next)+'</b></span></label>':'<span class="hint">“'+esc(o.cliente)+'” no está registrado en Clientes con ese mismo nombre, así que no se actualizará su próxima recarga.</span>'):"")+
+      (pl.inv.length?'<div><label class="check"><input type="checkbox" id="dInv" checked><span>Descontar del inventario</span></label><ul>'+pl.inv.map(function(x){return '<li>'+esc(x.label)+': '+x.qty+' '+x.unit+' → '+(x.item?esc(x.item.nombre)+' (hay '+(+x.item.stock||0)+', quedan '+Math.max(0,Math.round(((+x.item.stock||0)-x.qty)*100)/100)+')':'<span style="color:var(--amber)">ningún artículo marcado. En Inventario, edita el artículo y elige “Se descuenta al entregar”.</span>')+'</li>';}).join("")+'</ul></div>':"")+
+      (miss>0?'<span style="color:var(--amber);font-size:13px">Faltan '+miss+(miss===1?" extintor":" extintores")+' por marcar como listos.</span>':"")+
+      '<div><button type="button" class="btn" data-act="otDeliver">Entregar orden</button></div></div></div>';
+  }
+  return out;
 }
 
 /* ---------- vistas ---------- */
@@ -549,8 +626,8 @@ function vTaller(){
     var items=list.filter(function(o){return (o.etapa||0)===si;}).sort(function(a,b){return String(a.entrega||"9")<String(b.entrega||"9")?-1:1;});
     if(si===3)items=items.slice(-8).reverse();
     return '<div class="col" style="--k:'+st[1]+'"><div class="col-h"><h2>'+st[0]+'</h2><span class="mono" style="color:var(--muted)">'+list.filter(function(o){return (o.etapa||0)===si;}).length+'</span></div>'+
-      (items.length?items.map(function(o){var late=si<3&&o.entrega&&o.entrega<today();return '<div class="card"><div style="display:flex;justify-content:space-between;gap:8px"><span class="mono" style="color:var(--muted)">'+esc(o.folio)+'</span><span class="mono" style="color:'+(late?"var(--rose)":"var(--muted)")+'">'+(o.entrega?"entrega "+fmtDate(o.entrega).slice(0,5):"sin fecha")+'</span></div><b style="font-weight:600;overflow-wrap:anywhere">'+esc(o.cliente)+'</b>'+(eqTotal(o)?'<span class="mono" style="color:var(--amber)">'+eqTotal(o)+(eqTotal(o)===1?" extintor":" extintores")+'</span>':"")+'<span class="s" style="color:var(--muted);font-size:13px;overflow-wrap:anywhere">'+esc(o.detalle)+'</span>'+
-        (S.readOnly||!db?"":'<div class="card-a">'+(si>0?'<button type="button" class="btn ghost sm" data-act="otMove" data-id="'+o.id+'" data-v="-1" aria-label="Regresar etapa">←</button>':"")+(si<3?'<button type="button" class="btn sm" data-act="otMove" data-id="'+o.id+'" data-v="1">'+(si===2?"Entregar":"Avanzar →")+'</button>':"")+'<button type="button" class="btn ghost sm" data-act="edit:ordenes" data-id="'+o.id+'">Editar</button></div>')+'</div>';}).join(""):'<div class="empty" style="padding:14px"><span>'+(si===0?"Sin órdenes nuevas.":"Vacío.")+'</span></div>')+'</div>';
+      (items.length?items.map(function(o){var late=si<3&&o.entrega&&o.entrega<today();return '<div class="card"><div style="display:flex;justify-content:space-between;gap:8px"><button type="button" class="link" style="padding:0;font-family:var(--mono);font-size:12px" data-act="otOpen" data-id="'+o.id+'">'+esc(o.folio)+' →</button><span class="mono" style="color:'+(late?"var(--rose)":"var(--muted)")+'">'+(o.entrega?"entrega "+fmtDate(o.entrega).slice(0,5):"sin fecha")+'</span></div><b style="font-weight:600;overflow-wrap:anywhere">'+esc(o.cliente)+'</b>'+(function(){var pg=progress(o);return pg.t?'<span class="mono" style="color:'+(pg.n===pg.t?"var(--green)":"var(--amber)")+'">'+pg.n+'/'+pg.t+' listos</span><div class="bar"><i style="width:'+Math.round(pg.n/pg.t*100)+'%;background:var(--green)"></i></div>':"";})()+'<span class="s" style="color:var(--muted);font-size:13px;overflow-wrap:anywhere">'+esc(o.detalle)+'</span>'+
+        (S.readOnly||!db?"":'<div class="card-a">'+(si>0?'<button type="button" class="btn ghost sm" data-act="otMove" data-id="'+o.id+'" data-v="-1" aria-label="Regresar etapa">←</button>':"")+(si<2?'<button type="button" class="btn sm" data-act="otMove" data-id="'+o.id+'" data-v="1">Avanzar →</button>':si===2?'<button type="button" class="btn sm" data-act="otOpen" data-id="'+o.id+'" data-v="entrega">Entregar</button>':"")+'<button type="button" class="btn ghost sm" data-act="otOpen" data-id="'+o.id+'">Control</button></div>')+'</div>';}).join(""):'<div class="empty" style="padding:14px"><span>'+(si===0?"Sin órdenes nuevas.":"Vacío.")+'</span></div>')+'</div>';
   }).join("")+'</div>';
 }
 
@@ -560,7 +637,7 @@ function vInv(){
   var shopTxt="Pedido JASA Extintores:\n"+shop.map(function(x){return "• "+x.n+": "+x.q+(x.u?" "+x.u:"");}).join("\n");
   return '<div class="grid2"><div class="box"><div class="box-h"><h2>Existencias</h2>'+(S.readOnly||!db?"":'<button type="button" class="btn sm" data-act="new:inventario">+ Nuevo artículo</button>')+'</div>'+
   (list.length?'<div class="tbl-wrap"><table><thead><tr><th>ARTÍCULO</th><th class="num">EXISTENCIA</th><th>NIVEL</th><th></th></tr></thead><tbody>'+list.map(function(i){var s=+i.stock||0,mn=+i.min||0,op=+i.optimo||0,pct=op?Math.min(100,Math.round(s/op*100)):0,col=s<mn?"var(--red-2)":s<mn*1.3?"var(--amber)":"var(--green)";
-    return '<tr><td><b style="font-weight:600">'+esc(i.nombre)+'</b><div style="color:var(--muted);font-size:12px">mín '+mn+' · ópt '+op+(i.unidad?" "+esc(i.unidad):"")+'</div></td><td class="num">'+(S.readOnly||!db?'<span class="mono">'+s+'</span>':'<span class="stepper"><button type="button" data-act="stock" data-id="'+i.id+'" data-v="-1" aria-label="Restar uno">−</button><span class="mono" style="min-width:36px;text-align:center">'+s+'</span><button type="button" data-act="stock" data-id="'+i.id+'" data-v="1" aria-label="Sumar uno">+</button></span>')+'</td><td style="min-width:110px"><div class="bar"><i style="width:'+pct+'%;background:'+col+'"></i></div></td><td class="num">'+(S.readOnly||!db?"":'<button type="button" class="link" data-act="edit:inventario" data-id="'+i.id+'">Editar</button>')+'</td></tr>';}).join("")+'</tbody></table></div>':emptyBox("Inventario vacío","Agrega polvo PQS, CO₂, manómetros, válvulas, etiquetas y extintores nuevos con su mínimo y óptimo.","new:inventario","Nuevo artículo"))+
+    return '<tr><td><b style="font-weight:600">'+esc(i.nombre)+'</b><div style="color:var(--muted);font-size:12px">mín '+mn+' · ópt '+op+(i.unidad?" "+esc(i.unidad):"")+(i.consumo?' · <span style="color:var(--blue)">se descuenta al entregar</span>':"")+'</div></td><td class="num">'+(S.readOnly||!db?'<span class="mono">'+s+'</span>':'<span class="stepper"><button type="button" data-act="stock" data-id="'+i.id+'" data-v="-1" aria-label="Restar uno">−</button><span class="mono" style="min-width:36px;text-align:center">'+s+'</span><button type="button" data-act="stock" data-id="'+i.id+'" data-v="1" aria-label="Sumar uno">+</button></span>')+'</td><td style="min-width:110px"><div class="bar"><i style="width:'+pct+'%;background:'+col+'"></i></div></td><td class="num">'+(S.readOnly||!db?"":'<button type="button" class="link" data-act="edit:inventario" data-id="'+i.id+'">Editar</button>')+'</td></tr>';}).join("")+'</tbody></table></div>':emptyBox("Inventario vacío","Agrega polvo PQS, CO₂, manómetros, válvulas, etiquetas y extintores nuevos con su mínimo y óptimo.","new:inventario","Nuevo artículo"))+
   '</div><div class="box"><div class="box-h"><h2>Lista de compras</h2></div>'+(shop.length?shop.map(function(x){return '<div class="row"><span class="t">'+esc(x.n)+'</span><span class="mono" style="color:var(--amber)">+'+x.q+(x.u?" "+esc(x.u):"")+'</span></div>';}).join("")+'<div class="actions"><a class="btn wa" target="_blank" rel="noopener" href="'+esc("https://wa.me/?text="+encodeURIComponent(shopTxt))+'">Enviar pedido por WhatsApp</a></div>':'<div class="empty"><span>Todo está arriba del mínimo. Lo que baje del mínimo aparece aquí con la cantidad para llegar al óptimo.</span></div>')+'</div></div>';
 }
 
@@ -572,7 +649,7 @@ function render(){
   else if(S.screen==="quotes")html+=vQuotes();
   else if(S.screen==="clientes"||S.screen==="proveedores")html+=vDir(S.screen);
   else if(S.screen==="finanzas")html+=vFin();
-  else if(S.screen==="taller")html+=vTaller();
+  else if(S.screen==="taller"){var oo=S.otSel&&byId("ordenes",S.otSel);html+=oo?vOrden(oo):vTaller();}
   else html+=vInv();
   var view=document.getElementById("view"),ae=document.activeElement,keep=ae&&view.contains(ae)&&ae.id?ae.id:null;
   view.innerHTML=html;
@@ -588,7 +665,7 @@ document.addEventListener("click",function(e){
   var b=e.target.closest("[data-act]");if(!b)return;
   var a=b.getAttribute("data-act"),v=b.getAttribute("data-v"),id=b.getAttribute("data-id");
   if(a==="closeDrawer"){if(b.classList.contains("overlay")&&e.target!==b)return;S.drawer=null;renderDrawer();return;}
-  if(a==="go"){S.screen=v;S.confirm=null;render();window.scrollTo(0,0);return;}
+  if(a==="go"){S.screen=v;S.otSel=null;S.confirm=null;render();window.scrollTo(0,0);return;}
   if(a==="goPaste"){S.screen="quotes";render();setTimeout(function(){var p=document.getElementById("pasteBox");if(p)p.focus();},20);return;}
   if(a.indexOf("new:")===0){openForm(a.slice(4));return;}
   if(a.indexOf("edit:")===0){openForm(a.slice(5),id);return;}
@@ -629,18 +706,32 @@ document.addEventListener("click",function(e){
   if(a==="savePrices"&&q){savePrices(q);return;}
   if((a==="sheetPdf"||a==="sheetPng")&&q){exportSheet(a==="sheetPdf"?"pdf":"png",q);return;}
   if(a==="delPrice"){remove("precios",id).then(function(){toast("Precio quitado de tu lista");});return;}
+  if(a==="otOpen"){S.otSel=id;S.dlv={};render();if(v==="entrega"){var en=document.getElementById("entrega");if(en)en.scrollIntoView();}else window.scrollTo(0,0);return;}
+  if(a==="otBack"){S.otSel=null;render();window.scrollTo(0,0);return;}
+  var oc=S.otSel&&byId("ordenes",S.otSel);
+  if(a==="allReady"&&oc){patch("ordenes",oc.id,{unidades:cleanUnits(unitsOf(oc).map(function(u){u.listo=true;return u;}))});return;}
+  if(a==="otDeliver"&&oc){deliver(oc);return;}
+  if(a==="otPdf"&&oc){exportDoc("pdf",orderSheetHTML(oc),"Orden-JASA-"+String(oc.folio).replace(/[^A-Za-z0-9-]/g,"")+".pdf","otStatus","Imprímelo o compártelo para firma.");return;}
   if(a==="finTab"){S.finTab=v;render();return;}
   if(a==="otMove"){var o=byId("ordenes",id);if(!o)return;var n=Math.max(0,Math.min(3,(o.etapa||0)+(+v)));var up={etapa:n};if(n===3)up.entregado=today();patch("ordenes",id,up);return;}
   if(a==="stock"){var it=byId("inventario",id);if(!it)return;patch("inventario",id,{stock:Math.max(0,(+it.stock||0)+(+v))});return;}
   if(a==="backup"){backup();return;}
 });
 document.addEventListener("input",function(e){
+  if(e.target.id==="dEntrego"){S.dlv.entrego=e.target.value;return;}
+  if(e.target.id==="dRecibe"){S.dlv.recibe=e.target.value;return;}
   if(e.target.id==="search"){S.search=e.target.value;render();}
   if(e.target.id==="pasteBox"){S.paste=e.target.value;}
 });
 document.addEventListener("change",function(e){
   var t=e.target;
   if(t.id==="finMes"){S.finMes=t.value;render();return;}
+  if(t.hasAttribute("data-unit")){
+    var ot=S.otSel&&byId("ordenes",S.otSel);if(!ot)return;
+    var uk=t.getAttribute("data-uk"),key=t.getAttribute("data-unit");
+    var us=unitsOf(ot).map(function(u){if(u.key===key)u[uk]=uk==="listo"?t.checked:t.value.trim();return u;});
+    patch("ordenes",ot.id,{unidades:cleanUnits(us)});return;
+  }
   if(t.hasAttribute("data-line")){
     var q=byId("quotes",S.sel);if(!q)return;
     var i=+t.getAttribute("data-line"),k=t.getAttribute("data-k"),L=(q.lines||[]).map(function(l){return Object.assign({},l);});
