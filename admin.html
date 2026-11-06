@@ -141,6 +141,16 @@ textarea.inp{resize:vertical;min-height:120px;font-family:var(--mono);font-size:
 .sh-total{border-top:1px solid #444;padding-top:4px}
 .sh-total b{font-size:14px!important}
 .hint{font-size:13px;color:var(--muted)}
+.eq-list{display:flex;flex-direction:column;gap:8px}
+.eq-row{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) 72px 34px;gap:6px;align-items:center}
+.eq-x{width:34px;height:36px;border:1px solid var(--line);background:var(--panel-2);border-radius:3px;cursor:pointer;color:var(--muted)}
+.eq-x:hover{color:var(--ink)}
+.eq-head{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) 72px 34px;gap:6px;font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--faint);text-transform:uppercase}
+.eq-sum{font-size:13px;color:var(--muted)}
+.eq-row.svc{grid-template-areas:"t c q x" "s s s s";padding-bottom:8px;border-bottom:1px solid var(--line)}
+.eq-row.svc .eq-tipo{grid-area:t}.eq-row.svc .eq-cap{grid-area:c}.eq-row.svc .eq-qty{grid-area:q}.eq-row.svc .eq-x{grid-area:x}.eq-row.svc .eq-svc{grid-area:s}
+.eq-chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+.eq-chip{font-family:var(--mono);font-size:11px;border:1px solid var(--line);border-radius:3px;padding:1px 6px;color:var(--ink);white-space:nowrap}
 @media (max-width:1100px){.kanban{grid-template-columns:repeat(2,minmax(0,1fr))}.grid2,.q-layout{grid-template-columns:minmax(0,1fr)}}
 @media (max-width:760px){
   .app{grid-template-columns:minmax(0,1fr)}
@@ -253,13 +263,30 @@ function parseRequest(txt){
 }
 
 /* ---------- formularios ---------- */
+var EXT_SERV=["Recarga","Mantenimiento","Prueba hidrostática","Venta (nuevo)","Revisión"];
+function withSvc(){return !!(S.drawer&&S.drawer.kind==="ordenes");}
+var EXT_TIPOS=[["PQS","PQS (ABC)"],["CO2","CO₂"],["TIPO K","Tipo K (cocina)"],["AGUA","Agua"],["AFFF","Espuma AFFF"],["TIPO D","Tipo D (metales)"],["AGENTE LIMPIO","Agente limpio"]];
+var EXT_CAPS={"PQS":["1 KG","2 KG","4.5 KG","6 KG","9 KG","12 KG","35 KG (UNIDAD MÓVIL)","50 KG (UNIDAD MÓVIL)"],"CO2":["2.3 KG","4.5 KG","6.8 KG","9 KG","22.7 KG (UNIDAD MÓVIL)"],"TIPO K":["6 L","9.5 L"],"AGUA":["9.5 L"],"AFFF":["9.5 L","50 L (UNIDAD MÓVIL)"],"TIPO D":["9 KG","13.6 KG"],"AGENTE LIMPIO":["1.4 KG","2.3 KG","4.5 KG","6.8 KG"]};
+function tipoLabel(t){return t==="CO2"?"CO₂":t==="AGUA"?"Agua":t==="TIPO K"?"Tipo K":t==="TIPO D"?"Tipo D":t==="AGENTE LIMPIO"?"Agente limpio":t;}
+function eqList(c){return Array.isArray(c&&c.equiposDet)?c.equiposDet.filter(function(e){return e&&(+e.qty||0)>0;}):[];}
+function eqTotal(c){var l=eqList(c);return l.length?l.reduce(function(a,e){return a+(+e.qty||0);},0):(+(c&&c.equipos)||0);}
+function eqText(c){var l=eqList(c);return l.map(function(e){return e.qty+" × "+tipoLabel(e.tipo)+" "+String(e.cap||"").toLowerCase()+(e.servicio?" · "+e.servicio.toLowerCase():"");}).join(" | ");}
+function eqRowHTML(e){
+  e=e||{tipo:"PQS",cap:"6 KG",qty:1,servicio:"Recarga"};var t=e.tipo||"PQS",sv=withSvc();
+  return '<div class="eq-row'+(sv?" svc":"")+'"><select class="inp eq-tipo" aria-label="Tipo de extintor">'+EXT_TIPOS.map(function(o){return '<option value="'+o[0]+'"'+(o[0]===t?" selected":"")+'>'+esc(o[1])+'</option>';}).join("")+'</select>'+
+    '<select class="inp eq-cap" aria-label="Capacidad">'+(EXT_CAPS[t]||[]).concat(e.cap&&(EXT_CAPS[t]||[]).indexOf(e.cap)<0?[e.cap]:[]).map(function(c){return '<option value="'+esc(c)+'"'+(c===e.cap?" selected":"")+'>'+esc(c.charAt(0)+c.slice(1).toLowerCase())+'</option>';}).join("")+'</select>'+
+    '<input class="inp eq-qty" type="number" min="1" step="1" inputmode="numeric" aria-label="Cantidad" value="'+esc(e.qty||1)+'">'+
+    '<button type="button" class="eq-x" data-act="eqDel" aria-label="Quitar este renglón">×</button>'+
+    (sv?'<select class="inp eq-svc" aria-label="Servicio">'+EXT_SERV.map(function(o){return '<option'+(o===(e.servicio||"Recarga")?" selected":"")+'>'+esc(o)+'</option>';}).join("")+'</select>':"")+'</div>';
+}
+function eqSummary(){var rows=document.querySelectorAll("#eqList .eq-row"),n=0;rows.forEach(function(r){n+=parseInt(r.querySelector(".eq-qty").value,10)||0;});var el=document.getElementById("eqSum");if(el)el.textContent=n?("Total: "+n+(n===1?" extintor":" extintores")):"Sin extintores registrados";}
 var CAT_ING=["Ventas","Servicios","Capacitación","Otros ingresos"],CAT_EGR=["Insumos","Vehículo","Gastos fijos","Nómina","Impuestos","Otros gastos"];
 var STAGES=[["Recibido","var(--muted)"],["En servicio","var(--amber)"],["Listo para entregar","var(--green)"],["Entregado","var(--faint)"]];
 var FORMS={
-  clientes:{t:"cliente",f:[["nombre","Nombre o razón social","text",1],["contacto","Contacto","text"],["tel","Teléfono (10 dígitos)","tel"],["ciudad","Ciudad","text"],["equipos","Extintores registrados","number"],["proximaRecarga","Próxima recarga","month"],["saldo","Por cobrar ($)","number"],["notas","Notas","textarea"]]},
+  clientes:{t:"cliente",f:[["nombre","Nombre o razón social","text",1],["contacto","Contacto","text"],["tel","Teléfono (10 dígitos)","tel"],["ciudad","Ciudad","text"],["equiposDet","Extintores del cliente","equipos"],["proximaRecarga","Próxima recarga","month"],["saldo","Por cobrar ($)","number"],["notas","Notas","textarea"]]},
   proveedores:{t:"proveedor",f:[["nombre","Proveedor","text",1],["contacto","Contacto","text"],["tel","Teléfono","tel"],["ciudad","Ciudad","text"],["surte","Qué surte","text"],["saldo","Por pagar ($)","number"]]},
   movs:{t:"movimiento",f:[["tipo","Tipo","select",1,[["ingreso","Ingreso"],["egreso","Egreso"]]],["fecha","Fecha","date",1],["concepto","Concepto","text",1],["quien","Cliente o proveedor","text"],["categoria","Categoría","select",0,CAT_ING.concat(CAT_EGR).map(function(c){return [c,c];})],["monto","Monto ($)","number",1]]},
-  ordenes:{t:"orden de taller",f:[["cliente","Cliente","text",1],["detalle","Equipos y servicio","text",1,null,"Ej. 6 × PQS 9 kg · recarga"],["entrega","Fecha de entrega","date"],["etapa","Etapa","select",1,STAGES.map(function(s,i){return [String(i),s[0]];})]]},
+  ordenes:{t:"orden de taller",f:[["cliente","Cliente","text",1],["equiposDet","Equipos a recibir","equipos"],["notas","Notas","text",0,null,"Ej. Uno trae la manguera rota"],["entrega","Fecha de entrega","date"],["etapa","Etapa","select",1,STAGES.map(function(s,i){return [String(i),s[0]];})]]},
   inventario:{t:"artículo",f:[["nombre","Artículo","text",1],["unidad","Unidad","text",0,null,"kg, pzas, rollos…"],["stock","Existencia","number",1],["min","Mínimo","number",1],["optimo","Óptimo (para pedir)","number",1]]},
   quotes:{t:"cotización",f:[["cliente","Cliente","text",1],["dirigido","Dirigido a","text"],["tel","Teléfono (WhatsApp)","tel"],["direccion","Dirección","text"],["ciudad","Ciudad","text"],["rfc","RFC","text"],["cond","Condiciones","text",0,null,"Ej. Servicio a domicilio"],["entregaTxt","Tiempo de entrega","text",0,null,"Ej. 2 días hábiles"],["vigencia","Vigencia de precios","text",0,null,"Ej. 15 días"]]}
 };
@@ -273,7 +300,7 @@ function openForm(kind,id){
   }
   S.drawer={kind:kind,id:id||null,vals:Object.assign({},def,rec||{})};
   if(kind==="ordenes"&&rec)S.drawer.vals.etapa=String(rec.etapa||0);
-  renderDrawer();
+  renderDrawer();eqSummary();
   setTimeout(function(){var i=document.querySelector("#drawerRoot .inp");if(i)i.focus();},30);
 }
 function renderDrawer(){
@@ -282,13 +309,17 @@ function renderDrawer(){
   var d=S.drawer,F=FORMS[d.kind],v=d.vals;
   var fields=F.f.map(function(f){
     var k=f[0],lab=f[1],type=f[2],req=f[3],opts=f[4],hint=f[5],val=v[k]==null?"":v[k],id="f_"+k,ctl;
+    if(type==="equipos"){var det=Array.isArray(val)?val:[];if(!det.length&&(+v.equipos||0)>0)det=[{tipo:"PQS",cap:"6 KG",qty:+v.equipos}];
+      return '<div class="field"><label>'+esc(lab)+'</label>'+(det.length?'<div class="eq-head"><span>Tipo</span><span>Capacidad</span><span>Cantidad</span><span></span></div>':"")+'<div class="eq-list" id="eqList">'+det.map(eqRowHTML).join("")+'</div>'+
+        '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-top:4px"><div style="display:flex;gap:6px;flex-wrap:wrap"><button type="button" class="btn ghost sm" data-act="eqAdd">+ Agregar extintor</button>'+(withSvc()?'<button type="button" class="btn ghost sm" data-act="eqFromClient">Usar equipos del cliente</button>':"")+'</div><span class="eq-sum" id="eqSum"></span></div></div>';}
     if(type==="select")ctl='<select class="inp" id="'+id+'" name="'+k+'">'+opts.map(function(o){return '<option value="'+esc(o[0])+'"'+(String(val)===o[0]?" selected":"")+'>'+esc(o[1])+'</option>';}).join("")+'</select>';
     else if(type==="textarea")ctl='<textarea class="inp" id="'+id+'" name="'+k+'" style="font-family:var(--body);font-size:15px;min-height:80px">'+esc(val)+'</textarea>';
+    else if(d.kind==="ordenes"&&k==="cliente")ctl='<input class="inp" id="'+id+'" name="'+k+'" type="text" list="cliList" autocomplete="off" required value="'+esc(val)+'"><datalist id="cliList">'+S.data.clientes.map(function(c){return '<option value="'+esc(c.nombre)+'">';}).join("")+'</datalist>';
     else ctl='<input class="inp" id="'+id+'" name="'+k+'" type="'+type+'"'+(type==="number"?' step="any" inputmode="decimal"':"")+(req?" required":"")+' value="'+esc(val)+'">';
     return '<div class="field"><label for="'+id+'">'+esc(lab)+(req?" *":"")+'</label>'+ctl+(hint?'<small>'+esc(hint)+'</small>':"")+'</div>';
   }).join("");
-  root.innerHTML='<div class="overlay" data-act="closeDrawer"><div class="drawer" role="dialog" aria-modal="true" aria-label="'+(d.id?"Editar ":"Nuevo ")+F.t+'">'+
-    '<div class="box-h"><h2>'+(d.id?"Editar ":"Nuevo ")+esc(F.t)+'</h2><button type="button" class="btn ghost sm" data-act="closeDrawer">Cerrar</button></div>'+
+  root.innerHTML='<div class="overlay" data-act="closeDrawer"><div class="drawer" role="dialog" aria-modal="true" aria-label="'+(d.id?"Editar ":(d.kind==="ordenes"||d.kind==="quotes"?"Nueva ":"Nuevo "))+F.t+'">'+
+    '<div class="box-h"><h2>'+(d.id?"Editar ":(d.kind==="ordenes"||d.kind==="quotes"?"Nueva ":"Nuevo "))+esc(F.t)+'</h2><button type="button" class="btn ghost sm" data-act="closeDrawer">Cerrar</button></div>'+
     '<form id="drawerForm">'+fields+
     '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px"><button class="btn" type="submit">'+(d.id?"Guardar cambios":"Agregar")+'</button>'+
     (d.id?'<button type="button" class="btn ghost" data-act="askDelete">Eliminar</button>':"")+'</div>'+
@@ -296,8 +327,16 @@ function renderDrawer(){
 }
 function submitDrawer(form){
   var d=S.drawer,F=FORMS[d.kind],body={};
-  F.f.forEach(function(f){var el=form.elements[f[0]];var x=el.value.trim();if(f[2]==="number")x=x===""?0:(parseFloat(x)||0);body[f[0]]=x;});
-  if(d.kind==="ordenes")body.etapa=+body.etapa;
+  F.f.forEach(function(f){
+    if(f[2]==="equipos"){var det=[];document.querySelectorAll("#eqList .eq-row").forEach(function(r){var q=parseInt(r.querySelector(".eq-qty").value,10)||0;var sv=r.querySelector(".eq-svc");if(q>0){var o={tipo:r.querySelector(".eq-tipo").value,cap:r.querySelector(".eq-cap").value,qty:q};if(sv)o.servicio=sv.value;det.push(o);}});body.equiposDet=det;body.equipos=det.reduce(function(a,e){return a+e.qty;},0);return;}
+    var el=form.elements[f[0]];var x=el.value.trim();if(f[2]==="number")x=x===""?0:(parseFloat(x)||0);body[f[0]]=x;});
+  if(d.kind==="ordenes"){
+    body.etapa=+body.etapa;
+    var prev=d.id?byId("ordenes",d.id):null;
+    var txt=[eqText(body),body.notas].filter(Boolean).join(" | ");
+    body.detalle=txt||(prev&&prev.detalle)||"";
+    if(!body.detalle){toast("Agrega al menos un extintor o una nota.");return;}
+  }
   var p;
   if(d.id){p=patch(d.kind,d.id,body);}
   else{
@@ -431,7 +470,7 @@ function vPanel(){
   '<div class="grid2"><div class="box"><div class="box-h"><h2>Cotizaciones por contestar</h2><button type="button" class="link" data-act="go" data-v="quotes">Ver todas →</button></div>'+
   (pend.length?pend.slice(0,8).map(function(q){return '<button type="button" class="row" data-act="openQuote" data-id="'+q.id+'"><span class="t">'+esc(q.cliente)+'</span><span class="mono" style="color:var(--amber)">'+ago(q.creado)+'</span><span class="s">'+esc(q.folio)+' · '+(q.lines||[]).length+((q.lines||[]).length===1?" partida":" partidas")+'</span></button>';}).join(""):emptyBox("Nada pendiente","Cuando llegue una solicitud por WhatsApp, cópiala y pégala con el botón “Pegar solicitud”.","goPaste","Pegar solicitud"))+
   '</div><div style="display:flex;flex-direction:column;gap:16px;min-width:0"><div class="box"><div class="box-h"><h2>Recargas por vencer</h2><span class="eyebrow">próximos 2 meses</span></div>'+
-  (due.length?due.slice(0,8).map(function(c){var late=c.proximaRecarga<cur;return '<div class="row"><span class="t">'+esc(c.nombre)+'</span>'+(c.tel?'<a class="btn wa sm" target="_blank" rel="noopener" href="'+esc(waLink(c.tel,"Hola, le escribimos de JASA Extintores. Sus extintores "+(late?"ya vencieron":"están por vencer")+" ("+fmtMonth(c.proximaRecarga)+"). ¿Agendamos su recarga?"))+'">Avisar</a>':'<span></span>')+'<span class="s">'+(c.equipos?esc(c.equipos)+" extintores · ":"")+'<span style="color:'+(late?"var(--rose)":"var(--amber)")+'">'+(late?"vencido ":"vence ")+fmtMonth(c.proximaRecarga)+'</span></span></div>';}).join(""):emptyBox("Sin recargas próximas","Registra la próxima recarga de cada cliente y aquí verás a quién avisar.","new:clientes","Nuevo cliente"))+
+  (due.length?due.slice(0,8).map(function(c){var late=c.proximaRecarga<cur;return '<div class="row"><span class="t">'+esc(c.nombre)+'</span>'+(c.tel?'<a class="btn wa sm" target="_blank" rel="noopener" href="'+esc(waLink(c.tel,"Hola, le escribimos de JASA Extintores. Sus extintores "+(eqText(c)?"("+eqText(c)+") ":"")+(late?"ya vencieron":"están por vencer")+" ("+fmtMonth(c.proximaRecarga)+"). ¿Agendamos su recarga?"))+'">Avisar</a>':'<span></span>')+'<span class="s">'+(eqTotal(c)?eqTotal(c)+" extintores · ":"")+'<span style="color:'+(late?"var(--rose)":"var(--amber)")+'">'+(late?"vencido ":"vence ")+fmtMonth(c.proximaRecarga)+'</span></span></div>';}).join(""):emptyBox("Sin recargas próximas","Registra la próxima recarga de cada cliente y aquí verás a quién avisar.","new:clientes","Nuevo cliente"))+
   '</div>'+(low.length?'<div class="box"><div class="box-h"><h2>Bajo mínimo</h2><button type="button" class="link" data-act="go" data-v="inventario">Inventario →</button></div>'+low.map(function(i){return '<div class="row"><span class="t">'+esc(i.nombre)+'</span><span class="mono" style="color:var(--rose)">'+esc(i.stock)+' / mín '+esc(i.min)+'</span></div>';}).join("")+'</div>':"")+'</div></div>';
 }
 
@@ -477,7 +516,7 @@ function vDir(kind){
   var head=isCli?["Cliente","Contacto","Teléfono","Equipos · próxima recarga","Por cobrar",""]:["Proveedor","Contacto","Teléfono · ciudad","Surte","Por pagar",""];
   var rows=list.map(function(x){
     var c4,c3;
-    if(isCli){var pr=x.proximaRecarga,col=!pr?"var(--muted)":pr<cur?"var(--rose)":pr<=soon?"var(--amber)":"var(--muted)";c4='<span style="color:'+col+'">'+(x.equipos?esc(x.equipos)+" extintores · ":"")+(pr?(pr<cur?"vencido ":"vence ")+fmtMonth(pr):"sin fecha")+'</span>';c3=esc(x.tel||"—");}
+    if(isCli){var pr=x.proximaRecarga,col=!pr?"var(--muted)":pr<cur?"var(--rose)":pr<=soon?"var(--amber)":"var(--muted)";var tot=eqTotal(x),det=eqList(x);c4='<span style="color:'+col+'">'+(tot?tot+(tot===1?" extintor · ":" extintores · "):"")+(pr?(pr<cur?"vencido ":"vence ")+fmtMonth(pr):"sin fecha")+'</span>'+(det.length?'<div class="eq-chips">'+det.map(function(e){return '<span class="eq-chip">'+e.qty+' × '+esc(tipoLabel(e.tipo))+' '+esc(String(e.cap).toLowerCase())+'</span>';}).join("")+'</div>':"");c3=esc(x.tel||"—");}
     else{c4=esc(x.surte||"—");c3=esc(x.tel||"—")+(x.ciudad?'<div class="s" style="color:var(--muted);font-size:12px">'+esc(x.ciudad)+'</div>':"");}
     var s=+x.saldo||0;
     return '<tr><td><b style="font-weight:600">'+esc(x.nombre)+'</b>'+(isCli&&x.ciudad?'<div style="color:var(--muted);font-size:12px">'+esc(x.ciudad)+'</div>':"")+'</td><td>'+esc(x.contacto||"—")+'</td><td>'+c3+'</td><td>'+c4+'</td><td class="num" style="color:'+(s?(isCli?"var(--amber)":"var(--rose)"):"var(--green)")+'">'+(s?money(s):(isCli?"Al corriente":"Sin saldo"))+'</td><td class="num">'+(x.tel?'<a class="link" target="_blank" rel="noopener" href="'+esc(waLink(x.tel,"Hola, le escribimos de JASA Extintores."))+'">WhatsApp</a>':"")+(S.readOnly||!db?"":'<button type="button" class="link" data-act="edit:'+kind+'" data-id="'+x.id+'">Editar</button>')+'</td></tr>';
@@ -510,7 +549,7 @@ function vTaller(){
     var items=list.filter(function(o){return (o.etapa||0)===si;}).sort(function(a,b){return String(a.entrega||"9")<String(b.entrega||"9")?-1:1;});
     if(si===3)items=items.slice(-8).reverse();
     return '<div class="col" style="--k:'+st[1]+'"><div class="col-h"><h2>'+st[0]+'</h2><span class="mono" style="color:var(--muted)">'+list.filter(function(o){return (o.etapa||0)===si;}).length+'</span></div>'+
-      (items.length?items.map(function(o){var late=si<3&&o.entrega&&o.entrega<today();return '<div class="card"><div style="display:flex;justify-content:space-between;gap:8px"><span class="mono" style="color:var(--muted)">'+esc(o.folio)+'</span><span class="mono" style="color:'+(late?"var(--rose)":"var(--muted)")+'">'+(o.entrega?"entrega "+fmtDate(o.entrega).slice(0,5):"sin fecha")+'</span></div><b style="font-weight:600;overflow-wrap:anywhere">'+esc(o.cliente)+'</b><span class="s" style="color:var(--muted);font-size:13px;overflow-wrap:anywhere">'+esc(o.detalle)+'</span>'+
+      (items.length?items.map(function(o){var late=si<3&&o.entrega&&o.entrega<today();return '<div class="card"><div style="display:flex;justify-content:space-between;gap:8px"><span class="mono" style="color:var(--muted)">'+esc(o.folio)+'</span><span class="mono" style="color:'+(late?"var(--rose)":"var(--muted)")+'">'+(o.entrega?"entrega "+fmtDate(o.entrega).slice(0,5):"sin fecha")+'</span></div><b style="font-weight:600;overflow-wrap:anywhere">'+esc(o.cliente)+'</b>'+(eqTotal(o)?'<span class="mono" style="color:var(--amber)">'+eqTotal(o)+(eqTotal(o)===1?" extintor":" extintores")+'</span>':"")+'<span class="s" style="color:var(--muted);font-size:13px;overflow-wrap:anywhere">'+esc(o.detalle)+'</span>'+
         (S.readOnly||!db?"":'<div class="card-a">'+(si>0?'<button type="button" class="btn ghost sm" data-act="otMove" data-id="'+o.id+'" data-v="-1" aria-label="Regresar etapa">←</button>':"")+(si<3?'<button type="button" class="btn sm" data-act="otMove" data-id="'+o.id+'" data-v="1">'+(si===2?"Entregar":"Avanzar →")+'</button>':"")+'<button type="button" class="btn ghost sm" data-act="edit:ordenes" data-id="'+o.id+'">Editar</button></div>')+'</div>';}).join(""):'<div class="empty" style="padding:14px"><span>'+(si===0?"Sin órdenes nuevas.":"Vacío.")+'</span></div>')+'</div>';
   }).join("")+'</div>';
 }
@@ -553,6 +592,13 @@ document.addEventListener("click",function(e){
   if(a==="goPaste"){S.screen="quotes";render();setTimeout(function(){var p=document.getElementById("pasteBox");if(p)p.focus();},20);return;}
   if(a.indexOf("new:")===0){openForm(a.slice(4));return;}
   if(a.indexOf("edit:")===0){openForm(a.slice(5),id);return;}
+  if(a==="eqAdd"){var list=document.getElementById("eqList");if(!list.children.length)list.insertAdjacentHTML("beforebegin",'<div class="eq-head"><span>Tipo</span><span>Capacidad</span><span>Cantidad</span><span></span></div>');var last=list.lastElementChild;var e=last?{tipo:last.querySelector(".eq-tipo").value,cap:last.querySelector(".eq-cap").value,qty:1,servicio:last.querySelector(".eq-svc")?last.querySelector(".eq-svc").value:""}:null;list.insertAdjacentHTML("beforeend",eqRowHTML(e));eqSummary();var nq=list.lastElementChild.querySelector(".eq-tipo");if(nq)nq.focus();return;}
+  if(a==="eqFromClient"){var nm=(document.getElementById("f_cliente").value||"").trim().toLowerCase();var cl=S.data.clientes.find(function(c){return String(c.nombre||"").trim().toLowerCase()===nm;});
+    if(!cl){toast(nm?"No encontré ese cliente en Clientes. Revisa que el nombre sea igual.":"Escribe primero el nombre del cliente.");return;}
+    var det=eqList(cl);if(!det.length){toast("Ese cliente no tiene extintores registrados.");return;}
+    var lst=document.getElementById("eqList");if(!lst.children.length)lst.insertAdjacentHTML("beforebegin",'<div class="eq-head"><span>Tipo</span><span>Capacidad</span><span>Cantidad</span><span></span></div>');
+    lst.innerHTML=det.map(function(e){return eqRowHTML({tipo:e.tipo,cap:e.cap,qty:e.qty,servicio:"Recarga"});}).join("");eqSummary();toast("Equipos de "+cl.nombre+" agregados");return;}
+  if(a==="eqDel"){b.closest(".eq-row").remove();eqSummary();return;}
   if(a==="askDelete"){document.getElementById("delConfirm").innerHTML='<div class="confirm">¿Eliminar este registro? No se puede deshacer. <button type="button" class="btn sm" data-act="doDelete">Sí, eliminar</button><button type="button" class="btn ghost sm" data-act="noDelete">Cancelar</button></div>';return;}
   if(a==="noDelete"){document.getElementById("delConfirm").innerHTML="";return;}
   if(a==="doDelete"){var d=S.drawer;remove(d.kind,d.id).then(function(){S.drawer=null;renderDrawer();toast("Eliminado");});return;}
@@ -602,6 +648,8 @@ document.addEventListener("change",function(e){
     L[i][k]=k==="qty"?(parseInt(t.value,10)||0):k==="price"?(t.value===""?"":(parseFloat(t.value)||0)):t.value;
     setQuoteLines(q,L);
   }
+  if(t.classList&&t.classList.contains("eq-tipo")){var cs=t.closest(".eq-row").querySelector(".eq-cap");var caps=EXT_CAPS[t.value]||[];cs.innerHTML=caps.map(function(c){return '<option value="'+esc(c)+'">'+esc(c.charAt(0)+c.slice(1).toLowerCase())+'</option>';}).join("");return;}
+  if(t.classList&&t.classList.contains("eq-qty")){eqSummary();return;}
   if(S.drawer&&t.name==="tipo"){var c=document.getElementById("f_categoria");if(c)c.value=t.value==="ingreso"?"Ventas":"Insumos";}
 });
 document.addEventListener("submit",function(e){e.preventDefault();if(e.target.id==="drawerForm")submitDrawer(e.target);});
