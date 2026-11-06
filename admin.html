@@ -2,7 +2,7 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@600;800;900&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@600;800;900&family=Barlow+Condensed:wght@600&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
 <style>
 /* Layout: barra lateral fija de secciones + área de trabajo; en celular la barra se vuelve una fila deslizable arriba.
    Una sola apariencia oscura, la misma del sitio público de JASA. */
@@ -107,6 +107,40 @@ textarea.inp{resize:vertical;min-height:120px;font-family:var(--mono);font-size:
 .f2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:4px;font-weight:600;z-index:30;max-width:calc(100% - 32px)}
 .confirm{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:13px;color:var(--rose)}
+.sheet-wrap{background:var(--panel-2);padding:14px;overflow:hidden}
+.sheet-scale{transform-origin:top left;width:816px}
+.sheet{width:816px;background:#ffffff;color:#111111;padding:36px 40px 40px;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.3}
+.sheet *{box-sizing:border-box}
+.sh-top{display:flex;justify-content:space-between;align-items:center;border:1px solid #444;border-bottom:0;padding:10px 14px}
+.sh-logo img{display:block;width:210px;height:auto}
+.sh-co{display:flex;flex-direction:column;align-items:flex-end;text-align:right;gap:2px;font-weight:700;font-size:11.5px}
+.sh-co b{color:#c00000;font-size:16px}
+.sh-co .sh-tel{color:#777;font-weight:400}
+.sh-row{display:grid;grid-template-columns:1fr 210px;border:1px solid #444;border-bottom:0}
+.sh-title{text-align:center;color:#c00000;font-weight:700;font-size:30px;letter-spacing:.02em;padding:8px;border-right:1px solid #444}
+.sh-num{display:flex;flex-direction:column;justify-content:center;padding:6px 10px;color:#c00000;font-weight:700;gap:2px}
+.sh-num div{display:flex;justify-content:space-between;gap:8px}
+.sh-client{margin:0;padding:10px 12px;display:grid;grid-template-columns:72px 1fr;gap:5px 8px;align-items:baseline;border-right:1px solid #444;min-height:120px}
+.sh-client dt{color:#999;font-size:10.5px;text-align:right}
+.sh-client dd{margin:0;font-size:13px;text-transform:uppercase;min-height:16px;border-bottom:1px solid #eee;overflow-wrap:anywhere}
+.sh-cond{padding:8px 10px;font-size:11px;display:flex;flex-direction:column;gap:6px}
+.sh-cond div{text-transform:uppercase;overflow-wrap:anywhere;white-space:pre-line}
+.sh-table{width:100%;border-collapse:collapse;table-layout:fixed;border:1px solid #444}
+.sh-table th{font-family:Arial,Helvetica,sans-serif;background:#fff;color:#c00000;font-weight:400;font-size:11px;border:1px solid #aaa;border-top:2px solid #444;border-bottom:2px solid #444;padding:4px 6px;text-align:center;letter-spacing:0}
+.sh-table th:first-child{text-align:left}
+.sh-table td{color:#111;border:1px solid #bbb;padding:5px 6px;height:24px;font-size:11.5px;vertical-align:middle}
+.sh-table td:nth-child(2){text-transform:uppercase;overflow-wrap:anywhere}
+.sh-table td:nth-child(3){text-align:center}
+.sh-table td:nth-child(4),.sh-table td:nth-child(5){text-align:right;white-space:nowrap}
+.sh-foot{display:grid;grid-template-columns:1fr 210px;border:1px solid #444;border-top:0}
+.sh-foot-l{padding:12px 20px;font-size:11px;border-right:1px solid #444;display:flex;flex-direction:column;gap:4px}
+.sh-foot-l span{color:#666;font-size:10px}
+.sh-tot{padding:8px 10px;display:flex;flex-direction:column;gap:4px;font-weight:700;font-size:12.5px}
+.sh-tot div{display:flex;justify-content:space-between;gap:8px}
+.sh-tot b{color:#c00000;font-size:12px}
+.sh-total{border-top:1px solid #444;padding-top:4px}
+.sh-total b{font-size:14px!important}
+.hint{font-size:13px;color:var(--muted)}
 @media (max-width:1100px){.kanban{grid-template-columns:repeat(2,minmax(0,1fr))}.grid2,.q-layout{grid-template-columns:minmax(0,1fr)}}
 @media (max-width:760px){
   .app{grid-template-columns:minmax(0,1fr)}
@@ -156,7 +190,7 @@ textarea.inp{resize:vertical;min-height:120px;font-family:var(--mono);font-size:
 <script>
 (function(){
 "use strict";
-var COLS=["quotes","clientes","proveedores","movs","ordenes","inventario"];
+var COLS=["quotes","clientes","proveedores","movs","ordenes","inventario","precios"];
 var S={screen:"panel",data:{},ready:{},sel:null,finTab:"todos",finMes:null,search:"",paste:"",pasteMsg:"",drawer:null,confirm:null,readOnly:false,dbState:"loading"};
 COLS.forEach(function(c){S.data[c]=[];S.ready[c]=false;});
 var db=null, dl=null;
@@ -227,7 +261,7 @@ var FORMS={
   movs:{t:"movimiento",f:[["tipo","Tipo","select",1,[["ingreso","Ingreso"],["egreso","Egreso"]]],["fecha","Fecha","date",1],["concepto","Concepto","text",1],["quien","Cliente o proveedor","text"],["categoria","Categoría","select",0,CAT_ING.concat(CAT_EGR).map(function(c){return [c,c];})],["monto","Monto ($)","number",1]]},
   ordenes:{t:"orden de taller",f:[["cliente","Cliente","text",1],["detalle","Equipos y servicio","text",1,null,"Ej. 6 × PQS 9 kg · recarga"],["entrega","Fecha de entrega","date"],["etapa","Etapa","select",1,STAGES.map(function(s,i){return [String(i),s[0]];})]]},
   inventario:{t:"artículo",f:[["nombre","Artículo","text",1],["unidad","Unidad","text",0,null,"kg, pzas, rollos…"],["stock","Existencia","number",1],["min","Mínimo","number",1],["optimo","Óptimo (para pedir)","number",1]]},
-  quotes:{t:"cotización",f:[["cliente","Cliente","text",1],["dirigido","Dirigido a","text"],["tel","Teléfono","tel"],["ciudad","Ciudad","text"],["cond","Condiciones","text"]]}
+  quotes:{t:"cotización",f:[["cliente","Cliente","text",1],["dirigido","Dirigido a","text"],["tel","Teléfono (WhatsApp)","tel"],["direccion","Dirección","text"],["ciudad","Ciudad","text"],["rfc","RFC","text"],["cond","Condiciones","text",0,null,"Ej. Servicio a domicilio"],["entregaTxt","Tiempo de entrega","text",0,null,"Ej. 2 días hábiles"],["vigencia","Vigencia de precios","text",0,null,"Ej. 15 días"]]}
 };
 function openForm(kind,id){
   var rec=id?byId(kind,id):null;
@@ -275,6 +309,90 @@ function submitDrawer(form){
   p.then(function(){S.drawer=null;renderDrawer();toast(d.id?"Cambios guardados":"Agregado");render();},function(){});
 }
 function nextOT(){var n=S.data.ordenes.reduce(function(a,o){var m=String(o.folio||"").match(/(\d+)/);return m?Math.max(a,+m[1]):a;},0);return "OT-"+String(n+1).padStart(4,"0");}
+
+/* ---------- lista de precios ---------- */
+function normArt(t){return String(t||"").toUpperCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^A-Z0-9.]+/g," ").trim();}
+function priceId(t){var k=normArt(t),h=5381;for(var i=0;i<k.length;i++)h=((h<<5)+h+k.charCodeAt(i))>>>0;return "p"+h.toString(36)+k.length;}
+function lookupPrice(art){var id=priceId(art);var r=S.data.precios.find(function(x){return x.id===id;});return r?r.price:null;}
+function fillFromList(lines){var n=0;var out=lines.map(function(l){if(l.price===""||l.price==null){var p=lookupPrice(l.art);if(p!=null){n++;return Object.assign({},l,{price:p});}}return l;});return {lines:out,n:n};}
+function savePrices(q){
+  var ls=(q.lines||[]).filter(function(l){return l.art&&l.price!==""&&l.price!=null;});
+  if(!ls.length){toast("Pon precios primero.");return;}
+  var chain=Promise.resolve();
+  ls.forEach(function(l){chain=chain.then(function(){return write("precios",priceId(l.art),{art:String(l.art).trim().toUpperCase(),price:+l.price,actualizado:today()});});});
+  chain.then(function(){toast(ls.length+(ls.length===1?" precio guardado":" precios guardados")+" en tu lista");},function(){});
+}
+
+/* ---------- hoja de cotización (logo, PDF, imagen) ---------- */
+var LOGO="";
+function rr(x,a,b,w,h,r){x.beginPath();x.moveTo(a+r,b);x.arcTo(a+w,b,a+w,b+h,r);x.arcTo(a+w,b+h,a,b+h,r);x.arcTo(a,b+h,a,b,r);x.arcTo(a,b,a+w,b,r);x.closePath();x.fill();}
+function drawLogo(){
+  var cv=document.createElement("canvas"),K=3;cv.width=440*K;cv.height=200*K;
+  var x=cv.getContext("2d");x.scale(K,K);
+  x.save();x.translate(10,24);
+  x.strokeStyle="#1a1716";x.lineWidth=7;x.lineCap="round";x.beginPath();x.moveTo(30,18);x.lineTo(6,8);x.stroke();
+  x.fillStyle="#1a1716";rr(x,26,14,22,20,3);
+  x.fillStyle="#E10F0F";x.beginPath();x.moveTo(48,20);x.lineTo(96,6);x.lineTo(96,34);x.lineTo(48,28);x.closePath();x.fill();
+  rr(x,10,32,54,120,16);
+  x.fillStyle="#ffffff";x.fillRect(10,74,54,16);x.restore();
+  x.fillStyle="#1a1716";x.font='600 34px "Barlow Condensed","Arial Narrow",sans-serif';
+  if("letterSpacing" in x)x.letterSpacing="7px";x.fillText("EXTINTORES",122,52);if("letterSpacing" in x)x.letterSpacing="0px";
+  var F='900 150px "Saira Condensed","Arial Narrow",Impact,sans-serif';x.font=F;
+  var tw=x.measureText("JASA").width,sx=Math.min(1,300/tw);
+  function jasa(col){x.transform(1,0,Math.tan(-8*Math.PI/180),1,26,0);x.translate(96,176);x.scale(sx,1);x.font=F;x.fillStyle=col;x.fillText("JASA",0,0);}
+  x.save();jasa("#E10F0F");x.restore();
+  x.save();x.beginPath();x.rect(0,98,440,16);x.clip();jasa("#ffffff");x.restore();
+  LOGO=cv.toDataURL("image/png");
+  var im=document.getElementById("shLogo");if(im)im.src=LOGO;
+}
+function sheetHTML(q){
+  var lines=q.lines||[],sub=quoteTotal(q),n=Math.max(lines.length,10),rows="";
+  for(var i=0;i<n;i++){var l=lines[i];var has=l&&l.price!==""&&l.price!=null;
+    rows+="<tr><td>"+(l?i+1:"")+"</td><td>"+(l?esc(l.art):"")+"</td><td>"+(l?esc(l.qty):"")+"</td><td>"+(l?(has?money(l.price):"—"):"")+"</td><td>"+(l?(has?money((parseFloat(l.price)||0)*(+l.qty||0)):"—"):"")+"</td></tr>";}
+  var cond=[q.cond,q.vigencia?"Precios válidos "+q.vigencia:""].filter(Boolean).join("\n");
+  return '<div class="sheet" id="shSheet"><div class="sh-top"><div class="sh-logo"><img id="shLogo" alt="JASA Extintores" width="300" height="136" src="'+LOGO+'"></div>'+
+   '<div class="sh-co"><b>JASA EXTINTORES SA DE CV</b><span>MUTUALISTA 412 COL. BUENA VISTA SUR</span><span>PIEDRAS NEGRAS, COAHUILA</span><span>JEX180118NA0</span><span class="sh-tel">878 783 3216 · WhatsApp 878 117 4728</span></div></div>'+
+   '<div class="sh-row"><div class="sh-title">COTIZACIÓN</div><div class="sh-num"><div><span>NÚMERO:</span><b>'+esc(q.folio)+'</b></div><div><span>FECHA:</span><b>'+fmtDate(q.respondida||today())+'</b></div></div></div>'+
+   '<div class="sh-row"><dl class="sh-client"><dt>Cliente:</dt><dd>'+esc(q.cliente)+'</dd><dt>Dirigido A:</dt><dd>'+esc(q.dirigido)+'</dd><dt>Dirección:</dt><dd>'+esc(q.direccion)+'</dd><dt>Ciudad:</dt><dd>'+esc(q.ciudad)+'</dd><dt>RFC:</dt><dd>'+esc(q.rfc)+'</dd><dt>Tel.:</dt><dd>'+esc(q.tel)+'</dd></dl>'+
+   '<div class="sh-cond"><b>CONDICIONES</b><div>'+esc(cond)+'</div></div></div>'+
+   '<table class="sh-table"><colgroup><col style="width:9%"><col style="width:51%"><col style="width:10%"><col style="width:15%"><col style="width:15%"></colgroup><thead><tr><th>PARTIDAS</th><th>Artículo</th><th>Unidades</th><th>Precio Un.</th><th>Subtotal</th></tr></thead><tbody>'+rows+'</tbody></table>'+
+   '<div class="sh-foot"><div class="sh-foot-l"><b>TIEMPO DE ENTREGA: '+esc(q.entregaTxt?String(q.entregaTxt).toUpperCase():"POR CONFIRMAR")+'</b><span>Gracias por su preferencia. Para confirmar su pedido responda este mensaje o llame al 878 783 3216.</span></div>'+
+   '<div class="sh-tot"><div><span>SUB TOTAL</span><b>'+money(sub)+'</b></div><div><span>I.V.A. 8%</span><b>'+money(sub*IVA)+'</b></div><div class="sh-total"><span>TOTAL</span><b>'+money(sub*(1+IVA))+'</b></div></div></div></div>';
+}
+function fitSheet(){var w=document.getElementById("shWrap"),sc=document.getElementById("shScale"),sh=document.getElementById("shSheet");if(!w||!sc||!sh)return;var k=Math.min(1,(w.clientWidth-28)/816);sc.style.transform="scale("+k+")";w.style.height=Math.ceil(sh.offsetHeight*k+28)+"px";}
+window.addEventListener("resize",fitSheet);
+function loadScript(src){return new Promise(function(ok,no){var t=document.createElement("script");t.src=src;t.onload=ok;t.onerror=function(){no(new Error("load"));};document.head.appendChild(t);});}
+var libs=null;
+function getLibs(kind){libs=libs||loadScript("https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js");return kind==="pdf"?libs.then(function(){return window.jspdf?0:loadScript("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js");}):libs;}
+function saveBlob(name,blob){
+  if(dl)return dl.save({filename:name,data:blob});
+  var u=URL.createObjectURL(blob),a=document.createElement("a");a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(u);},4000);return Promise.resolve();
+}
+function exportSheet(kind,q){
+  var st=document.getElementById("shStatus");if(st)st.textContent="Preparando el archivo…";
+  var holder=document.createElement("div");holder.style.cssText="position:fixed;left:-10000px;top:0;width:816px;background:#fff";
+  holder.innerHTML=sheetHTML(q);document.body.appendChild(holder);
+  var name="Cotizacion-JASA-"+String(q.folio).replace(/[^A-Za-z0-9-]/g,"")+"."+kind;
+  getLibs(kind).then(function(){return window.html2canvas(holder.firstChild,{scale:2,backgroundColor:"#ffffff",logging:false});}).then(function(cv){
+    holder.remove();
+    if(kind==="png")return new Promise(function(ok){cv.toBlob(ok,"image/png");}).then(function(b){return saveBlob(name,b);});
+    var pdf=new window.jspdf.jsPDF({unit:"pt",format:"letter"}),W=612,H=792,r=Math.min(W/cv.width,H/cv.height),w=cv.width*r,h=cv.height*r;
+    pdf.addImage(cv.toDataURL("image/jpeg",0.92),"JPEG",(W-w)/2,0,w,h);
+    return saveBlob(name,pdf.output("blob"));
+  }).then(function(){if(st)st.textContent="Listo: "+name+". Adjúntalo en el chat de WhatsApp del cliente.";},function(e){
+    holder.remove();var c=e&&e.code;if(st)st.textContent=c==="declined"?"":c==="rate_limited"?"Espera un momento e inténtalo otra vez.":"No se pudo generar el archivo. Revisa tu conexión e inténtalo otra vez.";
+  });
+}
+function replyText(q){
+  var lines=q.lines||[],sub=quoteTotal(q);
+  var L=["*COTIZACIÓN · JASA EXTINTORES*","Número: "+q.folio,"Cliente: "+q.cliente,""];
+  lines.forEach(function(l,i){var has=l.price!==""&&l.price!=null;L.push((i+1)+". "+l.art+" — "+l.qty+" × "+(has?money(l.price)+" = "+money((parseFloat(l.price)||0)*(+l.qty||0)):"por definir"));});
+  L.push("","Sub total: "+money(sub),"I.V.A. 8%: "+money(sub*IVA),"*Total: "+money(sub*(1+IVA))+"*");
+  if(q.entregaTxt)L.push("Tiempo de entrega: "+q.entregaTxt);
+  if(q.vigencia)L.push("Precios válidos "+q.vigencia);
+  L.push("","Le comparto la cotización en PDF. Para confirmar su pedido responda este mensaje.","Gracias por su preferencia. JASA Extintores · 878 783 3216");
+  return L.join("\n");
+}
 
 /* ---------- vistas ---------- */
 var TITLES={panel:["Resumen","Panel"],quotes:["Bandeja","Cotizaciones"],clientes:["Cartera","Clientes"],proveedores:["Compras","Proveedores"],finanzas:["Contabilidad","Ingresos y egresos"],taller:["Taller JASA","Órdenes de taller"],inventario:["Taller JASA","Inventario"]};
@@ -331,19 +449,25 @@ function vQuotes(){
   var right="";
   if(q){
     var lines=q.lines||[],sub=quoteTotal(q),ro=S.readOnly||!db;
-    var reply=["*COTIZACIÓN · JASA EXTINTORES*","Número: "+q.folio,"Cliente: "+q.cliente,""].concat(lines.map(function(l,i){return (i+1)+". "+l.art+" — "+l.qty+" × "+(l.price!==""&&l.price!=null?money(l.price):"por definir");})).concat(["","Sub total: "+money(sub),"I.V.A. 8%: "+money(sub*IVA),"*Total: "+money(sub*(1+IVA))+"*","","Gracias por su preferencia. JASA Extintores · 878 783 3216"]).join("\n");
+    var reply=replyText(q);
     var missing=lines.some(function(l){return l.price===""||l.price==null;});
     right='<div class="box"><div class="box-h"><div style="display:flex;flex-direction:column;gap:2px;min-width:0"><span class="mono" style="color:var(--muted)">'+esc(q.folio)+'</span><h2 style="overflow-wrap:anywhere">'+esc(q.cliente)+'</h2></div><div style="display:flex;gap:8px;align-items:center"><span class="pill" style="color:'+(stC[q.status]||"var(--muted)")+'">'+esc(q.status)+'</span>'+(ro?"":'<button type="button" class="btn ghost sm" data-act="edit:quotes" data-id="'+q.id+'">Editar datos</button>')+'</div></div>'+
-      '<div class="q-meta">'+[["Dirigido a",q.dirigido],["Teléfono",q.tel],["Ciudad",q.ciudad],["Fecha",fmtDate(q.fecha)],["Condiciones",q.cond]].map(function(m){return '<div><span class="eyebrow">'+m[0]+'</span><span>'+esc(m[1]||"—")+'</span></div>';}).join("")+'</div>'+
+      '<div class="q-meta">'+[["Dirigido a",q.dirigido],["Teléfono",q.tel],["Ciudad",q.ciudad],["Fecha",fmtDate(q.fecha)],["Condiciones",q.cond],["Tiempo de entrega",q.entregaTxt],["Vigencia",q.vigencia]].map(function(m){return '<div><span class="eyebrow">'+m[0]+'</span><span>'+esc(m[1]||"—")+'</span></div>';}).join("")+'</div>'+
       '<div class="tbl-wrap"><table><thead><tr><th>#</th><th>Artículo</th><th class="num">Cant.</th><th class="num">Precio unit.</th><th class="num">Importe</th><th></th></tr></thead><tbody>'+
       (lines.length?lines.map(function(l,i){return '<tr><td class="mono">'+(i+1)+'</td><td style="min-width:200px"><input class="inp" aria-label="Artículo '+(i+1)+'" data-line="'+i+'" data-k="art" value="'+esc(l.art)+'"'+(ro?" disabled":"")+'></td><td class="num"><input class="inp" style="width:70px;text-align:right" type="number" min="0" step="1" aria-label="Cantidad '+(i+1)+'" data-line="'+i+'" data-k="qty" value="'+esc(l.qty)+'"'+(ro?" disabled":"")+'></td><td class="num"><input class="inp" style="width:110px;text-align:right" type="number" min="0" step="any" inputmode="decimal" placeholder="$" aria-label="Precio '+(i+1)+'" data-line="'+i+'" data-k="price" value="'+esc(l.price)+'"'+(ro?" disabled":"")+'></td><td class="num">'+(l.price!==""&&l.price!=null?money((parseFloat(l.price)||0)*(+l.qty||0)):"—")+'</td><td>'+(ro?"":'<button type="button" class="link" style="color:var(--muted)" data-act="delLine" data-i="'+i+'" aria-label="Quitar partida '+(i+1)+'">Quitar</button>')+'</td></tr>';}).join(""):'<tr><td colspan="6" style="color:var(--muted)">Sin partidas. Agrega la primera.</td></tr>')+
       '</tbody></table></div>'+(ro?"":'<div style="padding:10px 18px"><button type="button" class="link" data-act="addLine">+ Agregar partida</button></div>')+
-      '<div class="totals"><span class="s" style="color:var(--muted)">Sub total '+money(sub)+' · I.V.A. 8% '+money(sub*IVA)+'</span><span class="big">'+money(sub*(1+IVA))+'</span>'+(missing?'<span class="s" style="color:var(--amber);font-size:13px">Faltan precios en algunas partidas</span>':"")+'</div>'+
+      (ro?"":'<div style="padding:0 18px 10px;display:flex;gap:14px;flex-wrap:wrap"><button type="button" class="link" data-act="fillPrices">Llenar con mi lista de precios</button><button type="button" class="link" data-act="savePrices">Guardar estos precios en mi lista</button></div>')+'<div class="totals"><span class="s" style="color:var(--muted)">Sub total '+money(sub)+' · I.V.A. 8% '+money(sub*IVA)+'</span><span class="big">'+money(sub*(1+IVA))+'</span>'+(missing?'<span class="s" style="color:var(--amber);font-size:13px">Faltan precios en algunas partidas</span>':"")+'</div>'+
       '<div class="actions">'+(q.tel?'<a class="btn wa" target="_blank" rel="noopener" href="'+esc(waLink(q.tel,reply))+'">Responder por WhatsApp</a>':'<span class="s" style="color:var(--muted);font-size:13px;align-self:center">Agrega un teléfono para responder por WhatsApp.</span>')+
       (ro?"":'<button type="button" class="btn ghost" data-act="qStatus" data-v="Respondida">Marcar respondida</button><button type="button" class="btn ghost" data-act="qAccept"'+(q.otFolio?" disabled":"")+'>'+(q.otFolio?"Aceptada · "+esc(q.otFolio):"Aceptada → abrir orden")+'</button><button type="button" class="btn ghost" data-act="qStatus" data-v="Rechazada">Rechazada</button><button type="button" class="btn ghost" data-act="askDeleteQuote">Eliminar</button>')+
-      '</div><div id="qConfirm" style="padding:0 18px 14px"></div></div>';
+      '</div><div id="qConfirm" style="padding:0 18px 14px"></div></div>'+
+      '<div class="box" style="margin-top:16px"><div class="box-h"><h2>Hoja de cotización con precios</h2><div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn sm" data-act="sheetPdf"'+(missing||!lines.length?" disabled":"")+'>Descargar PDF</button><button type="button" class="btn ghost sm" data-act="sheetPng"'+(missing||!lines.length?" disabled":"")+'>Descargar imagen</button></div></div>'+
+      '<div style="padding:12px 18px;display:flex;flex-direction:column;gap:4px"><span class="hint">'+(missing||!lines.length?"Pon el precio de todas las partidas para descargar la hoja.":"1. Descarga el PDF.  2. Toca “Responder por WhatsApp”.  3. Adjunta el PDF en ese chat.")+'</span><span class="hint" id="shStatus" aria-live="polite"></span></div>'+
+      '<div class="sheet-wrap" id="shWrap"><div class="sheet-scale" id="shScale">'+sheetHTML(q)+'</div></div></div>';
   }
-  return paste+'<div class="q-layout">'+left+'<div style="min-width:0">'+right+'</div></div>';
+  var pl=S.data.precios.filter(match).sort(function(a,b){return String(a.art).localeCompare(String(b.art),"es");});
+  var plist='<div class="box"><div class="box-h"><h2>Mi lista de precios</h2><span class="mono" style="color:var(--muted)">'+S.data.precios.length+'</span></div>'+
+    (pl.length?'<div class="tbl-wrap"><table><thead><tr><th>ARTÍCULO</th><th class="num">PRECIO UNIT.</th><th>ACTUALIZADO</th><th></th></tr></thead><tbody>'+pl.map(function(x){return '<tr><td>'+esc(x.art)+'</td><td class="num">'+money(x.price)+'</td><td class="mono" style="color:var(--muted)">'+fmtDate(x.actualizado)+'</td><td class="num">'+(S.readOnly||!db?"":'<button type="button" class="link" style="color:var(--muted)" data-act="delPrice" data-id="'+x.id+'">Quitar</button>')+'</td></tr>';}).join("")+'</tbody></table></div>':'<div class="empty"><span>Cuando pongas precios en una cotización, toca “Guardar estos precios en mi lista”. Las próximas solicitudes con los mismos artículos se llenan solas.</span></div>')+'</div>';
+  return paste+'<div class="q-layout">'+left+'<div style="min-width:0">'+right+'</div></div>'+plist;
 }
 
 function vDir(kind){
@@ -414,6 +538,7 @@ function render(){
   var view=document.getElementById("view"),ae=document.activeElement,keep=ae&&view.contains(ae)&&ae.id?ae.id:null;
   view.innerHTML=html;
   if(keep){var el=document.getElementById(keep);if(el)el.focus();}
+  fitSheet();
   var sn=document.getElementById("syncNote");
   sn.textContent={ok:"Guardado en claude.ai",loading:"Conectando…",slow:"Sin respuesta de la base",error:"Sin conexión",revoked:"Sin acceso",nodb:"Sin base de datos"}[S.dbState]||"";
 }
@@ -436,13 +561,14 @@ document.addEventListener("click",function(e){
     var p=parseRequest(S.paste);
     if(!p.lines.length){S.pasteMsg="No encontré partidas. Pega el mensaje completo, desde *SOLICITUD DE COTIZACIÓN*.";render();return;}
     if(S.data.quotes.some(function(x){return x.folio===p.folio;})){S.pasteMsg="La solicitud "+p.folio+" ya está en la bandeja.";render();return;}
-    write("quotes",null,p).then(function(nid){S.sel=nid;S.paste="";S.pasteMsg="Solicitud "+p.folio+" agregada.";render();},function(){});
+    var pf=fillFromList(p.lines);p.lines=pf.lines;
+    write("quotes",null,p).then(function(nid){S.sel=nid;S.paste="";S.pasteMsg="Solicitud "+p.folio+" agregada."+(pf.n?" "+pf.n+(pf.n===1?" precio tomado":" precios tomados")+" de tu lista.":"");render();},function(){});
     return;
   }
   var q=S.sel&&byId("quotes",S.sel);
   if(a==="addLine"&&q){setQuoteLines(q,(q.lines||[]).concat([{art:"",qty:1,price:""}])).then(function(){setTimeout(function(){var ins=document.querySelectorAll('[data-k="art"]');if(ins.length)ins[ins.length-1].focus();},50);});return;}
   if(a==="delLine"&&q){var L=(q.lines||[]).slice();L.splice(+b.getAttribute("data-i"),1);setQuoteLines(q,L);return;}
-  if(a==="qStatus"&&q){patch("quotes",q.id,{status:v}).then(function(){toast("Marcada como "+v.toLowerCase());});return;}
+  if(a==="qStatus"&&q){patch("quotes",q.id,v==="Respondida"?{status:v,respondida:today()}:{status:v}).then(function(){toast("Marcada como "+v.toLowerCase());});return;}
   if(a==="qAccept"&&q&&!q.otFolio){
     var folio=nextOT();
     write("ordenes",null,{folio:folio,cliente:q.cliente,detalle:(q.lines||[]).map(function(l){return l.qty+" × "+String(l.art).toLowerCase();}).join(" · ").slice(0,140),entrega:"",etapa:0,creado:Date.now(),cotizacion:q.folio})
@@ -453,6 +579,10 @@ document.addEventListener("click",function(e){
   if(a==="askDeleteQuote"){document.getElementById("qConfirm").innerHTML='<div class="confirm">¿Eliminar la cotización '+esc(q.folio)+'? <button type="button" class="btn sm" data-act="doDeleteQuote">Sí, eliminar</button><button type="button" class="btn ghost sm" data-act="noDeleteQuote">Cancelar</button></div>';return;}
   if(a==="noDeleteQuote"){document.getElementById("qConfirm").innerHTML="";return;}
   if(a==="doDeleteQuote"&&q){remove("quotes",q.id).then(function(){S.sel=null;toast("Cotización eliminada");render();});return;}
+  if(a==="fillPrices"&&q){var f=fillFromList(q.lines||[]);if(!f.n){toast(S.data.precios.length?"No encontré precios guardados para estas partidas.":"Tu lista de precios está vacía. Guarda precios desde una cotización.");return;}setQuoteLines(q,f.lines).then(function(){toast(f.n+(f.n===1?" precio llenado":" precios llenados")+" de tu lista");});return;}
+  if(a==="savePrices"&&q){savePrices(q);return;}
+  if((a==="sheetPdf"||a==="sheetPng")&&q){exportSheet(a==="sheetPdf"?"pdf":"png",q);return;}
+  if(a==="delPrice"){remove("precios",id).then(function(){toast("Precio quitado de tu lista");});return;}
   if(a==="finTab"){S.finTab=v;render();return;}
   if(a==="otMove"){var o=byId("ordenes",id);if(!o)return;var n=Math.max(0,Math.min(3,(o.etapa||0)+(+v)));var up={etapa:n};if(n===3)up.entregado=today();patch("ordenes",id,up);return;}
   if(a==="stock"){var it=byId("inventario",id);if(!it)return;patch("inventario",id,{stock:Math.max(0,(+it.stock||0)+(+v))});return;}
@@ -484,6 +614,8 @@ function backup(){
 }
 
 /* ---------- arranque ---------- */
+drawLogo();
+if(document.fonts){document.fonts.load('900 150px "Saira Condensed"').then(drawLogo,function(){});document.fonts.load('600 34px "Barlow Condensed"').then(drawLogo,function(){});if(document.fonts.ready)document.fonts.ready.then(function(){drawLogo();fitSheet();});}
 render();
 if(window.claude&&window.claude.use){
   window.claude.use("db").then(function(d){
