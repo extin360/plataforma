@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Portal de clientes · JASA Extintores</title>
+<meta name="description" content="Consulta tus extintores y descarga tus reportes de inspección de JASA Extintores.">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#0d0d0d">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@600;800;900&family=Barlow+Condensed:wght@600&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Portal: una sola columna de lectura; arriba quién eres y cuándo te toca recarga, abajo tus equipos y tus reportes */
+:root{
+  --bg:#0d0d0d; --panel:#171514; --panel-2:#211d1c; --line:#2f2a28;
+  --ink:#f3eeea; --muted:#a8a09b; --faint:#6f6864;
+  --red:#e10f0f; --red-2:#ff3b30; --amber:#f2b01e; --green:#5fcf6a; --rose:#ff8a7d;
+  --display:'Saira Condensed','Arial Narrow',Impact,sans-serif;
+  --body:'Barlow',-apple-system,'Segoe UI',Roboto,sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.5 var(--body);padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+[hidden]{display:none!important}
+a{color:inherit}
+button,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+.wrap{max-width:920px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header{border-bottom:1px solid var(--line)}
+header .wrap{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:14px}
+.brand{display:flex;align-items:baseline;gap:10px;text-decoration:none}
+.brand b{font-family:var(--display);font-weight:900;font-size:32px;line-height:.9;color:var(--red);font-style:italic}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+main .wrap{padding-block:28px 64px;display:flex;flex-direction:column;gap:20px}
+h1,h2{margin:0;font-family:var(--display);text-transform:uppercase;line-height:.95;text-wrap:balance}
+h1{font-size:clamp(34px,7vw,52px);font-weight:900}
+h2{font-size:22px;font-weight:800}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;background:var(--red);border:0;color:#fff;border-radius:3px;padding:12px 18px;cursor:pointer;font-family:var(--display);font-weight:800;text-transform:uppercase;font-size:17px;letter-spacing:.03em;text-decoration:none;white-space:nowrap}
+.btn:hover{background:var(--red-2)}
+.btn.ghost{background:transparent;border:1px solid var(--line);color:var(--ink)}
+.btn.ghost:hover{background:var(--panel-2)}
+.btn.wa{background:#1f9d55}
+.btn.sm{padding:7px 12px;font-size:15px}
+.btn[disabled]{opacity:.5;cursor:wait}
+.box{background:var(--panel);border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.box-h{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:14px 18px;border-bottom:1px solid var(--line)}
+.login{max-width:440px;display:flex;flex-direction:column;gap:14px;padding:24px}
+.login p{margin:0;color:var(--muted)}
+.code{font-family:var(--mono);font-size:24px;letter-spacing:.12em;text-transform:uppercase;background:var(--bg);border:1px solid var(--line);border-radius:3px;padding:12px 14px;width:100%;text-align:center}
+.code:focus{border-color:var(--muted)}
+.check{display:flex;gap:8px;align-items:center;font-size:14px;color:var(--muted)}
+.check input{width:18px;height:18px;accent-color:var(--red)}
+.err{color:var(--rose);font-size:14px;min-height:1.3em}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-top:3px solid var(--k,var(--line));border-radius:6px;padding:14px 16px;display:flex;flex-direction:column;gap:4px}
+.kpi .v{font-family:var(--display);font-weight:900;font-size:34px;line-height:.95;font-variant-numeric:tabular-nums}
+.kpi .n{font-size:13px;color:var(--muted)}
+.tbl{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th{font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--muted);text-align:left;font-weight:500;padding:10px 16px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:10px 16px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr:last-child td{border-bottom:0}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+.ord{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 12px;align-items:center;padding:14px 18px;border-bottom:1px solid var(--line)}
+.ord:last-child{border-bottom:0}
+.ord .s{font-size:14px;color:var(--muted)}
+.pill{display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;border:1px solid currentColor;border-radius:999px;padding:2px 8px;white-space:nowrap;margin-left:8px;vertical-align:middle}
+.empty{padding:20px 18px;color:var(--muted)}
+.foot{color:var(--faint);font-size:13px;display:flex;flex-wrap:wrap;gap:6px 16px;justify-content:space-between}
+@media (max-width:540px){.ord{grid-template-columns:minmax(0,1fr)}.ord .btn{justify-self:start}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <a class="brand" href="https://jasaextintores.com/"><b>JASA</b><span class="eyebrow">Portal de clientes</span></a>
+  <button type="button" class="btn ghost sm" id="logout" hidden>Salir</button>
+</div></header>
+
+<main><div class="wrap" id="app">
+  <section class="box login" id="login">
+    <h1>Mis extintores</h1>
+    <p>Consulta tus extintores, la fecha de tu próxima recarga y descarga tus reportes de inspección.</p>
+    <form id="form" autocomplete="off">
+      <label class="eyebrow" for="code">Código de acceso</label>
+      <input class="code" id="code" inputmode="text" autocapitalize="characters" autocorrect="off" spellcheck="false" placeholder="XXXX-XXXX-XX" maxlength="12" required>
+      <label class="check" style="margin-top:10px"><input type="checkbox" id="remember" checked> Recordarme en este dispositivo</label>
+      <div class="err" id="err" role="alert"></div>
+      <button class="btn" type="submit" id="go" style="width:100%">Entrar</button>
+    </form>
+    <p style="font-size:14px">¿No tienes tu código? Pídelo por WhatsApp al <a href="https://wa.me/528781174728?text=Hola%2C%20quiero%20mi%20c%C3%B3digo%20del%20portal%20de%20clientes" target="_blank" rel="noopener">878 117 4728</a>.</p>
+  </section>
+  <div id="view" hidden></div>
+  <div class="foot"><span>JASA Extintores SA de CV · Mutualista 412, Piedras Negras, Coahuila</span><span>Tel. 878 783 3216</span></div>
+</div></main>
+
+<script>
+(function(){
+"use strict";
+var SUPA_URL="https://psggoagcdokwrkykgufr.supabase.co",SUPA_KEY="sb_publishable_jwx2IRxOqdCW-SjmKcYW2A_lrJTFJa3";
+var KEY="jasaPortalCode",DATA=null,CODE="",LOGO="";
+var MESES=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+var STAGES=[["Recibido","#a8a09b"],["En servicio","#f2b01e"],["Listo para entregar","#5fcf6a"],["Entregado","#6f6864"]];
+function $(id){return document.getElementById(id);}
+function esc(v){return String(v==null?"":v).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+function pad(n){return String(n).padStart(2,"0");}
+function today(){var d=new Date();return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());}
+function addM(k,n){var p=k.split("-").map(Number),d=new Date(p[0],p[1]-1+n,1);return d.getFullYear()+"-"+pad(d.getMonth()+1);}
+function fd(s){if(!s)return "—";var p=s.split("-");return p.length===3?p[2]+"/"+p[1]+"/"+p[0]:s;}
+function monthName(k){if(!k)return "Sin fecha";var p=k.split("-");return MESES[+p[1]-1]+" "+p[0];}
+function tl(t){return t==="CO2"?"CO₂":t==="AGUA"?"Agua":t==="TIPO K"?"Tipo K":t==="TIPO D"?"Tipo D":t==="AGENTE LIMPIO"?"Agente limpio":(t||"");}
+function norm(v){var c=String(v||"").toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,10);return c.length>8?c.slice(0,4)+"-"+c.slice(4,8)+"-"+c.slice(8):c.length>4?c.slice(0,4)+"-"+c.slice(4):c;}
+function store(k,v){try{if(v)localStorage.setItem(k,v);else localStorage.removeItem(k);}catch(e){}}
+function read(k){try{return localStorage.getItem(k)||"";}catch(e){return "";}}
+
+/*@reporte*/
+/* Reporte de inspección y servicio de JASA Extintores.
+   Se comparte entre el panel (admin) y el portal de clientes; tools/build.py lo inserta en ambos. */
+function jasaReportHTML(o, cli, logo) {
+  function e(v) { return String(v == null ? "" : v).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+  function p2(n) { return String(n).padStart(2, "0"); }
+  function fd(s) { if (!s) return ""; var p = String(s).split("-"); return p.length === 3 ? p[2] + "/" + p[1] + "/" + p[0] : s; }
+  function fm(s) { if (!s) return ""; var p = String(s).split("-"); return p.length >= 2 ? p[1] + "/" + p[0] : s; }
+  function addM(k, n) { var p = k.split("-").map(Number), d = new Date(p[0], p[1] - 1 + n, 1); return d.getFullYear() + "-" + p2(d.getMonth() + 1); }
+  function tl(t) { return t === "CO2" ? "CO₂" : t === "AGUA" ? "Agua" : t === "TIPO K" ? "Tipo K" : t === "TIPO D" ? "Tipo D" : t === "AGENTE LIMPIO" ? "Agente limpio" : (t || ""); }
+  cli = cli || {};
+  var old = {}, rows = [];
+  (o.unidades || []).forEach(function (u) { old[u.key] = u; });
+  (o.equiposDet || []).forEach(function (r, i) {
+    for (var k = 0; k < (+r.qty || 0); k++) {
+      var u = old[i + "-" + k] || {};
+      rows.push({ eq: tl(r.tipo) + " " + String(r.cap || "").toLowerCase(), svc: r.servicio || "Recarga", serie: u.serie || "", fab: u.fab || "", ph: u.ph || "", et: u.etiqueta || "", ok: !!u.listo });
+    }
+  });
+  var entregada = (+o.etapa || 0) === 3;
+  var fecha = o.entregado || o.recibido || "";
+  var prox = entregada && o.entregado ? addM(o.entregado.slice(0, 7), 12) : (cli.proximaRecarga || "");
+  var n = Math.max(rows.length, 8), body = "";
+  for (var i = 0; i < n; i++) {
+    var r = rows[i];
+    body += "<tr><td>" + (r ? i + 1 : "") + "</td><td>" + (r ? e(r.eq) : "") + "</td><td>" + (r ? e(r.svc) : "") + "</td><td>" + (r ? e(r.serie) : "") + "</td><td>" + (r ? e(fm(r.fab)) : "") + "</td><td>" + (r ? e(fm(r.ph)) : "") + "</td><td>" + (r ? e(r.et) : "") + "</td><td>" + (r ? (r.ok || entregada ? "Conforme" : "En proceso") : "") + "</td></tr>";
+  }
+  return '<div class="sheet"><div class="sh-top"><div class="sh-logo"><img alt="JASA Extintores" width="300" height="136" src="' + (logo || "") + '"></div>' +
+    '<div class="sh-co"><b>JASA EXTINTORES SA DE CV</b><span>MUTUALISTA 412 COL. BUENA VISTA SUR</span><span>PIEDRAS NEGRAS, COAHUILA</span><span>JEX180118NA0</span><span class="sh-tel">878 783 3216 · WhatsApp 878 117 4728</span></div></div>' +
+    '<div class="sh-row"><div class="sh-title" style="font-size:24px">REPORTE DE INSPECCIÓN Y SERVICIO</div><div class="sh-num"><div><span>ORDEN:</span><b>' + e(o.folio) + '</b></div><div><span>FECHA:</span><b>' + e(fd(fecha)) + '</b></div><div><span>PRÓX. RECARGA:</span><b>' + e(fm(prox) || "—") + '</b></div></div></div>' +
+    '<div class="sh-row"><dl class="sh-client"><dt>Cliente:</dt><dd>' + e(cli.nombre || o.cliente) + '</dd><dt>Ciudad:</dt><dd>' + e(cli.ciudad || "") + '</dd><dt>Recibido:</dt><dd>' + e(fd(o.recibido)) + '</dd><dt>Entregado:</dt><dd>' + e(entregada ? fd(o.entregado) : "EN PROCESO") + '</dd><dt>Extintores:</dt><dd>' + rows.length + '</dd></dl>' +
+    '<div class="sh-cond"><b>OBSERVACIONES</b><div>' + e(o.notas || "") + '</div></div></div>' +
+    '<table class="sh-table"><colgroup><col style="width:5%"><col style="width:17%"><col style="width:15%"><col style="width:14%"><col style="width:11%"><col style="width:12%"><col style="width:14%"><col style="width:12%"></colgroup>' +
+    '<thead><tr><th>#</th><th>Equipo</th><th>Servicio</th><th>No. de serie</th><th>Fabricación</th><th>Próx. P. H.</th><th>Etiqueta NOM-154</th><th>Resultado</th></tr></thead><tbody>' + body + '</tbody></table>' +
+    '<div class="sh-legal">Servicio de mantenimiento y recarga conforme a la NOM-154-SCFI-2005 y a la NOM-002-STPS-2010. P. H. = prueba hidrostática. Conserve este reporte para sus inspecciones de Protección Civil.</div>' +
+    '<div class="sh-sign" style="grid-template-columns:repeat(2,1fr)"><div><span>TÉCNICO RESPONSABLE (JASA)</span><small>' + e(o.entrego || o.recibio || "") + '</small></div><div><span>RECIBE DE CONFORMIDAD (CLIENTE)</span><small>' + e(o.recibioCliente || "") + '</small></div></div></div>';
+}
+var JASA_SHEET_CSS = ".sheet{width:816px;background:#ffffff;color:#111111;padding:36px 40px 40px;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.3;box-sizing:border-box}" +
+  ".sheet *{box-sizing:border-box}" +
+  ".sh-top{display:flex;justify-content:space-between;align-items:center;border:1px solid #444;border-bottom:0;padding:10px 14px}" +
+  ".sh-logo img{display:block;width:210px;height:auto}" +
+  ".sh-co{display:flex;flex-direction:column;align-items:flex-end;text-align:right;gap:2px;font-weight:700;font-size:11.5px}" +
+  ".sh-co b{color:#c00000;font-size:16px}.sh-co .sh-tel{color:#777;font-weight:400}" +
+  ".sh-row{display:grid;grid-template-columns:1fr 210px;border:1px solid #444;border-bottom:0}" +
+  ".sh-title{text-align:center;color:#c00000;font-weight:700;font-size:30px;letter-spacing:.02em;padding:8px;border-right:1px solid #444;display:flex;align-items:center;justify-content:center}" +
+  ".sh-num{display:flex;flex-direction:column;justify-content:center;padding:6px 10px;color:#c00000;font-weight:700;gap:2px}" +
+  ".sh-num div{display:flex;justify-content:space-between;gap:8px}" +
+  ".sh-client{margin:0;padding:10px 12px;display:grid;grid-template-columns:72px 1fr;gap:5px 8px;align-items:baseline;border-right:1px solid #444;min-height:110px}" +
+  ".sh-client dt{color:#999;font-size:10.5px;text-align:right}" +
+  ".sh-client dd{margin:0;font-size:13px;text-transform:uppercase;min-height:16px;border-bottom:1px solid #eee;overflow-wrap:anywhere}" +
+  ".sh-cond{padding:8px 10px;font-size:11px;display:flex;flex-direction:column;gap:6px}" +
+  ".sh-cond div{text-transform:uppercase;overflow-wrap:anywhere;white-space:pre-line}" +
+  ".sh-table{width:100%;border-collapse:collapse;table-layout:fixed;border:1px solid #444}" +
+  ".sh-table th{font-family:Arial,Helvetica,sans-serif;background:#fff;color:#c00000;font-weight:400;font-size:10.5px;border:1px solid #aaa;border-top:2px solid #444;border-bottom:2px solid #444;padding:4px 5px;text-align:center;letter-spacing:0;text-transform:none}" +
+  ".sh-table td{color:#111;border:1px solid #bbb;padding:5px 5px;height:24px;font-size:11px;vertical-align:middle;overflow-wrap:anywhere}" +
+  ".sh-legal{border:1px solid #444;border-top:0;padding:8px 12px;font-size:10px;color:#555}" +
+  ".sh-sign{display:grid;grid-template-columns:repeat(2,1fr);border:1px solid #444;border-top:0}" +
+  ".sh-sign div{padding:46px 10px 8px;text-align:center;font-size:10.5px;border-right:1px solid #444}" +
+  ".sh-sign div:last-child{border-right:0}" +
+  ".sh-sign span{display:block;border-top:1px solid #444;padding-top:4px;font-weight:700}" +
+  ".sh-sign small{display:block;color:#666;font-size:10px;margin-top:2px;min-height:12px}";
+/*@/reporte*/
+
+(function(){var st=document.createElement("style");st.textContent=JASA_SHEET_CSS;document.head.appendChild(st);})();
+
+function rr(x,a,b,w,h,r){x.beginPath();x.moveTo(a+r,b);x.arcTo(a+w,b,a+w,b+h,r);x.arcTo(a+w,b+h,a,b+h,r);x.arcTo(a,b+h,a,b,r);x.arcTo(a,b,a+w,b,r);x.closePath();x.fill();}
+function drawLogo(){
+  var cv=document.createElement("canvas"),K=3;cv.width=440*K;cv.height=200*K;var x=cv.getContext("2d");x.scale(K,K);
+  x.save();x.translate(10,24);x.strokeStyle="#1a1716";x.lineWidth=7;x.lineCap="round";x.beginPath();x.moveTo(30,18);x.lineTo(6,8);x.stroke();
+  x.fillStyle="#1a1716";rr(x,26,14,22,20,3);x.fillStyle="#E10F0F";x.beginPath();x.moveTo(48,20);x.lineTo(96,6);x.lineTo(96,34);x.lineTo(48,28);x.closePath();x.fill();
+  rr(x,10,32,54,120,16);x.fillStyle="#ffffff";x.fillRect(10,74,54,16);x.restore();
+  x.fillStyle="#1a1716";x.font='600 34px "Barlow Condensed","Arial Narrow",sans-serif';if("letterSpacing" in x)x.letterSpacing="7px";x.fillText("EXTINTORES",122,52);if("letterSpacing" in x)x.letterSpacing="0px";
+  var F='900 150px "Saira Condensed","Arial Narrow",Impact,sans-serif';x.font=F;var sx=Math.min(1,300/x.measureText("JASA").width);
+  function j(c){x.transform(1,0,Math.tan(-8*Math.PI/180),1,26,0);x.translate(96,176);x.scale(sx,1);x.font=F;x.fillStyle=c;x.fillText("JASA",0,0);}
+  x.save();j("#E10F0F");x.restore();x.save();x.beginPath();x.rect(0,98,440,16);x.clip();j("#ffffff");x.restore();
+  LOGO=cv.toDataURL("image/png");
+}
+drawLogo();if(document.fonts&&document.fonts.ready)document.fonts.ready.then(drawLogo);
+
+function ask(code){
+  return fetch(SUPA_URL+"/rest/v1/rpc/portal",{method:"POST",headers:{"apikey":SUPA_KEY,"Content-Type":"application/json"},body:JSON.stringify({codigo:code})})
+    .then(function(r){if(!r.ok)throw new Error("http "+r.status);return r.json();});
+}
+function enter(code,silent){
+  var go=$("go");go.disabled=true;$("err").textContent=silent?"":"Buscando…";
+  ask(code).then(function(d){
+    go.disabled=false;
+    if(!d||!d.cliente){$("err").textContent="Ese código no existe o ya no está activo. Revísalo o pide uno nuevo por WhatsApp.";store(KEY,"");if(silent)$("err").textContent="";return;}
+    DATA=d;CODE=code;$("err").textContent="";
+    if($("remember").checked)store(KEY,code);
+    render();
+  }).catch(function(){go.disabled=false;$("err").textContent="No pudimos conectarnos. Revisa tu internet e inténtalo otra vez.";});
+}
+function render(){
+  var c=DATA.cliente||{},ords=DATA.ordenes||[],eq=(c.equiposDet||[]).filter(function(e){return (+e.qty||0)>0;});
+  var tot=eq.reduce(function(a,e){return a+(+e.qty||0);},0),cur=today().slice(0,7),pr=c.proximaRecarga||"";
+  var open=ords.filter(function(o){return (+o.etapa||0)<3;}).length;
+  var prCol=!pr?"var(--muted)":pr<cur?"var(--rose)":pr<=addM(cur,2)?"var(--amber)":"var(--green)";
+  var prNote=!pr?"Te avisamos cuando se registre":pr<cur?"Ya venció: agenda tu recarga":pr<=addM(cur,2)?"Se acerca: agenda tu recarga":"Al día";
+  var h='<div><span class="eyebrow">Cliente</span><h1>'+esc(c.nombre)+'</h1></div>'+
+    '<div class="kpis"><div class="kpi" style="--k:var(--red)"><span class="eyebrow">Extintores registrados</span><span class="v">'+tot+'</span><span class="n">'+(eq.length?eq.length+(eq.length===1?" tipo de equipo":" tipos de equipo"):"Sin equipos registrados")+'</span></div>'+
+    '<div class="kpi" style="--k:'+prCol+'"><span class="eyebrow">Próxima recarga</span><span class="v" style="font-size:28px;color:'+prCol+'">'+esc(monthName(pr))+'</span><span class="n">'+prNote+'</span></div>'+
+    '<div class="kpi" style="--k:var(--amber)"><span class="eyebrow">En taller ahora</span><span class="v">'+open+'</span><span class="n">'+(open===1?"orden en servicio":"órdenes en servicio")+'</span></div></div>'+
+    '<div><a class="btn wa" target="_blank" rel="noopener" href="https://wa.me/528781174728?text='+encodeURIComponent("Hola, soy de "+(c.nombre||"")+" y quiero agendar la recarga de mis extintores.")+'">Agendar recarga por WhatsApp</a></div>';
+  h+='<div class="box"><div class="box-h"><h2>Tus extintores</h2></div>'+(eq.length?'<div class="tbl"><table><thead><tr><th>TIPO</th><th>CAPACIDAD</th><th class="num">CANTIDAD</th></tr></thead><tbody>'+eq.map(function(e){return '<tr><td>'+esc(tl(e.tipo))+'</td><td>'+esc(String(e.cap||"").toLowerCase())+'</td><td class="num">'+esc(e.qty)+'</td></tr>';}).join("")+'</tbody></table></div>':'<div class="empty">Aún no tenemos tus equipos registrados.</div>')+'</div>';
+  h+='<div class="box"><div class="box-h"><h2>Órdenes y reportes</h2><span class="eyebrow">'+ords.length+'</span></div>'+(ords.length?ords.map(function(o,i){var st=STAGES[+o.etapa||0]||STAGES[0];var n=(o.equiposDet||[]).reduce(function(a,e){return a+(+e.qty||0);},0);
+      return '<div class="ord"><div><b style="font-weight:600">Orden '+esc(o.folio)+'</b><span class="pill" style="color:'+st[1]+'">'+st[0]+'</span><div class="s">Recibida '+fd(o.recibido)+((+o.etapa||0)===3?" · Entregada "+fd(o.entregado):(o.entrega?" · Entrega estimada "+fd(o.entrega):""))+' · '+n+(n===1?" extintor":" extintores")+'</div></div>'+
+        '<button type="button" class="btn sm'+((+o.etapa||0)===3?"":" ghost")+'" data-i="'+i+'">Reporte PDF</button></div>';}).join(""):'<div class="empty">Todavía no hay órdenes registradas.</div>')+'</div>'+
+    '<p class="err" id="pdfMsg" role="status" style="color:var(--muted)"></p>';
+  $("view").innerHTML=h;$("view").hidden=false;$("login").hidden=true;$("logout").hidden=false;window.scrollTo(0,0);
+}
+function loadScript(src){return new Promise(function(ok,no){var t=document.createElement("script");t.src=src;t.onload=ok;t.onerror=no;document.head.appendChild(t);});}
+var libs=null;
+function pdf(o,btn){
+  var msg=$("pdfMsg");btn.disabled=true;msg.textContent="Preparando tu reporte…";
+  libs=libs||loadScript("https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js").then(function(){return loadScript("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js");});
+  var holder=document.createElement("div");holder.style.cssText="position:fixed;left:-10000px;top:0;width:816px;background:#fff";
+  holder.innerHTML=jasaReportHTML(o,DATA.cliente,LOGO);document.body.appendChild(holder);
+  libs.then(function(){return window.html2canvas(holder.firstChild,{scale:2,backgroundColor:"#ffffff",logging:false});}).then(function(cv){
+    holder.remove();
+    var doc=new window.jspdf.jsPDF({unit:"pt",format:"letter"}),W=612,H=792,r=Math.min(W/cv.width,H/cv.height);
+    doc.addImage(cv.toDataURL("image/jpeg",0.92),"JPEG",(W-cv.width*r)/2,0,cv.width*r,cv.height*r);
+    doc.save("Reporte-JASA-"+String(o.folio).replace(/[^A-Za-z0-9-]/g,"")+".pdf");
+    btn.disabled=false;msg.textContent="Listo. Revisa tus descargas.";
+  }).catch(function(){holder.remove();btn.disabled=false;msg.textContent="No se pudo generar el PDF. Inténtalo otra vez.";});
+}
+$("code").addEventListener("input",function(e){var v=norm(e.target.value);if(v!==e.target.value)e.target.value=v;});
+$("form").addEventListener("submit",function(e){e.preventDefault();var c=norm($("code").value);if(c.replace(/-/g,"").length<10){$("err").textContent="El código tiene 10 letras y números, por ejemplo ABCD-EFGH-JK.";return;}enter(c,false);});
+$("logout").addEventListener("click",function(){store(KEY,"");DATA=null;$("view").hidden=true;$("view").innerHTML="";$("login").hidden=false;$("logout").hidden=true;$("code").value="";$("code").focus();});
+document.addEventListener("click",function(e){var b=e.target.closest("[data-i]");if(b&&DATA)pdf(DATA.ordenes[+b.getAttribute("data-i")],b);});
+var saved=read(KEY);if(saved){$("code").value=saved;enter(saved,true);}
+})();
+</script>
+</body>
+</html>

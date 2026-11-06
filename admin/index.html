@@ -1,0 +1,996 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>JASA Admin</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@600;800;900&family=Barlow+Condensed:wght@600&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: barra lateral fija de secciones + área de trabajo; en celular la barra se vuelve una fila deslizable arriba.
+   Una sola apariencia oscura, la misma del sitio público de JASA. */
+:root{
+  --bg:#0d0d0d; --side:#080808; --panel:#171514; --panel-2:#211d1c; --line:#2f2a28;
+  --ink:#f3eeea; --muted:#a8a09b; --faint:#6f6864;
+  --red:#e10f0f; --red-2:#ff3b30; --amber:#f2b01e; --green:#5fcf6a; --blue:#7fb2e5; --rose:#ff8a7d;
+  --display:'Saira Condensed','Arial Narrow',Impact,sans-serif;
+  --body:'Barlow',-apple-system,'Segoe UI',Roboto,sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:15px/1.45 var(--body)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+.app{display:grid;grid-template-columns:232px minmax(0,1fr);min-height:100vh}
+aside{background:var(--side);border-right:1px solid var(--line);display:flex;flex-direction:column;gap:20px;padding:20px 14px;position:sticky;top:env(safe-area-inset-top,0px);height:100vh}
+.brand{display:flex;flex-direction:column;gap:2px;padding:0 8px}
+.brand b{font-family:var(--display);font-weight:900;font-size:34px;line-height:.9;color:var(--red);font-style:italic}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+nav{display:flex;flex-direction:column;gap:2px}
+.nav-b{display:flex;align-items:center;justify-content:space-between;gap:8px;background:transparent;color:var(--muted);border:0;border-radius:3px;padding:10px;cursor:pointer;text-align:left;font-family:var(--display);font-weight:800;text-transform:uppercase;font-size:17px;letter-spacing:.03em;white-space:nowrap}
+.nav-b:hover{background:var(--panel-2);color:var(--ink)}
+.nav-b[aria-current="page"]{background:var(--red);color:#fff}
+.nav-b .cnt{font-family:var(--mono);font-size:11px;font-weight:500;color:var(--amber)}
+.nav-b[aria-current="page"] .cnt{color:#fff}
+.side-foot{margin-top:auto;display:flex;flex-direction:column;gap:6px;padding:12px 8px 0;border-top:1px solid var(--line);font-size:12px;color:var(--faint)}
+main{min-width:0;display:flex;flex-direction:column}
+header.top{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding-block:18px;padding-left:max(28px,env(safe-area-inset-left,0px));padding-right:max(28px,env(safe-area-inset-right,0px));border-bottom:1px solid var(--line);background:rgba(13,13,13,.95);position:sticky;top:env(safe-area-inset-top,0px);z-index:5}
+h1{margin:0;font-family:var(--display);font-weight:900;text-transform:uppercase;font-size:34px;line-height:.95;text-wrap:balance}
+h2{margin:0;font-family:var(--display);font-weight:800;text-transform:uppercase;font-size:22px;letter-spacing:.01em}
+.top-act{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.search{background:var(--panel);border:1px solid var(--line);border-radius:3px;padding:9px 12px;width:260px;max-width:100%}
+.content{padding-block:24px 56px;padding-left:max(28px,env(safe-area-inset-left,0px));padding-right:max(28px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:20px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;background:var(--red);border:0;color:#fff;border-radius:3px;padding:10px 16px;cursor:pointer;font-family:var(--display);font-weight:800;text-transform:uppercase;font-size:16px;letter-spacing:.03em;text-decoration:none;white-space:nowrap}
+.btn:hover{background:var(--red-2)}
+.btn.ghost{background:transparent;border:1px solid var(--line);color:var(--ink)}
+.btn.ghost:hover{background:var(--panel-2)}
+.btn.wa{background:#1f9d55}.btn.wa:hover{background:#25b863}
+.btn.sm{padding:6px 10px;font-size:14px}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.link{background:none;border:0;color:var(--red-2);cursor:pointer;font-size:14px;padding:4px;white-space:nowrap}
+.box{background:var(--panel);border:1px solid var(--line);border-radius:6px;overflow:hidden;min-width:0}
+.box-h{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:14px 18px;border-bottom:1px solid var(--line)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-top:3px solid var(--k,var(--line));border-radius:6px;padding:16px 18px;display:flex;flex-direction:column;gap:6px}
+.kpi .v{font-family:var(--display);font-weight:900;font-size:38px;line-height:.9;font-variant-numeric:tabular-nums}
+.kpi .n{font-size:13px;color:var(--muted)}
+.grid2{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:16px;align-items:start}
+.row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;align-items:center;width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--line);padding:12px 18px}
+.row:last-child{border-bottom:0}
+button.row{cursor:pointer}button.row:hover{background:var(--panel-2)}
+.row .t{font-weight:600;min-width:0;overflow-wrap:anywhere}
+.row .s{font-size:13px;color:var(--muted);min-width:0;overflow-wrap:anywhere}
+.mono{font-family:var(--mono);font-size:12px;font-variant-numeric:tabular-nums}
+.pill{display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;border:1px solid currentColor;border-radius:999px;padding:2px 8px;white-space:nowrap}
+.empty{padding:22px 18px;color:var(--muted);font-size:14px;display:flex;flex-direction:column;gap:10px;align-items:flex-start}
+.empty b{color:var(--ink);font-weight:600}
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--muted);text-align:left;font-weight:500;padding:10px 14px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr:last-child td{border-bottom:0}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.inp{background:var(--bg);border:1px solid var(--line);border-radius:3px;padding:8px 10px;width:100%;min-width:0}
+.inp:focus{border-color:var(--muted)}
+textarea.inp{resize:vertical;min-height:120px;font-family:var(--mono);font-size:12px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
+.tab{background:transparent;border:1px solid var(--line);color:var(--ink);border-radius:3px;padding:6px 12px;cursor:pointer;font-family:var(--display);font-weight:800;text-transform:uppercase;font-size:15px}
+.tab[aria-pressed="true"]{background:var(--red);border-color:var(--red);color:#fff}
+.q-layout{display:grid;grid-template-columns:minmax(0,320px) minmax(0,1fr);gap:16px;align-items:start}
+.q-item{border-left:3px solid transparent}
+.q-item[aria-current="true"]{background:var(--panel-2);border-left-color:var(--red)}
+.q-meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px 18px;padding:16px 18px;border-bottom:1px solid var(--line)}
+.q-meta div{display:flex;flex-direction:column;gap:2px;min-width:0}
+.q-meta span:last-child{overflow-wrap:anywhere}
+.totals{display:flex;flex-direction:column;gap:4px;align-items:flex-end;padding:14px 18px;border-top:1px solid var(--line);font-variant-numeric:tabular-nums}
+.totals .big{font-family:var(--display);font-weight:900;font-size:30px}
+.actions{display:flex;gap:8px;flex-wrap:wrap;padding:14px 18px;border-top:1px solid var(--line)}
+.kanban{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;align-items:start}
+.col{background:var(--panel);border:1px solid var(--line);border-top:3px solid var(--k);border-radius:6px;display:flex;flex-direction:column;min-width:0}
+.col-h{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid var(--line)}
+.col-h h2{font-size:18px}
+.card{display:flex;flex-direction:column;gap:6px;padding:12px 14px;border-bottom:1px solid var(--line)}
+.card:last-child{border-bottom:0}
+.card-a{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+.bar{height:6px;background:var(--panel-2);border-radius:3px;overflow:hidden;min-width:80px}
+.bar i{display:block;height:100%}
+.stepper{display:inline-flex;align-items:center;gap:6px}
+.stepper button{width:28px;height:28px;border:1px solid var(--line);background:var(--panel-2);border-radius:3px;cursor:pointer}
+.notice{border:1px solid var(--line);border-left:3px solid var(--amber);background:var(--panel);border-radius:6px;padding:14px 18px;font-size:14px;color:var(--muted)}
+.notice b{color:var(--ink)}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:20;display:flex;justify-content:flex-end}
+.drawer{background:var(--panel);border-left:1px solid var(--line);width:min(460px,100%);height:100%;overflow-y:auto;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);padding-right:env(safe-area-inset-right,0px)}
+.drawer form{display:flex;flex-direction:column;gap:14px;padding:18px}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.field small{color:var(--faint);font-size:12px}
+.f2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:4px;font-weight:600;z-index:30;max-width:calc(100% - 32px)}
+.confirm{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:13px;color:var(--rose)}
+.sheet-wrap{background:var(--panel-2);padding:14px;overflow:hidden}
+.sheet-scale{transform-origin:top left;width:816px}
+.sheet{width:816px;background:#ffffff;color:#111111;padding:36px 40px 40px;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.3}
+.sheet *{box-sizing:border-box}
+.sh-top{display:flex;justify-content:space-between;align-items:center;border:1px solid #444;border-bottom:0;padding:10px 14px}
+.sh-logo img{display:block;width:210px;height:auto}
+.sh-co{display:flex;flex-direction:column;align-items:flex-end;text-align:right;gap:2px;font-weight:700;font-size:11.5px}
+.sh-co b{color:#c00000;font-size:16px}
+.sh-co .sh-tel{color:#777;font-weight:400}
+.sh-row{display:grid;grid-template-columns:1fr 210px;border:1px solid #444;border-bottom:0}
+.sh-title{text-align:center;color:#c00000;font-weight:700;font-size:30px;letter-spacing:.02em;padding:8px;border-right:1px solid #444}
+.sh-num{display:flex;flex-direction:column;justify-content:center;padding:6px 10px;color:#c00000;font-weight:700;gap:2px}
+.sh-num div{display:flex;justify-content:space-between;gap:8px}
+.sh-client{margin:0;padding:10px 12px;display:grid;grid-template-columns:72px 1fr;gap:5px 8px;align-items:baseline;border-right:1px solid #444;min-height:120px}
+.sh-client dt{color:#999;font-size:10.5px;text-align:right}
+.sh-client dd{margin:0;font-size:13px;text-transform:uppercase;min-height:16px;border-bottom:1px solid #eee;overflow-wrap:anywhere}
+.sh-cond{padding:8px 10px;font-size:11px;display:flex;flex-direction:column;gap:6px}
+.sh-cond div{text-transform:uppercase;overflow-wrap:anywhere;white-space:pre-line}
+.sh-table{width:100%;border-collapse:collapse;table-layout:fixed;border:1px solid #444}
+.sh-table th{font-family:Arial,Helvetica,sans-serif;background:#fff;color:#c00000;font-weight:400;font-size:11px;border:1px solid #aaa;border-top:2px solid #444;border-bottom:2px solid #444;padding:4px 6px;text-align:center;letter-spacing:0}
+.sh-table th:first-child{text-align:left}
+.sh-table td{color:#111;border:1px solid #bbb;padding:5px 6px;height:24px;font-size:11.5px;vertical-align:middle}
+.sh-table td:nth-child(2){text-transform:uppercase;overflow-wrap:anywhere}
+.sh-table td:nth-child(3){text-align:center}
+.sh-table td:nth-child(4),.sh-table td:nth-child(5){text-align:right;white-space:nowrap}
+.sh-foot{display:grid;grid-template-columns:1fr 210px;border:1px solid #444;border-top:0}
+.sh-foot-l{padding:12px 20px;font-size:11px;border-right:1px solid #444;display:flex;flex-direction:column;gap:4px}
+.sh-foot-l span{color:#666;font-size:10px}
+.sh-tot{padding:8px 10px;display:flex;flex-direction:column;gap:4px;font-weight:700;font-size:12.5px}
+.sh-tot div{display:flex;justify-content:space-between;gap:8px}
+.sh-tot b{color:#c00000;font-size:12px}
+.sh-total{border-top:1px solid #444;padding-top:4px}
+.sh-total b{font-size:14px!important}
+.hint{font-size:13px;color:var(--muted)}
+.sh-legal{border:1px solid #444;border-top:0;padding:8px 12px;font-size:10px;color:#555}
+.login{position:fixed;inset:0;z-index:40;background:var(--bg);display:flex;align-items:center;justify-content:center;padding-block:24px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.login form{width:min(380px,100%);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:24px;display:flex;flex-direction:column;gap:14px}
+.login .err{color:var(--rose);font-size:14px;min-height:1.2em}
+.eq-list{display:flex;flex-direction:column;gap:8px}
+.eq-row{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) 72px 34px;gap:6px;align-items:center}
+.eq-x{width:34px;height:36px;border:1px solid var(--line);background:var(--panel-2);border-radius:3px;cursor:pointer;color:var(--muted)}
+.eq-x:hover{color:var(--ink)}
+.eq-head{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) 72px 34px;gap:6px;font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--faint);text-transform:uppercase}
+.eq-sum{font-size:13px;color:var(--muted)}
+.eq-row.svc{grid-template-areas:"t c q x" "s s s s";padding-bottom:8px;border-bottom:1px solid var(--line)}
+.eq-row.svc .eq-tipo{grid-area:t}.eq-row.svc .eq-cap{grid-area:c}.eq-row.svc .eq-qty{grid-area:q}.eq-row.svc .eq-x{grid-area:x}.eq-row.svc .eq-svc{grid-area:s}
+.unit-tbl input.inp{padding:6px 8px;font-size:13px}
+.unit-tbl td{padding:6px 8px}
+.unit-tbl input[type=checkbox]{width:20px;height:20px;accent-color:var(--green)}
+.unit-tbl tr.done td{background:rgba(95,207,106,.06)}
+.inp.warn{border-color:var(--rose)}
+.check{display:flex;gap:10px;align-items:flex-start;font-size:14px}
+.check input{width:18px;height:18px;margin-top:2px;accent-color:var(--red)}
+.plan{display:flex;flex-direction:column;gap:12px;padding:16px 18px}
+.plan ul{margin:6px 0 0;padding-left:18px;color:var(--muted);font-size:13px;display:flex;flex-direction:column;gap:3px}
+.sh-sign{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid #444;border-top:0}
+.sh-sign div{padding:46px 10px 8px;text-align:center;font-size:10.5px;border-right:1px solid #444}
+.sh-sign div:last-child{border-right:0}
+.sh-sign span{display:block;border-top:1px solid #444;padding-top:4px;font-weight:700}
+.sh-sign small{display:block;color:#666;font-size:10px;margin-top:2px;min-height:12px}
+.task{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:4px 12px;align-items:start;padding:10px 18px;border-bottom:1px solid var(--line)}
+.task:last-child{border-bottom:0}
+.task input[type=checkbox]{width:22px;height:22px;accent-color:var(--green);margin-top:1px}
+.task b{font-weight:600;overflow-wrap:anywhere}
+.task.ok b{text-decoration:line-through;color:var(--muted)}
+.task small{display:block;color:var(--muted);font-size:12px;margin-top:2px;overflow-wrap:anywhere}
+.task.late b{color:var(--rose)}
+.tg{font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--line);border-radius:20px;padding:1px 7px;color:var(--blue);margin-right:6px;white-space:nowrap}
+.day-h{display:flex;justify-content:space-between;align-items:center;padding:10px 18px;background:var(--panel-2);border-bottom:1px solid var(--line);font-family:var(--display);font-weight:800;text-transform:uppercase;font-size:16px}
+.kpis.sm{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+.kpis.sm .kpi .v{font-size:30px}
+.eq-chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+.eq-chip{font-family:var(--mono);font-size:11px;border:1px solid var(--line);border-radius:3px;padding:1px 6px;color:var(--ink);white-space:nowrap}
+@media (max-width:1100px){.kanban{grid-template-columns:repeat(2,minmax(0,1fr))}.grid2,.q-layout{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:760px){
+  .app{grid-template-columns:minmax(0,1fr)}
+  aside{position:static;height:auto;flex-direction:column;gap:10px;padding-block:12px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));border-right:0;border-bottom:1px solid var(--line)}
+  .brand{flex-direction:row;align-items:baseline;gap:10px;padding:0}
+  nav{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:4px}
+  .nav-b{font-size:15px;padding:8px 10px;border:1px solid var(--line)}
+  .nav-b[aria-current="page"]{border-color:var(--red)}
+  .side-foot{display:none}
+  header.top,.content{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+  header.top{position:static}
+  h1{font-size:28px}
+  .search{width:100%}
+  .top-act{width:100%}
+  .kanban{grid-template-columns:minmax(0,1fr)}
+  .f2{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div class="app">
+  <aside>
+    <div class="brand"><b>JASA</b><span class="eyebrow">Administración</span></div>
+    <nav id="nav" aria-label="Secciones"></nav>
+    <div class="side-foot">
+      <span id="syncNote">Conectando…</span>
+      <button type="button" class="link" data-act="backup" id="backupBtn" hidden style="text-align:left;padding:0">Descargar respaldo</button>
+      <button type="button" class="link" data-act="importAsk" id="importBtn" hidden style="text-align:left;padding:0">Importar respaldo</button>
+      <input type="file" id="importFile" accept=".json,application/json" hidden>
+      <span id="whoNote" hidden></span>
+      <button type="button" class="link" data-act="logout" id="logoutBtn" hidden style="text-align:left;padding:0;color:var(--muted)">Cerrar sesión</button>
+    </div>
+  </aside>
+  <main>
+    <header class="top">
+      <div style="display:flex;flex-direction:column;gap:2px">
+        <span class="eyebrow" id="crumb" style="color:var(--red-2)"></span>
+        <h1 id="title"></h1>
+      </div>
+      <div class="top-act">
+        <input type="search" id="search" name="jasa-buscar" autocomplete="off" autocorrect="off" spellcheck="false" class="search" placeholder="Buscar cliente, folio u orden…" aria-label="Buscar">
+        <button type="button" class="btn" data-act="goPaste">+ Pegar solicitud</button>
+      </div>
+    </header>
+    <div class="content" id="view"></div>
+  </main>
+</div>
+<div id="drawerRoot"></div>
+<div id="loginRoot"></div>
+<div id="toast" class="toast" hidden role="status"></div>
+
+<script>
+(function(){
+"use strict";
+var COLS=["quotes","clientes","proveedores","movs","ordenes","inventario","precios","pendientes"];
+var S={screen:"panel",data:{},ready:{},sel:null,finTab:"todos",finMes:null,search:"",paste:"",pasteMsg:"",drawer:null,otSel:null,dlv:{},confirm:null,readOnly:false,dbState:"loading"};
+COLS.forEach(function(c){S.data[c]=[];S.ready[c]=false;});
+var db=null, dl=null;
+
+/* ---------- utilidades ---------- */
+function esc(v){return String(v==null?"":v).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+function money(n){n=+n||0;return "$"+n.toLocaleString("es-MX",{minimumFractionDigits:2,maximumFractionDigits:2});}
+function pad(n){return String(n).padStart(2,"0");}
+function today(){var d=new Date();return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());}
+function monthKey(iso){return (iso||"").slice(0,7);}
+var MESES=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+function monthName(k){if(!k)return "";var p=k.split("-");return MESES[+p[1]-1]+" "+p[0];}
+function fmtDate(iso){if(!iso)return "—";var p=iso.split("-");return p.length===3?p[2]+"/"+p[1]+"/"+p[0]:iso;}
+function fmtMonth(k){if(!k)return "—";var p=k.split("-");return p[1]+"/"+p[0];}
+function addMonths(k,n){var p=k.split("-").map(Number);var d=new Date(p[0],p[1]-1+n,1);return d.getFullYear()+"-"+pad(d.getMonth()+1);}
+function digits(t){return String(t||"").replace(/\D/g,"");}
+function waLink(tel,text){var d=digits(tel);if(d.length===10)d="52"+d;return "https://wa.me/"+d+"?text="+encodeURIComponent(text);}
+function ago(ts){if(!ts)return "";var m=Math.round((Date.now()-ts)/60000);if(m<1)return "ahora";if(m<60)return "hace "+m+" min";var h=Math.round(m/60);if(h<24)return "hace "+h+" h";var d=Math.round(h/24);return d===1?"ayer":"hace "+d+" días";}
+function match(o){var q=S.search.trim().toLowerCase();if(!q)return true;return JSON.stringify(o).toLowerCase().indexOf(q)>=0;}
+function byId(c,id){return S.data[c].find(function(x){return x.id===id;});}
+function toast(msg){var t=document.getElementById("toast");t.textContent=msg;t.hidden=false;clearTimeout(toast._t);toast._t=setTimeout(function(){t.hidden=true;},2600);}
+function quoteTotal(q){return (q.lines||[]).reduce(function(a,l){return a+(parseFloat(l.price)||0)*(+l.qty||0);},0);}
+var IVA=0.08;
+
+/* ---------- base de datos ---------- */
+function write(c,id,body){
+  if(!db){toast("Sin conexión a la base de datos.");return Promise.reject();}
+  var ref=id?db.collection(c).doc(id):db.collection(c).doc();
+  return ref.set(body).then(function(){return ref.id;},onWriteErr);
+}
+function patch(c,id,body){if(!db)return Promise.reject();return db.collection(c).doc(id).update(body).catch(onWriteErr);}
+function remove(c,id){if(!db)return Promise.reject();return db.collection(c).doc(id).delete().catch(onWriteErr);}
+function onWriteErr(e){
+  var code=e&&e.code;
+  if(code==="invalid_argument"){S.readOnly=true;toast("Tu acceso es de solo lectura.");render();}
+  else if(code==="quota_exceeded")toast("La base de datos está llena. Borra registros viejos.");
+  else toast("No se guardó. Revisa tu conexión e inténtalo otra vez.");
+  throw e;
+}
+function startDb(){
+  var timer=setTimeout(function(){if(S.dbState==="loading"){S.dbState="slow";render();}},10000);
+  COLS.forEach(function(c){
+    db.collection(c).onSnapshot(function(snap){
+      S.data[c]=snap.docs.map(function(d){var o=Object.assign({},d.data());o.id=d.id;return o;});
+      if(!snap.metadata.fromCache)S.ready[c]=true;
+      if(COLS.every(function(k){return S.ready[k];})){S.dbState="ok";clearTimeout(timer);}
+      render();
+    },function(e){S.dbState=e&&e.code==="revoked"?"revoked":"error";clearTimeout(timer);render();});
+  });
+}
+
+/* ---------- parseo de la solicitud de WhatsApp (formato del sitio) ---------- */
+function parseRequest(txt){
+  var get=function(k){var m=txt.match(new RegExp("^"+k+":\\s*(.+)$","m"));return m?m[1].trim():"";};
+  var lines=[];txt.split("\n").forEach(function(l){var m=l.trim().match(/^\d+\.\s+(.+?)\s+[—-]\s+(\d+)\s+unidad/);if(m)lines.push({art:m[1],qty:+m[2],price:""});});
+  var ci=txt.indexOf("*CONDICIONES*"),cond="";
+  if(ci>=0)cond=txt.slice(ci+13).split("\n").map(function(s){return s.trim();}).filter(function(s){return s&&!/^Quedo atento/.test(s);}).join(" · ");
+  var f=get("Fecha"),iso="";var m=f.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);if(m)iso=m[3]+"-"+pad(m[2])+"-"+pad(m[1]);
+  return {folio:get("Número")||("MAN-"+Date.now().toString().slice(-6)),fecha:iso||today(),cliente:get("Cliente")||"Sin nombre",dirigido:get("Dirigido a"),direccion:get("Dirección"),ciudad:get("Ciudad"),rfc:get("RFC"),tel:get("Tel\\."),cond:cond,status:"Nueva",creado:Date.now(),lines:lines};
+}
+
+/* ---------- formularios ---------- */
+var EXT_SERV=["Recarga","Mantenimiento","Prueba hidrostática","Venta (nuevo)","Revisión"];
+function withSvc(){return !!(S.drawer&&S.drawer.kind==="ordenes");}
+var EXT_TIPOS=[["PQS","PQS (ABC)"],["CO2","CO₂"],["TIPO K","Tipo K (cocina)"],["AGUA","Agua"],["AFFF","Espuma AFFF"],["TIPO D","Tipo D (metales)"],["AGENTE LIMPIO","Agente limpio"]];
+var EXT_CAPS={"PQS":["1 KG","2 KG","4.5 KG","6 KG","9 KG","12 KG","35 KG (UNIDAD MÓVIL)","50 KG (UNIDAD MÓVIL)"],"CO2":["2.3 KG","4.5 KG","6.8 KG","9 KG","22.7 KG (UNIDAD MÓVIL)"],"TIPO K":["6 L","9.5 L"],"AGUA":["9.5 L"],"AFFF":["9.5 L","50 L (UNIDAD MÓVIL)"],"TIPO D":["9 KG","13.6 KG"],"AGENTE LIMPIO":["1.4 KG","2.3 KG","4.5 KG","6.8 KG"]};
+function tipoLabel(t){return t==="CO2"?"CO₂":t==="AGUA"?"Agua":t==="TIPO K"?"Tipo K":t==="TIPO D"?"Tipo D":t==="AGENTE LIMPIO"?"Agente limpio":t;}
+function eqList(c){return Array.isArray(c&&c.equiposDet)?c.equiposDet.filter(function(e){return e&&(+e.qty||0)>0;}):[];}
+function eqTotal(c){var l=eqList(c);return l.length?l.reduce(function(a,e){return a+(+e.qty||0);},0):(+(c&&c.equipos)||0);}
+function eqText(c){var l=eqList(c);return l.map(function(e){return e.qty+" × "+tipoLabel(e.tipo)+" "+String(e.cap||"").toLowerCase()+(e.servicio?" · "+e.servicio.toLowerCase():"");}).join(" | ");}
+function eqRowHTML(e){
+  e=e||{tipo:"PQS",cap:"6 KG",qty:1,servicio:"Recarga"};var t=e.tipo||"PQS",sv=withSvc();
+  return '<div class="eq-row'+(sv?" svc":"")+'"><select class="inp eq-tipo" aria-label="Tipo de extintor">'+EXT_TIPOS.map(function(o){return '<option value="'+o[0]+'"'+(o[0]===t?" selected":"")+'>'+esc(o[1])+'</option>';}).join("")+'</select>'+
+    '<select class="inp eq-cap" aria-label="Capacidad">'+(EXT_CAPS[t]||[]).concat(e.cap&&(EXT_CAPS[t]||[]).indexOf(e.cap)<0?[e.cap]:[]).map(function(c){return '<option value="'+esc(c)+'"'+(c===e.cap?" selected":"")+'>'+esc(c.charAt(0)+c.slice(1).toLowerCase())+'</option>';}).join("")+'</select>'+
+    '<input class="inp eq-qty" type="number" min="1" step="1" inputmode="numeric" aria-label="Cantidad" value="'+esc(e.qty||1)+'">'+
+    '<button type="button" class="eq-x" data-act="eqDel" aria-label="Quitar este renglón">×</button>'+
+    (sv?'<select class="inp eq-svc" aria-label="Servicio">'+EXT_SERV.map(function(o){return '<option'+(o===(e.servicio||"Recarga")?" selected":"")+'>'+esc(o)+'</option>';}).join("")+'</select>':"")+'</div>';
+}
+function eqSummary(){var rows=document.querySelectorAll("#eqList .eq-row"),n=0;rows.forEach(function(r){n+=parseInt(r.querySelector(".eq-qty").value,10)||0;});var el=document.getElementById("eqSum");if(el)el.textContent=n?("Total: "+n+(n===1?" extintor":" extintores")):"Sin extintores registrados";}
+var PN_CATS=["Visita a cliente","Compra de material","Banco","Cobranza","Entrega / recolección","Administrativo","Otro"];
+var PN_REP=[["no","Solo una vez"],["lunsab","Diario (lunes a sábado)"],["diario","Todos los días"],["semanal","Cada semana, mismo día"],["mensual","Cada mes, mismo día"]];
+var CAT_ING=["Ventas","Servicios","Capacitación","Otros ingresos"],CAT_EGR=["Insumos","Vehículo","Gastos fijos","Nómina","Impuestos","Otros gastos"];
+var STAGES=[["Recibido","var(--muted)"],["En servicio","var(--amber)"],["Listo para entregar","var(--green)"],["Entregado","var(--faint)"]];
+var FORMS={
+  clientes:{t:"cliente",f:[["nombre","Nombre o razón social","text",1],["contacto","Contacto","text"],["tel","Teléfono (10 dígitos)","tel"],["ciudad","Ciudad","text"],["equiposDet","Extintores del cliente","equipos"],["proximaRecarga","Próxima recarga","month"],["saldo","Por cobrar ($)","number"],["codigoPortal","Código del portal de clientes","text",0,null,"Se genera con el botón Portal. Bórralo para quitarle el acceso."],["notas","Notas","textarea"]]},
+  proveedores:{t:"proveedor",f:[["nombre","Proveedor","text",1],["contacto","Contacto","text"],["tel","Teléfono","tel"],["ciudad","Ciudad","text"],["surte","Qué surte","text"],["saldo","Por pagar ($)","number"]]},
+  movs:{t:"movimiento",f:[["tipo","Tipo","select",1,[["ingreso","Ingreso"],["egreso","Egreso"]]],["fecha","Fecha","date",1],["concepto","Concepto","text",1],["quien","Cliente o proveedor","text"],["categoria","Categoría","select",0,CAT_ING.concat(CAT_EGR).map(function(c){return [c,c];})],["monto","Monto ($)","number",1]]},
+  ordenes:{t:"orden de taller",f:[["cliente","Cliente","text",1],["contacto","Contacto","text"],["tel","Teléfono / WhatsApp","tel"],["recibido","Fecha de ingreso","date",1],["entrega","Entrega programada","date"],["equiposDet","Equipos recibidos","equipos"],["recibio","Recibió en JASA","text",0,null,"Nombre de quien recibe los equipos"],["notas","Notas","textarea",0,null,"Estado del equipo, piezas a cambiar, planta…"],["etapa","Etapa","select",1,STAGES.map(function(s,i){return [String(i),s[0]];})]]},
+  inventario:{t:"artículo",f:[["nombre","Artículo","text",1],["categoria","Categoría","select",0,[["Extintores","Extintores"],["Señalamientos","Señalamientos"],["Refacciones","Refacciones"],["Agentes y polvo","Agentes y polvo"],["Otros","Otros"]]],["unidad","Unidad","text",0,null,"kg, pza, rollos…"],["ubicacion","Ubicación","text",0,null,"Ej. Anaquel 2"],["stock","Existencia","number",1],["min","Mínimo","number",1],["optimo","Óptimo (para pedir)","number",1],["consumo","Se descuenta al entregar una orden","select",0,[["","No"],["PQS","Sí: polvo PQS (kg recargados)"],["CO2","Sí: CO₂ (kg recargados)"],["ETIQUETA","Sí: 1 etiqueta por extintor"]]]]},
+  pendientes:{t:"pendiente",f:[["titulo","Actividad","text",1],["cat","Tipo","select",1,PN_CATS.map(function(c){return [c,c];})],["fecha","Fecha","date",1],["hora","Hora (opcional)","time"],["repite","Repetir","select",1,PN_REP],["hasta","Repetir hasta (opcional)","date",0,null,"Vacío = se repite siempre"],["notas","Notas","textarea",0,null,"Dirección, contacto, montos…"]]},
+  quotes:{t:"cotización",f:[["cliente","Cliente","text",1],["dirigido","Dirigido a","text"],["tel","Teléfono (WhatsApp)","tel"],["direccion","Dirección","text"],["ciudad","Ciudad","text"],["rfc","RFC","text"],["cond","Condiciones","text",0,null,"Ej. Servicio a domicilio"],["entregaTxt","Tiempo de entrega","text",0,null,"Ej. 2 días hábiles"],["vigencia","Vigencia de precios","text",0,null,"Ej. 15 días"]]}
+};
+function openForm(kind,id){
+  var rec=id?byId(kind,id):null;
+  var def={};
+  if(!rec){
+    if(kind==="movs")def={tipo:"ingreso",fecha:today(),categoria:"Ventas"};
+    if(kind==="ordenes"){var t0=today();def={etapa:"0",recibido:t0,entrega:addWorkDays(t0,3)};}
+    if(kind==="pendientes")def={fecha:S.pnDay||today(),repite:"no",cat:"Administrativo"};
+    if(kind==="inventario")def={stock:0,min:0,optimo:0};
+  }
+  S.drawer={kind:kind,id:id||null,vals:Object.assign({},def,rec||{})};
+  if(kind==="ordenes"&&rec)S.drawer.vals.etapa=String(rec.etapa||0);
+  renderDrawer();eqSummary();
+  var fi=document.querySelector("#drawerRoot .inp");if(fi)fi.focus();
+}
+function renderDrawer(){
+  var root=document.getElementById("drawerRoot");
+  if(!S.drawer){root.innerHTML="";return;}
+  var d=S.drawer,F=FORMS[d.kind],v=d.vals;
+  var fields=F.f.map(function(f){
+    var k=f[0],lab=f[1],type=f[2],req=f[3],opts=f[4],hint=f[5],val=v[k]==null?"":v[k],id="f_"+k,ctl;
+    if(type==="equipos"){var det=Array.isArray(val)?val:[];if(!det.length&&(+v.equipos||0)>0)det=[{tipo:"PQS",cap:"6 KG",qty:+v.equipos}];
+      return '<div class="field"><label>'+esc(lab)+'</label>'+(det.length?'<div class="eq-head"><span>Tipo</span><span>Capacidad</span><span>Cantidad</span><span></span></div>':"")+'<div class="eq-list" id="eqList">'+det.map(eqRowHTML).join("")+'</div>'+
+        '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-top:4px"><div style="display:flex;gap:6px;flex-wrap:wrap"><button type="button" class="btn ghost sm" data-act="eqAdd">+ Agregar extintor</button>'+(withSvc()?'<button type="button" class="btn ghost sm" data-act="eqFromClient">Usar equipos del cliente</button>':"")+'</div><span class="eq-sum" id="eqSum"></span></div></div>';}
+    if(type==="select")ctl='<select class="inp" id="'+id+'" name="'+k+'">'+opts.map(function(o){return '<option value="'+esc(o[0])+'"'+(String(val)===o[0]?" selected":"")+'>'+esc(o[1])+'</option>';}).join("")+'</select>';
+    else if(type==="textarea")ctl='<textarea class="inp" id="'+id+'" name="'+k+'" style="font-family:var(--body);font-size:15px;min-height:80px">'+esc(val)+'</textarea>';
+    else if(d.kind==="ordenes"&&k==="cliente")ctl='<input class="inp" id="'+id+'" name="'+k+'" type="text" list="cliList" autocomplete="off" required value="'+esc(val)+'"><datalist id="cliList">'+S.data.clientes.map(function(c){return '<option value="'+esc(c.nombre)+'">';}).join("")+'</datalist>';
+    else ctl='<input class="inp" autocomplete="off" id="'+id+'" name="'+k+'" type="'+type+'"'+(type==="number"?' step="any" inputmode="decimal"':"")+(req?" required":"")+' value="'+esc(val)+'">';
+    return '<div class="field"><label for="'+id+'">'+esc(lab)+(req?" *":"")+'</label>'+ctl+(hint?'<small>'+esc(hint)+'</small>':"")+'</div>';
+  }).join("");
+  root.innerHTML='<div class="overlay" data-act="closeDrawer"><div class="drawer" role="dialog" aria-modal="true" aria-label="'+(d.id?"Editar ":(d.kind==="ordenes"||d.kind==="quotes"?"Nueva ":"Nuevo "))+F.t+'">'+
+    '<div class="box-h"><h2>'+(d.id?"Editar ":(d.kind==="ordenes"||d.kind==="quotes"?"Nueva ":"Nuevo "))+esc(F.t)+'</h2><button type="button" class="btn ghost sm" data-act="closeDrawer">Cerrar</button></div>'+
+    '<form id="drawerForm">'+fields+
+    '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px"><button class="btn" type="submit">'+(d.id?"Guardar cambios":"Agregar")+'</button>'+
+    (d.id?'<button type="button" class="btn ghost" data-act="askDelete">Eliminar</button>':"")+'</div>'+
+    '<div id="delConfirm"></div></form></div></div>';
+}
+function submitDrawer(form){
+  var d=S.drawer,F=FORMS[d.kind],body={};
+  F.f.forEach(function(f){
+    if(f[2]==="equipos"){var det=[];document.querySelectorAll("#eqList .eq-row").forEach(function(r){var q=parseInt(r.querySelector(".eq-qty").value,10)||0;var sv=r.querySelector(".eq-svc");if(q>0){var o={tipo:r.querySelector(".eq-tipo").value,cap:r.querySelector(".eq-cap").value,qty:q};if(sv)o.servicio=sv.value;det.push(o);}});body.equiposDet=det;body.equipos=det.reduce(function(a,e){return a+e.qty;},0);return;}
+    var el=form.elements[f[0]];var x=el.value.trim();if(f[2]==="number")x=x===""?0:(parseFloat(x)||0);body[f[0]]=x;});
+  if(d.kind==="inventario")body.porCapturar=false;
+  if(d.kind==="ordenes"){
+    body.etapa=+body.etapa;
+    var prev=d.id?byId("ordenes",d.id):null;
+    var txt=[eqText(body),body.notas].filter(Boolean).join(" | ");
+    body.detalle=txt||(prev&&prev.detalle)||"";
+    if(!body.detalle){toast("Agrega al menos un extintor o una nota.");return;}
+  }
+  var p;
+  if(d.id){p=patch(d.kind,d.id,body);}
+  else{
+    if(d.kind==="ordenes"){body.folio=nextOT();body.creado=Date.now();}
+    if(d.kind==="quotes"){body.folio="MAN-"+Date.now().toString().slice(-6);body.fecha=today();body.status="Nueva";body.creado=Date.now();body.lines=[];}
+    if(d.kind==="clientes")body.desde=today();
+    if(d.kind==="pendientes"){body.hechos=[];body.creado=Date.now();}
+    p=write(d.kind,null,body).then(function(id){if(d.kind==="quotes"){S.sel=id;S.screen="quotes";}});
+  }
+  p.then(function(){S.drawer=null;renderDrawer();toast(d.id?"Cambios guardados":"Agregado");render();},function(){});
+}
+function nextOT(){var n=S.data.ordenes.reduce(function(a,o){var m=String(o.folio||"").match(/^OT-(\d+)$/);return m?Math.max(a,+m[1]):a;},0);return "OT-"+String(n+1).padStart(4,"0");}
+function addWorkDays(iso,n){var p=iso.split("-").map(Number),d=new Date(p[0],p[1]-1,p[2]);while(n>0){d.setDate(d.getDate()+1);if(d.getDay()!==0)n--;}return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());}
+
+/* ---------- lista de precios ---------- */
+function normArt(t){return String(t||"").toUpperCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^A-Z0-9.]+/g," ").trim();}
+function priceId(t){var k=normArt(t),h=5381;for(var i=0;i<k.length;i++)h=((h<<5)+h+k.charCodeAt(i))>>>0;return "p"+h.toString(36)+k.length;}
+function lookupPrice(art){var id=priceId(art);var r=S.data.precios.find(function(x){return x.id===id;});return r?r.price:null;}
+function fillFromList(lines){var n=0;var out=lines.map(function(l){if(l.price===""||l.price==null){var p=lookupPrice(l.art);if(p!=null){n++;return Object.assign({},l,{price:p});}}return l;});return {lines:out,n:n};}
+function savePrices(q){
+  var ls=(q.lines||[]).filter(function(l){return l.art&&l.price!==""&&l.price!=null;});
+  if(!ls.length){toast("Pon precios primero.");return;}
+  var chain=Promise.resolve();
+  ls.forEach(function(l){chain=chain.then(function(){return write("precios",priceId(l.art),{art:String(l.art).trim().toUpperCase(),price:+l.price,actualizado:today()});});});
+  chain.then(function(){toast(ls.length+(ls.length===1?" precio guardado":" precios guardados")+" en tu lista");},function(){});
+}
+
+/* ---------- hoja de cotización (logo, PDF, imagen) ---------- */
+var LOGO="";
+function rr(x,a,b,w,h,r){x.beginPath();x.moveTo(a+r,b);x.arcTo(a+w,b,a+w,b+h,r);x.arcTo(a+w,b+h,a,b+h,r);x.arcTo(a,b+h,a,b,r);x.arcTo(a,b,a+w,b,r);x.closePath();x.fill();}
+function drawLogo(){
+  var cv=document.createElement("canvas"),K=3;cv.width=440*K;cv.height=200*K;
+  var x=cv.getContext("2d");x.scale(K,K);
+  x.save();x.translate(10,24);
+  x.strokeStyle="#1a1716";x.lineWidth=7;x.lineCap="round";x.beginPath();x.moveTo(30,18);x.lineTo(6,8);x.stroke();
+  x.fillStyle="#1a1716";rr(x,26,14,22,20,3);
+  x.fillStyle="#E10F0F";x.beginPath();x.moveTo(48,20);x.lineTo(96,6);x.lineTo(96,34);x.lineTo(48,28);x.closePath();x.fill();
+  rr(x,10,32,54,120,16);
+  x.fillStyle="#ffffff";x.fillRect(10,74,54,16);x.restore();
+  x.fillStyle="#1a1716";x.font='600 34px "Barlow Condensed","Arial Narrow",sans-serif';
+  if("letterSpacing" in x)x.letterSpacing="7px";x.fillText("EXTINTORES",122,52);if("letterSpacing" in x)x.letterSpacing="0px";
+  var F='900 150px "Saira Condensed","Arial Narrow",Impact,sans-serif';x.font=F;
+  var tw=x.measureText("JASA").width,sx=Math.min(1,300/tw);
+  function jasa(col){x.transform(1,0,Math.tan(-8*Math.PI/180),1,26,0);x.translate(96,176);x.scale(sx,1);x.font=F;x.fillStyle=col;x.fillText("JASA",0,0);}
+  x.save();jasa("#E10F0F");x.restore();
+  x.save();x.beginPath();x.rect(0,98,440,16);x.clip();jasa("#ffffff");x.restore();
+  LOGO=cv.toDataURL("image/png");
+  var im=document.getElementById("shLogo");if(im)im.src=LOGO;
+}
+function sheetHTML(q){
+  var lines=q.lines||[],sub=quoteTotal(q),n=Math.max(lines.length,10),rows="";
+  for(var i=0;i<n;i++){var l=lines[i];var has=l&&l.price!==""&&l.price!=null;
+    rows+="<tr><td>"+(l?i+1:"")+"</td><td>"+(l?esc(l.art):"")+"</td><td>"+(l?esc(l.qty):"")+"</td><td>"+(l?(has?money(l.price):"—"):"")+"</td><td>"+(l?(has?money((parseFloat(l.price)||0)*(+l.qty||0)):"—"):"")+"</td></tr>";}
+  var cond=[q.cond,q.vigencia?"Precios válidos "+q.vigencia:""].filter(Boolean).join("\n");
+  return '<div class="sheet" id="shSheet"><div class="sh-top"><div class="sh-logo"><img id="shLogo" alt="JASA Extintores" width="300" height="136" src="'+LOGO+'"></div>'+
+   '<div class="sh-co"><b>JASA EXTINTORES SA DE CV</b><span>MUTUALISTA 412 COL. BUENA VISTA SUR</span><span>PIEDRAS NEGRAS, COAHUILA</span><span>JEX180118NA0</span><span class="sh-tel">878 783 3216 · WhatsApp 878 117 4728</span></div></div>'+
+   '<div class="sh-row"><div class="sh-title">COTIZACIÓN</div><div class="sh-num"><div><span>NÚMERO:</span><b>'+esc(q.folio)+'</b></div><div><span>FECHA:</span><b>'+fmtDate(q.respondida||today())+'</b></div></div></div>'+
+   '<div class="sh-row"><dl class="sh-client"><dt>Cliente:</dt><dd>'+esc(q.cliente)+'</dd><dt>Dirigido A:</dt><dd>'+esc(q.dirigido)+'</dd><dt>Dirección:</dt><dd>'+esc(q.direccion)+'</dd><dt>Ciudad:</dt><dd>'+esc(q.ciudad)+'</dd><dt>RFC:</dt><dd>'+esc(q.rfc)+'</dd><dt>Tel.:</dt><dd>'+esc(q.tel)+'</dd></dl>'+
+   '<div class="sh-cond"><b>CONDICIONES</b><div>'+esc(cond)+'</div></div></div>'+
+   '<table class="sh-table"><colgroup><col style="width:9%"><col style="width:51%"><col style="width:10%"><col style="width:15%"><col style="width:15%"></colgroup><thead><tr><th>PARTIDAS</th><th>Artículo</th><th>Unidades</th><th>Precio Un.</th><th>Subtotal</th></tr></thead><tbody>'+rows+'</tbody></table>'+
+   '<div class="sh-foot"><div class="sh-foot-l"><b>TIEMPO DE ENTREGA: '+esc(q.entregaTxt?String(q.entregaTxt).toUpperCase():"POR CONFIRMAR")+'</b><span>Gracias por su preferencia. Para confirmar su pedido responda este mensaje o llame al 878 783 3216.</span></div>'+
+   '<div class="sh-tot"><div><span>SUB TOTAL</span><b>'+money(sub)+'</b></div><div><span>I.V.A. 8%</span><b>'+money(sub*IVA)+'</b></div><div class="sh-total"><span>TOTAL</span><b>'+money(sub*(1+IVA))+'</b></div></div></div></div>';
+}
+function fitSheet(){var w=document.getElementById("shWrap"),sc=document.getElementById("shScale"),sh=document.getElementById("shSheet");if(!w||!sc||!sh)return;var k=Math.min(1,(w.clientWidth-28)/816);sc.style.transform="scale("+k+")";w.style.height=Math.ceil(sh.offsetHeight*k+28)+"px";}
+window.addEventListener("resize",fitSheet);
+function loadScript(src){return new Promise(function(ok,no){var t=document.createElement("script");t.src=src;t.onload=ok;t.onerror=function(){no(new Error("load"));};document.head.appendChild(t);});}
+var libs=null;
+function getLibs(kind){libs=libs||loadScript("https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js");return kind==="pdf"?libs.then(function(){return window.jspdf?0:loadScript("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js");}):libs;}
+function saveBlob(name,blob){
+  if(dl)return dl.save({filename:name,data:blob});
+  var u=URL.createObjectURL(blob),a=document.createElement("a");a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(u);},4000);return Promise.resolve();
+}
+function exportSheet(kind,q){exportDoc(kind,sheetHTML(q),"Cotizacion-JASA-"+String(q.folio).replace(/[^A-Za-z0-9-]/g,"")+"."+kind,"shStatus","Adjúntalo en el chat de WhatsApp del cliente.");}
+function exportDoc(kind,html,name,statusId,okMsg){
+  var st=document.getElementById(statusId);if(st)st.textContent="Preparando el archivo…";
+  var holder=document.createElement("div");holder.style.cssText="position:fixed;left:-10000px;top:0;width:816px;background:#fff";
+  holder.innerHTML=html;document.body.appendChild(holder);
+  getLibs(kind).then(function(){return window.html2canvas(holder.firstChild,{scale:2,backgroundColor:"#ffffff",logging:false});}).then(function(cv){
+    holder.remove();
+    if(kind==="png")return new Promise(function(ok){cv.toBlob(ok,"image/png");}).then(function(b){return saveBlob(name,b);});
+    var pdf=new window.jspdf.jsPDF({unit:"pt",format:"letter"}),W=612,H=792,r=Math.min(W/cv.width,H/cv.height),w=cv.width*r,h=cv.height*r;
+    pdf.addImage(cv.toDataURL("image/jpeg",0.92),"JPEG",(W-w)/2,0,w,h);
+    return saveBlob(name,pdf.output("blob"));
+  }).then(function(){st=document.getElementById(statusId);if(st)st.textContent="Listo: "+name+". "+okMsg;},function(e){st=document.getElementById(statusId);
+    holder.remove();var c=e&&e.code;if(st)st.textContent=c==="declined"?"":c==="rate_limited"?"Espera un momento e inténtalo otra vez.":"No se pudo generar el archivo. Revisa tu conexión e inténtalo otra vez.";
+  });
+}
+function replyText(q){
+  var lines=q.lines||[],sub=quoteTotal(q);
+  var L=["*COTIZACIÓN · JASA EXTINTORES*","Número: "+q.folio,"Cliente: "+q.cliente,""];
+  lines.forEach(function(l,i){var has=l.price!==""&&l.price!=null;L.push((i+1)+". "+l.art+" — "+l.qty+" × "+(has?money(l.price)+" = "+money((parseFloat(l.price)||0)*(+l.qty||0)):"por definir"));});
+  L.push("","Sub total: "+money(sub),"I.V.A. 8%: "+money(sub*IVA),"*Total: "+money(sub*(1+IVA))+"*");
+  if(q.entregaTxt)L.push("Tiempo de entrega: "+q.entregaTxt);
+  if(q.vigencia)L.push("Precios válidos "+q.vigencia);
+  L.push("","Le comparto la cotización en PDF. Para confirmar su pedido responda este mensaje.","Gracias por su preferencia. JASA Extintores · 878 783 3216");
+  return L.join("\n");
+}
+
+/* ---------- control de taller ---------- */
+var SVC_ETIQ=["Recarga","Mantenimiento","Prueba hidrostática","Revisión"];
+function capNum(c){var m=String(c||"").match(/([\d.]+)\s*KG/i);return m?parseFloat(m[1]):0;}
+function tsISO(ts){if(!ts)return "";var d=new Date(ts);return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());}
+function unitsOf(o){var old={};(o.unidades||[]).forEach(function(u){old[u.key]=u;});var out=[];eqList(o).forEach(function(r,i){for(var k=0;k<(+r.qty||0);k++){var key=i+"-"+k;var u=Object.assign({key:key,serie:"",fab:"",ph:"",etiqueta:"",listo:false},old[key]||{});u.row=r;out.push(u);}});return out;}
+function cleanUnits(us){return us.map(function(u){return {key:u.key,serie:u.serie||"",fab:u.fab||"",ph:u.ph||"",etiqueta:u.etiqueta||"",listo:!!u.listo};});}
+function progress(o){var us=unitsOf(o);return {n:us.filter(function(u){return u.listo;}).length,t:us.length};}
+function findClient(name){var nm=String(name||"").trim().toLowerCase();if(!nm)return null;return S.data.clientes.find(function(c){return String(c.nombre||"").trim().toLowerCase()===nm;})||null;}
+function deliveryPlan(o){
+  var c={PQS:0,CO2:0,ETIQUETA:0};
+  eqList(o).forEach(function(e){var q=+e.qty||0,svc=e.servicio||"Recarga";if(svc==="Recarga"&&(e.tipo==="PQS"||e.tipo==="CO2"))c[e.tipo]+=q*capNum(e.cap);if(SVC_ETIQ.indexOf(svc)>=0)c.ETIQUETA+=q;});
+  var inv=[];[["PQS","Polvo PQS","kg"],["CO2","CO₂","kg"],["ETIQUETA","Etiquetas de servicio","pzas"]].forEach(function(k){if(!c[k[0]])return;inv.push({key:k[0],label:k[1],qty:Math.round(c[k[0]]*100)/100,unit:k[2],item:S.data.inventario.find(function(i){return i.consumo===k[0];})||null});});
+  var renew=eqList(o).some(function(e){return ["Recarga","Mantenimiento","Venta (nuevo)"].indexOf(e.servicio||"Recarga")>=0;});
+  return {inv:inv,cli:findClient(o.cliente),next:renew?addMonths(today().slice(0,7),12):null};
+}
+function deliver(o){
+  var pl=deliveryPlan(o),uc=document.getElementById("dCli"),ui=document.getElementById("dInv"),done=[];
+  var chain=patch("ordenes",o.id,{etapa:3,entregado:today(),entrego:(S.dlv.entrego||"").trim(),recibioCliente:(S.dlv.recibe||"").trim()});
+  if(pl.cli&&pl.next&&uc&&uc.checked)chain=chain.then(function(){return patch("clientes",pl.cli.id,{proximaRecarga:pl.next});}).then(function(){done.push("próxima recarga "+fmtMonth(pl.next));});
+  if(ui&&ui.checked)pl.inv.forEach(function(x){if(!x.item)return;chain=chain.then(function(){var cur=byId("inventario",x.item.id)||x.item;return patch("inventario",x.item.id,{stock:Math.max(0,Math.round(((+cur.stock||0)-x.qty)*100)/100)});}).then(function(){done.push("−"+x.qty+" "+x.unit+" de "+x.item.nombre);});});
+  chain.then(function(){S.dlv={};toast("Orden "+o.folio+" entregada"+(done.length?": "+done.join(" · "):""));},function(){});
+}
+function orderSheetHTML(o){
+  var us=unitsOf(o),cli=findClient(o.cliente)||{},n=Math.max(us.length,10),rows="";
+  for(var i=0;i<n;i++){var u=us[i];rows+="<tr><td>"+(u?i+1:"")+"</td><td>"+(u?esc(tipoLabel(u.row.tipo)+" "+u.row.cap):"")+"</td><td>"+(u?esc(u.row.servicio||""):"")+"</td><td>"+(u?esc(u.serie):"")+"</td><td>"+(u?esc(u.etiqueta):"")+"</td></tr>";}
+  var rec=o.recibido||tsISO(o.creado);
+  return '<div class="sheet"><div class="sh-top"><div class="sh-logo"><img alt="JASA Extintores" width="300" height="136" src="'+LOGO+'"></div>'+
+   '<div class="sh-co"><b>JASA EXTINTORES SA DE CV</b><span>MUTUALISTA 412 COL. BUENA VISTA SUR</span><span>PIEDRAS NEGRAS, COAHUILA</span><span>JEX180118NA0</span><span class="sh-tel">878 783 3216 · WhatsApp 878 117 4728</span></div></div>'+
+   '<div class="sh-row"><div class="sh-title">ORDEN DE SERVICIO</div><div class="sh-num"><div><span>FOLIO:</span><b>'+esc(o.folio)+'</b></div><div><span>RECIBIDO:</span><b>'+fmtDate(rec)+'</b></div><div><span>ENTREGA:</span><b>'+(o.entregado?fmtDate(o.entregado):o.entrega?fmtDate(o.entrega):"POR CONFIRMAR")+'</b></div></div></div>'+
+   '<div class="sh-row"><dl class="sh-client"><dt>Cliente:</dt><dd>'+esc(o.cliente)+'</dd><dt>Contacto:</dt><dd>'+esc(o.contacto||cli.contacto||"")+'</dd><dt>Tel.:</dt><dd>'+esc(o.tel||cli.tel||"")+'</dd><dt>Ciudad:</dt><dd>'+esc(cli.ciudad||"")+'</dd><dt>Equipos:</dt><dd>'+us.length+'</dd><dt>Cotización:</dt><dd>'+esc(o.cotizacion||"")+'</dd></dl>'+
+   '<div class="sh-cond"><b>OBSERVACIONES</b><div>'+esc(o.notas||"")+'</div></div></div>'+
+   '<table class="sh-table"><colgroup><col style="width:7%"><col style="width:30%"><col style="width:23%"><col style="width:20%"><col style="width:20%"></colgroup><thead><tr><th>#</th><th>Equipo</th><th>Servicio</th><th>No. de serie</th><th>Etiqueta NOM-154</th></tr></thead><tbody>'+rows+'</tbody></table>'+
+   '<div class="sh-sign"><div><span>RECIBIÓ (JASA)</span><small>'+esc(o.recibio||"")+'</small></div><div><span>ENTREGÓ (JASA)</span><small>'+esc(o.entrego||"")+'</small></div><div><span>RECIBE DE CONFORMIDAD (CLIENTE)</span><small>'+esc(o.recibioCliente||"")+'</small></div></div></div>';
+}
+function vOrden(o){
+  var ro=S.readOnly||!db,us=unitsOf(o),pg=progress(o),si=o.etapa||0,pct=pg.t?Math.round(pg.n/pg.t*100):0,cli=findClient(o.cliente),cm=today().slice(0,7);
+  var out='<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><button type="button" class="btn ghost sm" data-act="otBack">← Tablero</button><div style="display:flex;gap:8px;flex-wrap:wrap">'+(ro?"":'<button type="button" class="btn ghost sm" data-act="edit:ordenes" data-id="'+o.id+'">Editar orden</button>')+'<button type="button" class="btn ghost sm" data-act="otPdf">Orden PDF</button><button type="button" class="btn sm" data-act="otReport">Reporte de inspección PDF</button></div></div><span class="hint" id="otStatus" aria-live="polite"></span>';
+  out+='<div class="box"><div class="box-h"><div style="display:flex;flex-direction:column;gap:2px;min-width:0"><span class="mono" style="color:var(--muted)">'+esc(o.folio)+(o.cotizacion?" · cotización "+esc(o.cotizacion):"")+'</span><h2 style="overflow-wrap:anywhere">'+esc(o.cliente)+'</h2></div><span class="pill" style="color:'+STAGES[si][1]+'">'+STAGES[si][0]+'</span></div>'+
+    '<div class="q-meta">'+[["Recibido",fmtDate(o.recibido||tsISO(o.creado))],["Recibió en JASA",o.recibio||"—"],["Entrega estimada",o.entrega?fmtDate(o.entrega):"—"],["Contacto",o.contacto||(cli&&cli.contacto)||"—"],["Teléfono",o.tel||(cli&&cli.tel)||"—"],["Notas",o.notas||"—"]].map(function(m){return '<div><span class="eyebrow">'+m[0]+'</span><span>'+esc(m[1])+'</span></div>';}).join("")+'</div></div>';
+  out+='<div class="box"><div class="box-h"><h2>Extintores</h2><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span class="mono" style="color:'+(pg.t&&pg.n===pg.t?"var(--green)":"var(--muted)")+'">'+pg.n+' de '+pg.t+' listos</span>'+(ro||!pg.t||pg.n===pg.t?"":'<button type="button" class="btn ghost sm" data-act="allReady">Marcar todos listos</button>')+'</div></div>'+
+    (pg.t?'<div style="padding:12px 18px 0"><div class="bar"><i style="width:'+pct+'%;background:var(--green)"></i></div></div><div class="tbl-wrap" style="padding-top:8px"><table class="unit-tbl"><thead><tr><th>#</th><th>EQUIPO</th><th>NO. DE SERIE</th><th>FABRICACIÓN</th><th>PRÓX. HIDROSTÁTICA</th><th>ETIQUETA NOM-154</th><th>LISTO</th></tr></thead><tbody>'+
+      us.map(function(u,i){var k=u.key.replace("-","_"),dis=ro?" disabled":"",phLate=u.ph&&u.ph<cm;
+        return '<tr'+(u.listo?' class="done"':"")+'><td class="mono">'+(i+1)+'</td><td style="min-width:150px"><b style="font-weight:600">'+esc(tipoLabel(u.row.tipo))+' '+esc(String(u.row.cap).toLowerCase())+'</b><div style="color:var(--muted);font-size:12px">'+esc(u.row.servicio||"")+'</div></td>'+
+        '<td><input class="inp" autocomplete="off" style="min-width:110px" id="u_'+k+'_serie" data-unit="'+u.key+'" data-uk="serie" value="'+esc(u.serie)+'" aria-label="Serie del extintor '+(i+1)+'"'+dis+'></td>'+
+        '<td><input class="inp" type="month" id="u_'+k+'_fab" data-unit="'+u.key+'" data-uk="fab" value="'+esc(u.fab)+'" aria-label="Fabricación del extintor '+(i+1)+'"'+dis+'></td>'+
+        '<td><input class="inp'+(phLate?" warn":"")+'" type="month" id="u_'+k+'_ph" data-unit="'+u.key+'" data-uk="ph" value="'+esc(u.ph)+'" aria-label="Próxima prueba hidrostática del extintor '+(i+1)+'"'+dis+'>'+(phLate?'<div style="color:var(--rose);font-size:11px;margin-top:2px">Prueba vencida</div>':"")+'</td>'+
+        '<td><input class="inp" autocomplete="off" style="min-width:100px" id="u_'+k+'_etiqueta" data-unit="'+u.key+'" data-uk="etiqueta" value="'+esc(u.etiqueta)+'" aria-label="Etiqueta del extintor '+(i+1)+'"'+dis+'></td>'+
+        '<td style="text-align:center"><input type="checkbox" id="u_'+k+'_listo" data-unit="'+u.key+'" data-uk="listo"'+(u.listo?" checked":"")+' aria-label="Extintor '+(i+1)+' listo"'+dis+'></td></tr>';}).join("")+'</tbody></table></div>'
+    :'<div class="empty"><b>Esta orden no tiene extintores capturados.</b><span>Toca “Editar orden” y agrega los extintores por tipo y capacidad.</span></div>')+'</div>';
+  if(si===3){
+    out+='<div class="box"><div class="box-h"><h2>Entregada</h2><span class="mono" style="color:var(--green)">'+fmtDate(o.entregado)+'</span></div><div class="q-meta">'+[["Entregó (JASA)",o.entrego||"—"],["Recibió (cliente)",o.recibioCliente||"—"]].map(function(m){return '<div><span class="eyebrow">'+m[0]+'</span><span>'+esc(m[1])+'</span></div>';}).join("")+'</div></div>';
+  }else if(!ro){
+    var pl=deliveryPlan(o),miss=pg.t-pg.n;
+    out+='<div class="box" id="entrega"><div class="box-h"><h2>Entrega</h2></div><div class="plan">'+
+      '<div class="f2"><div class="field"><label for="dEntrego">Entregó (JASA)</label><input class="inp" autocomplete="off" id="dEntrego" value="'+esc(S.dlv.entrego||"")+'"></div><div class="field"><label for="dRecibe">Recibe (cliente)</label><input class="inp" autocomplete="off" id="dRecibe" value="'+esc(S.dlv.recibe||"")+'"></div></div>'+
+      (pl.next?(pl.cli?'<label class="check"><input type="checkbox" id="dCli" checked><span>Actualizar la próxima recarga de <b>'+esc(pl.cli.nombre)+'</b> a <b>'+fmtMonth(pl.next)+'</b></span></label>':'<span class="hint">“'+esc(o.cliente)+'” no está registrado en Clientes con ese mismo nombre, así que no se actualizará su próxima recarga.</span>'):"")+
+      (pl.inv.length?'<div><label class="check"><input type="checkbox" id="dInv" checked><span>Descontar del inventario</span></label><ul>'+pl.inv.map(function(x){return '<li>'+esc(x.label)+': '+x.qty+' '+x.unit+' → '+(x.item?esc(x.item.nombre)+' (hay '+(+x.item.stock||0)+', quedan '+Math.max(0,Math.round(((+x.item.stock||0)-x.qty)*100)/100)+')':'<span style="color:var(--amber)">ningún artículo marcado. En Inventario, edita el artículo y elige “Se descuenta al entregar”.</span>')+'</li>';}).join("")+'</ul></div>':"")+
+      (miss>0?'<span style="color:var(--amber);font-size:13px">Faltan '+miss+(miss===1?" extintor":" extintores")+' por marcar como listos.</span>':"")+
+      '<div><button type="button" class="btn" data-act="otDeliver">Entregar orden</button></div></div></div>';
+  }
+  return out;
+}
+
+/* ---------- pendientes (agenda) ---------- */
+function isoD(d){return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());}
+function parseD(s){var p=String(s).split("-").map(Number);return new Date(p[0],p[1]-1,p[2]);}
+function addDays(s,n){var d=parseD(s);d.setDate(d.getDate()+n);return isoD(d);}
+var DOW=["dom","lun","mar","mié","jue","vie","sáb"];
+function niceDay(s){var d=parseD(s);return DOW[d.getDay()]+" "+d.getDate()+" "+MESES[d.getMonth()].slice(0,3);}
+function hora12(h){if(!h)return "";var p=h.split(":"),H=+p[0];return (H%12||12)+":"+p[1]+(H<12?" am":" pm");}
+function applies(t,d){
+  if(!t.fecha||d<t.fecha)return false;if(t.hasta&&d>t.hasta)return false;
+  var r=t.repite||"no";if(r==="no")return d===t.fecha;if(r==="diario")return true;
+  var x=parseD(d);if(r==="lunsab")return x.getDay()!==0;
+  if(r==="semanal")return x.getDay()===parseD(t.fecha).getDay();
+  if(r==="mensual")return x.getDate()===parseD(t.fecha).getDate();
+  return false;
+}
+function isDone(t,d){return (t.hechos||[]).indexOf(d)>=0;}
+function dayTasks(d){return S.data.pendientes.filter(function(t){return applies(t,d)&&match(t);}).sort(function(a,b){return (a.hora||"99").localeCompare(b.hora||"99")||String(a.titulo).localeCompare(String(b.titulo),"es");});}
+function overdue(){var out=[],t0=today();for(var i=30;i>=1;i--){var d=addDays(t0,-i);dayTasks(d).forEach(function(t){if(!isDone(t,d))out.push({t:t,d:d});});}return out;}
+function taskRow(t,d,late){
+  var ok=isDone(t,d),ro=S.readOnly||!db,meta=[];
+  if(t.hora)meta.push(hora12(t.hora));if(late)meta.push(niceDay(d));if(t.repite&&t.repite!=="no")meta.push(({lunsab:"Lun a sáb",diario:"Diario",semanal:"Semanal",mensual:"Mensual"})[t.repite]);
+  return '<div class="task'+(ok?" ok":"")+(late&&!ok?" late":"")+'"><input type="checkbox" data-act="pnToggle" data-id="'+t.id+'" data-v="'+d+'"'+(ok?" checked":"")+(ro?" disabled":"")+' aria-label="Marcar como hecho: '+esc(t.titulo)+'">'+
+    '<div><b>'+esc(t.titulo)+'</b><small><span class="tg">'+esc(t.cat||"Otro")+'</span>'+esc(meta.join(" · "))+'</small>'+(t.notas?'<small>'+esc(t.notas)+'</small>':"")+'</div>'+
+    (ro?"<span></span>":'<button type="button" class="link" style="color:var(--muted)" data-act="edit:pendientes" data-id="'+t.id+'">Editar</button>')+'</div>';
+}
+function vPend(){
+  var t0=today(),hoy=dayTasks(t0),ov=overdue(),okHoy=hoy.filter(function(t){return isDone(t,t0);}).length;
+  var ro=S.readOnly||!db,out="";
+  out+='<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><span class="hint">Tu agenda: visitas, compras, banco, cobranza y la rutina de cada día. Marca la casilla cuando concluyas cada actividad.</span>'+(ro?"":'<button type="button" class="btn sm" data-act="new:pendientes">+ Nuevo pendiente</button>')+'</div>';
+  out+='<div class="kpis sm">'+[["Para hoy",String(hoy.length-okHoy),"var(--amber)"],["Concluidos hoy",String(okHoy),"var(--green)"],["Vencidos",String(ov.length),"var(--red)"]].map(function(k){return '<div class="kpi" style="--k:'+k[2]+'"><span class="eyebrow">'+k[0]+'</span><span class="v">'+k[1]+'</span></div>';}).join("")+'</div>';
+  out+='<div class="grid2"><div style="display:flex;flex-direction:column;gap:16px;min-width:0">';
+  out+='<div class="box"><div class="box-h"><h2>Hoy · '+niceDay(t0)+'</h2></div>'+(hoy.length?hoy.map(function(t){return taskRow(t,t0,false);}).join(""):emptyBox("Nada para hoy","Agrega visitas, cobros o compras con “Nuevo pendiente”.","new:pendientes","Nuevo pendiente"))+'</div>';
+  if(ov.length)out+='<div class="box"><div class="box-h"><h2>Vencidos</h2><span class="mono" style="color:var(--rose)">últimos 30 días</span></div>'+ov.map(function(x){return taskRow(x.t,x.d,true);}).join("")+'</div>';
+  out+='</div><div class="box"><div class="box-h"><h2>Próximos 14 días</h2></div>';
+  var any=false;for(var i=1;i<=14;i++){var d=addDays(t0,i),l=dayTasks(d);if(!l.length)continue;any=true;out+='<div class="day-h"><span>'+niceDay(d)+'</span><span class="mono" style="color:var(--muted)">'+l.length+'</span></div>'+l.map(function(t){return taskRow(t,d,false);}).join("");}
+  if(!any)out+='<div class="empty"><span>No hay nada programado en las próximas dos semanas.</span></div>';
+  out+='</div></div>';
+  return out;
+}
+
+/* ---------- vistas ---------- */
+var TITLES={panel:["Resumen","Panel"],quotes:["Bandeja","Cotizaciones"],clientes:["Cartera","Clientes"],proveedores:["Compras","Proveedores"],finanzas:["Contabilidad","Ingresos y egresos"],taller:["Taller JASA","Órdenes de taller"],inventario:["Taller JASA","Inventario"],pendientes:["Agenda","Pendientes"]};
+function lowStock(){return S.data.inventario.filter(function(i){return (+i.stock||0)<(+i.min||0);});}
+function dueClients(){
+  var lim=addMonths(today().slice(0,7),2);
+  return S.data.clientes.filter(function(c){return c.proximaRecarga&&c.proximaRecarga<=lim;}).sort(function(a,b){return a.proximaRecarga<b.proximaRecarga?-1:1;});
+}
+function renderNav(){
+  var pend=S.data.quotes.filter(function(q){return q.status==="Nueva";}).length;
+  var open=S.data.ordenes.filter(function(o){return (o.etapa||0)<3;}).length;
+  var items=[["panel","Panel",""],["quotes","Cotizaciones",pend||""],["clientes","Clientes",""],["proveedores","Proveedores",""],["finanzas","Finanzas",""],["taller","Taller",open||""],["inventario","Inventario",lowStock().length||""],["pendientes","Pendientes",(function(){var t0=today();var n=dayTasks(t0).filter(function(t){return !isDone(t,t0);}).length+overdue().length;return n||"";})()]];
+  document.getElementById("nav").innerHTML=items.map(function(n){return '<button type="button" class="nav-b" data-act="go" data-v="'+n[0]+'"'+(S.screen===n[0]?' aria-current="page"':"")+'><span>'+n[1]+'</span><span class="cnt">'+n[2]+'</span></button>';}).join("");
+}
+function statusNote(){
+  if(S.dbState==="nodb")return '<div class="notice"><b>No se pudo conectar con la base de datos.</b> Recarga la página.</div>';
+  if(S.dbState==="slow")return '<div class="notice"><b>La base de datos aún no responde.</b> Lo que ves puede no estar al día. Sigue intentando sola.</div>';
+  if(S.dbState==="error"||S.dbState==="revoked")return '<div class="notice"><b>Se perdió la conexión con la base de datos.</b> Recarga la página para volver a conectar.</div>';
+  if(S.readOnly)return '<div class="notice"><b>Acceso de solo lectura.</b> Puedes consultar, pero no registrar cambios.</div>';
+  return "";
+}
+function emptyBox(title,text,act,label){return '<div class="empty"><b>'+esc(title)+'</b><span>'+esc(text)+'</span>'+(act&&!S.readOnly&&db?'<button type="button" class="btn sm" data-act="'+act+'">'+esc(label)+'</button>':"")+'</div>';}
+
+function vPanel(){
+  var mk=today().slice(0,7);
+  var pend=S.data.quotes.filter(function(q){return q.status==="Nueva"&&match(q);}).sort(function(a,b){return (b.creado||0)-(a.creado||0);});
+  var mv=S.data.movs.filter(function(m){return monthKey(m.fecha)===mk;});
+  var ing=mv.filter(function(m){return m.tipo==="ingreso";}).reduce(function(a,m){return a+(+m.monto||0);},0);
+  var egr=mv.filter(function(m){return m.tipo==="egreso";}).reduce(function(a,m){return a+(+m.monto||0);},0);
+  var open=S.data.ordenes.filter(function(o){return (o.etapa||0)<3;}).length;
+  var mes=MESES[+mk.slice(5)-1];
+  var k=[["Cotizaciones nuevas",String(S.data.quotes.filter(function(q){return q.status==="Nueva";}).length),"Por contestar","var(--amber)"],["Ingresos "+mes,money(ing),mv.filter(function(m){return m.tipo==="ingreso";}).length+" movimientos","var(--green)"],["Egresos "+mes,money(egr),"Utilidad "+money(ing-egr),"var(--red)"],["En taller",String(open),"Órdenes abiertas","var(--blue)"]];
+  var due=dueClients().filter(match),low=lowStock();
+  var cur=today().slice(0,7);
+  return '<div class="kpis">'+k.map(function(x){return '<div class="kpi" style="--k:'+x[3]+'"><span class="eyebrow">'+x[0]+'</span><span class="v">'+x[1]+'</span><span class="n">'+x[2]+'</span></div>';}).join("")+'</div>'+
+  '<div class="grid2"><div class="box"><div class="box-h"><h2>Cotizaciones por contestar</h2><button type="button" class="link" data-act="go" data-v="quotes">Ver todas →</button></div>'+
+  (pend.length?pend.slice(0,8).map(function(q){return '<button type="button" class="row" data-act="openQuote" data-id="'+q.id+'"><span class="t">'+esc(q.cliente)+'</span><span class="mono" style="color:var(--amber)">'+ago(q.creado)+'</span><span class="s">'+esc(q.folio)+' · '+(q.lines||[]).length+((q.lines||[]).length===1?" partida":" partidas")+'</span></button>';}).join(""):emptyBox("Nada pendiente","Cuando llegue una solicitud por WhatsApp, cópiala y pégala con el botón “Pegar solicitud”.","goPaste","Pegar solicitud"))+
+  '</div><div style="display:flex;flex-direction:column;gap:16px;min-width:0"><div class="box"><div class="box-h"><h2>Recargas por vencer</h2><span class="eyebrow">próximos 2 meses</span></div>'+
+  (due.length?due.slice(0,8).map(function(c){var late=c.proximaRecarga<cur;return '<div class="row"><span class="t">'+esc(c.nombre)+'</span>'+(c.tel?'<a class="btn wa sm" target="_blank" rel="noopener" href="'+esc(waLink(c.tel,"Hola, le escribimos de JASA Extintores. Sus extintores "+(eqText(c)?"("+eqText(c)+") ":"")+(late?"ya vencieron":"están por vencer")+" ("+fmtMonth(c.proximaRecarga)+"). ¿Agendamos su recarga?"))+'">Avisar</a>':'<span></span>')+'<span class="s">'+(eqTotal(c)?eqTotal(c)+" extintores · ":"")+'<span style="color:'+(late?"var(--rose)":"var(--amber)")+'">'+(late?"vencido ":"vence ")+fmtMonth(c.proximaRecarga)+'</span></span></div>';}).join(""):emptyBox("Sin recargas próximas","Registra la próxima recarga de cada cliente y aquí verás a quién avisar.","new:clientes","Nuevo cliente"))+
+  '</div>'+(function(){var t0=today(),l=dayTasks(t0).filter(function(t){return !isDone(t,t0);});return l.length?'<div class="box"><div class="box-h"><h2>Pendientes de hoy</h2><button type="button" class="link" data-act="go" data-v="pendientes">Agenda →</button></div>'+l.slice(0,6).map(function(t){return taskRow(t,t0,false);}).join("")+'</div>':"";})()+(low.length?'<div class="box"><div class="box-h"><h2>Bajo mínimo</h2><button type="button" class="link" data-act="go" data-v="inventario">Inventario →</button></div>'+low.map(function(i){return '<div class="row"><span class="t">'+esc(i.nombre)+'</span><span class="mono" style="color:var(--rose)">'+esc(i.stock)+' / mín '+esc(i.min)+'</span></div>';}).join("")+'</div>':"")+'</div></div>';
+}
+
+function vQuotes(){
+  var list=S.data.quotes.filter(match).sort(function(a,b){return (b.creado||0)-(a.creado||0);});
+  if(!S.sel||!byId("quotes",S.sel))S.sel=list[0]?list[0].id:null;
+  var q=S.sel?byId("quotes",S.sel):null;
+  var stC={Nueva:"var(--amber)",Respondida:"var(--blue)",Aceptada:"var(--green)",Rechazada:"var(--faint)"};
+  var paste='<div class="box"><div class="box-h"><h2>Pegar solicitud de WhatsApp</h2><button type="button" class="link" data-act="new:quotes">o capturar a mano →</button></div><div style="padding:14px 18px;display:flex;flex-direction:column;gap:10px">'+
+    '<label for="pasteBox" class="s" style="color:var(--muted);font-size:13px">Copia el mensaje completo que llegó desde el formulario del sitio y pégalo aquí.</label>'+
+    '<textarea id="pasteBox" autocomplete="off" class="inp" placeholder="*SOLICITUD DE COTIZACIÓN · JASA EXTINTORES*&#10;Número: WEB-…">'+esc(S.paste)+'</textarea>'+
+    '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><button type="button" class="btn" data-act="importPaste"'+(S.readOnly||!db?" disabled":"")+'>Agregar a la bandeja</button><span class="s" style="color:var(--muted);font-size:13px">'+esc(S.pasteMsg)+'</span></div></div></div>';
+  var left='<div class="box"><div class="box-h"><h2>Bandeja</h2><span class="mono" style="color:var(--muted)">'+list.length+'</span></div>'+
+    (list.length?list.map(function(x){return '<button type="button" class="row q-item" data-act="openQuote" data-id="'+x.id+'"'+(x.id===S.sel?' aria-current="true"':"")+'><span class="t">'+esc(x.cliente)+'</span><span class="pill" style="color:'+(stC[x.status]||"var(--muted)")+'">'+esc(x.status)+'</span><span class="s">'+esc(x.folio)+' · '+fmtDate(x.fecha)+'</span></button>';}).join(""):emptyBox("Bandeja vacía","Las solicitudes que pegues o captures aparecen aquí.",null))+'</div>';
+  var right="";
+  if(q){
+    var lines=q.lines||[],sub=quoteTotal(q),ro=S.readOnly||!db;
+    var reply=replyText(q);
+    var missing=lines.some(function(l){return l.price===""||l.price==null;});
+    right='<div class="box"><div class="box-h"><div style="display:flex;flex-direction:column;gap:2px;min-width:0"><span class="mono" style="color:var(--muted)">'+esc(q.folio)+'</span><h2 style="overflow-wrap:anywhere">'+esc(q.cliente)+'</h2></div><div style="display:flex;gap:8px;align-items:center"><span class="pill" style="color:'+(stC[q.status]||"var(--muted)")+'">'+esc(q.status)+'</span>'+(ro?"":'<button type="button" class="btn ghost sm" data-act="edit:quotes" data-id="'+q.id+'">Editar datos</button>')+'</div></div>'+
+      '<div class="q-meta">'+[["Dirigido a",q.dirigido],["Teléfono",q.tel],["Ciudad",q.ciudad],["Fecha",fmtDate(q.fecha)],["Condiciones",q.cond],["Tiempo de entrega",q.entregaTxt],["Vigencia",q.vigencia]].map(function(m){return '<div><span class="eyebrow">'+m[0]+'</span><span>'+esc(m[1]||"—")+'</span></div>';}).join("")+'</div>'+
+      '<div class="tbl-wrap"><table><thead><tr><th>#</th><th>Artículo</th><th class="num">Cant.</th><th class="num">Precio unit.</th><th class="num">Importe</th><th></th></tr></thead><tbody>'+
+      (lines.length?lines.map(function(l,i){return '<tr><td class="mono">'+(i+1)+'</td><td style="min-width:200px"><input class="inp" autocomplete="off" aria-label="Artículo '+(i+1)+'" data-line="'+i+'" data-k="art" value="'+esc(l.art)+'"'+(ro?" disabled":"")+'></td><td class="num"><input class="inp" style="width:70px;text-align:right" type="number" min="0" step="1" aria-label="Cantidad '+(i+1)+'" data-line="'+i+'" data-k="qty" value="'+esc(l.qty)+'"'+(ro?" disabled":"")+'></td><td class="num"><input class="inp" style="width:110px;text-align:right" type="number" min="0" step="any" inputmode="decimal" placeholder="$" aria-label="Precio '+(i+1)+'" data-line="'+i+'" data-k="price" value="'+esc(l.price)+'"'+(ro?" disabled":"")+'></td><td class="num">'+(l.price!==""&&l.price!=null?money((parseFloat(l.price)||0)*(+l.qty||0)):"—")+'</td><td>'+(ro?"":'<button type="button" class="link" style="color:var(--muted)" data-act="delLine" data-i="'+i+'" aria-label="Quitar partida '+(i+1)+'">Quitar</button>')+'</td></tr>';}).join(""):'<tr><td colspan="6" style="color:var(--muted)">Sin partidas. Agrega la primera.</td></tr>')+
+      '</tbody></table></div>'+(ro?"":'<div style="padding:10px 18px"><button type="button" class="link" data-act="addLine">+ Agregar partida</button></div>')+
+      (ro?"":'<div style="padding:0 18px 10px;display:flex;gap:14px;flex-wrap:wrap"><button type="button" class="link" data-act="fillPrices">Llenar con mi lista de precios</button><button type="button" class="link" data-act="savePrices">Guardar estos precios en mi lista</button></div>')+'<div class="totals"><span class="s" style="color:var(--muted)">Sub total '+money(sub)+' · I.V.A. 8% '+money(sub*IVA)+'</span><span class="big">'+money(sub*(1+IVA))+'</span>'+(missing?'<span class="s" style="color:var(--amber);font-size:13px">Faltan precios en algunas partidas</span>':"")+'</div>'+
+      '<div class="actions">'+(q.tel?'<a class="btn wa" target="_blank" rel="noopener" href="'+esc(waLink(q.tel,reply))+'">Responder por WhatsApp</a>':'<span class="s" style="color:var(--muted);font-size:13px;align-self:center">Agrega un teléfono para responder por WhatsApp.</span>')+
+      (ro?"":'<button type="button" class="btn ghost" data-act="qStatus" data-v="Respondida">Marcar respondida</button><button type="button" class="btn ghost" data-act="qAccept"'+(q.otFolio?" disabled":"")+'>'+(q.otFolio?"Aceptada · "+esc(q.otFolio):"Aceptada → abrir orden")+'</button><button type="button" class="btn ghost" data-act="qStatus" data-v="Rechazada">Rechazada</button><button type="button" class="btn ghost" data-act="askDeleteQuote">Eliminar</button>')+
+      '</div><div id="qConfirm" style="padding:0 18px 14px"></div></div>'+
+      '<div class="box" style="margin-top:16px"><div class="box-h"><h2>Hoja de cotización con precios</h2><div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn sm" data-act="sheetPdf"'+(missing||!lines.length?" disabled":"")+'>Descargar PDF</button><button type="button" class="btn ghost sm" data-act="sheetPng"'+(missing||!lines.length?" disabled":"")+'>Descargar imagen</button></div></div>'+
+      '<div style="padding:12px 18px;display:flex;flex-direction:column;gap:4px"><span class="hint">'+(missing||!lines.length?"Pon el precio de todas las partidas para descargar la hoja.":"1. Descarga el PDF.  2. Toca “Responder por WhatsApp”.  3. Adjunta el PDF en ese chat.")+'</span><span class="hint" id="shStatus" aria-live="polite"></span></div>'+
+      '<div class="sheet-wrap" id="shWrap"><div class="sheet-scale" id="shScale">'+sheetHTML(q)+'</div></div></div>';
+  }
+  var pl=S.data.precios.filter(match).sort(function(a,b){return String(a.art).localeCompare(String(b.art),"es");});
+  var plist='<div class="box"><div class="box-h"><h2>Mi lista de precios</h2><span class="mono" style="color:var(--muted)">'+S.data.precios.length+'</span></div>'+
+    (pl.length?'<div class="tbl-wrap"><table><thead><tr><th>ARTÍCULO</th><th class="num">PRECIO UNIT.</th><th>ACTUALIZADO</th><th></th></tr></thead><tbody>'+pl.map(function(x){return '<tr><td>'+esc(x.art)+'</td><td class="num">'+money(x.price)+'</td><td class="mono" style="color:var(--muted)">'+fmtDate(x.actualizado)+'</td><td class="num">'+(S.readOnly||!db?"":'<button type="button" class="link" style="color:var(--muted)" data-act="delPrice" data-id="'+x.id+'">Quitar</button>')+'</td></tr>';}).join("")+'</tbody></table></div>':'<div class="empty"><span>Cuando pongas precios en una cotización, toca “Guardar estos precios en mi lista”. Las próximas solicitudes con los mismos artículos se llenan solas.</span></div>')+'</div>';
+  return paste+'<div class="q-layout">'+left+'<div style="min-width:0">'+right+'</div></div>'+plist;
+}
+
+function vDir(kind){
+  var isCli=kind==="clientes",list=S.data[kind].filter(match).sort(function(a,b){return String(a.nombre).localeCompare(String(b.nombre),"es");});
+  var cur=today().slice(0,7),soon=addMonths(cur,2);
+  var total=list.reduce(function(a,x){return a+(+x.saldo||0);},0);
+  var head=isCli?["Cliente","Contacto","Teléfono","Equipos · próxima recarga","Por cobrar",""]:["Proveedor","Contacto","Teléfono · ciudad","Surte","Por pagar",""];
+  var rows=list.map(function(x){
+    var c4,c3;
+    if(isCli){var pr=x.proximaRecarga,col=!pr?"var(--muted)":pr<cur?"var(--rose)":pr<=soon?"var(--amber)":"var(--muted)";var tot=eqTotal(x),det=eqList(x);c4='<span style="color:'+col+'">'+(tot?tot+(tot===1?" extintor · ":" extintores · "):"")+(pr?(pr<cur?"vencido ":"vence ")+fmtMonth(pr):"sin fecha")+'</span>'+(det.length?'<div class="eq-chips">'+det.map(function(e){return '<span class="eq-chip">'+e.qty+' × '+esc(tipoLabel(e.tipo))+' '+esc(String(e.cap).toLowerCase())+'</span>';}).join("")+'</div>':"");c3=esc(x.tel||"—");}
+    else{c4=esc(x.surte||"—");c3=esc(x.tel||"—")+(x.ciudad?'<div class="s" style="color:var(--muted);font-size:12px">'+esc(x.ciudad)+'</div>':"");}
+    var s=+x.saldo||0;
+    return '<tr><td><b style="font-weight:600">'+esc(x.nombre)+'</b>'+(isCli&&x.ciudad?'<div style="color:var(--muted);font-size:12px">'+esc(x.ciudad)+'</div>':"")+'</td><td>'+esc(x.contacto||"—")+'</td><td>'+c3+'</td><td>'+c4+'</td><td class="num" style="color:'+(s?(isCli?"var(--amber)":"var(--rose)"):"var(--green)")+'">'+(s?money(s):(isCli?"Al corriente":"Sin saldo"))+'</td><td class="num">'+(x.tel?'<a class="link" target="_blank" rel="noopener" href="'+esc(waLink(x.tel,"Hola, le escribimos de JASA Extintores."))+'">WhatsApp</a>':"")+(isCli&&!S.readOnly&&db?'<button type="button" class="link" data-act="portalShare" data-id="'+x.id+'" title="'+esc(x.codigoPortal?"Código: "+x.codigoPortal:"Generar código de acceso")+'">Portal</button>':"")+(S.readOnly||!db?"":'<button type="button" class="link" data-act="edit:'+kind+'" data-id="'+x.id+'">Editar</button>')+'</td></tr>';
+  }).join("");
+  return '<div class="box"><div class="box-h"><div style="display:flex;flex-direction:column;gap:2px"><span class="s" style="color:var(--muted);font-size:13px">'+(isCli?"Cartera con equipos registrados y fecha de su próxima recarga.":"Proveedores y saldos pendientes de pago.")+'</span><span class="mono" style="color:var(--muted)">'+list.length+' registros · '+(isCli?"por cobrar ":"por pagar ")+money(total)+'</span></div>'+(S.readOnly||!db?"":'<button type="button" class="btn sm" data-act="new:'+kind+'">+ Nuevo '+(isCli?"cliente":"proveedor")+'</button>')+'</div>'+
+    (list.length?'<div class="tbl-wrap"><table><thead><tr>'+head.map(function(h,i){return '<th'+(i>=4?' class="num"':"")+'>'+h.toUpperCase()+'</th>';}).join("")+'</tr></thead><tbody>'+rows+'</tbody></table></div>':emptyBox(S.search?"Sin resultados":"Aún no hay "+(isCli?"clientes":"proveedores"),S.search?"Prueba con otra búsqueda.":(isCli?"Agrega tus clientes con sus extintores y la fecha de su próxima recarga.":"Agrega a quién le compras polvo, CO₂, válvulas o señalamientos."),S.search?null:"new:"+kind,isCli?"Nuevo cliente":"Nuevo proveedor"))+'</div>';
+}
+
+function vFin(){
+  var months={};S.data.movs.forEach(function(m){if(m.fecha)months[monthKey(m.fecha)]=1;});months[today().slice(0,7)]=1;
+  var mlist=Object.keys(months).sort().reverse();
+  if(!S.finMes)S.finMes=mlist[0];
+  var inMonth=S.data.movs.filter(function(m){return S.finMes==="todo"||monthKey(m.fecha)===S.finMes;});
+  var ing=inMonth.filter(function(m){return m.tipo==="ingreso";}).reduce(function(a,m){return a+(+m.monto||0);},0);
+  var egr=inMonth.filter(function(m){return m.tipo==="egreso";}).reduce(function(a,m){return a+(+m.monto||0);},0);
+  var rows=inMonth.filter(function(m){return (S.finTab==="todos"||m.tipo===S.finTab)&&match(m);}).sort(function(a,b){return a.fecha<b.fecha?1:a.fecha>b.fecha?-1:0;});
+  var byCat={};inMonth.filter(function(m){return m.tipo==="egreso";}).forEach(function(m){byCat[m.categoria||"Otros gastos"]=(byCat[m.categoria||"Otros gastos"]||0)+(+m.monto||0);});
+  var cats=Object.keys(byCat).sort(function(a,b){return byCat[b]-byCat[a];});
+  return '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><label for="finMes" class="eyebrow">Periodo</label><select id="finMes" class="inp" style="width:auto">'+mlist.map(function(k){return '<option value="'+k+'"'+(S.finMes===k?" selected":"")+'>'+monthName(k)+'</option>';}).join("")+'<option value="todo"'+(S.finMes==="todo"?" selected":"")+'>Todo el historial</option></select>'+(S.readOnly||!db?"":'<button type="button" class="btn sm" data-act="new:movs" style="margin-left:auto">+ Registrar movimiento</button>')+'</div>'+
+  '<div class="kpis">'+[["Ingresos",money(ing),"var(--green)"],["Egresos",money(egr),"var(--red)"],["Utilidad",money(ing-egr),"var(--amber)"]].map(function(x){return '<div class="kpi" style="--k:'+x[2]+'"><span class="eyebrow">'+x[0]+'</span><span class="v">'+x[1]+'</span></div>';}).join("")+'</div>'+
+  '<div class="grid2"><div class="box"><div class="box-h"><h2>Movimientos</h2><div class="tabs">'+[["todos","Todos"],["ingreso","Ingresos"],["egreso","Egresos"]].map(function(t){return '<button type="button" class="tab" data-act="finTab" data-v="'+t[0]+'" aria-pressed="'+(S.finTab===t[0])+'">'+t[1]+'</button>';}).join("")+'</div></div>'+
+  (rows.length?'<div class="tbl-wrap"><table><thead><tr><th>FECHA</th><th>CONCEPTO</th><th>CATEGORÍA</th><th class="num">MONTO</th><th></th></tr></thead><tbody>'+rows.map(function(m){var i=m.tipo==="ingreso";return '<tr><td class="mono">'+fmtDate(m.fecha)+'</td><td>'+esc(m.concepto)+(m.quien?'<div style="color:var(--muted);font-size:12px">'+esc(m.quien)+'</div>':"")+'</td><td style="color:var(--muted)">'+esc(m.categoria||"—")+'</td><td class="num" style="color:'+(i?"var(--green)":"var(--rose)")+'">'+(i?"+ ":"− ")+money(m.monto)+'</td><td class="num">'+(S.readOnly||!db?"":'<button type="button" class="link" data-act="edit:movs" data-id="'+m.id+'">Editar</button>')+'</td></tr>';}).join("")+'</tbody></table></div>':emptyBox("Sin movimientos en este periodo","Registra cada cobro y cada gasto para ver tu utilidad del mes.","new:movs","Registrar movimiento"))+
+  '</div><div class="box"><div class="box-h"><h2>Gastos por categoría</h2></div>'+(cats.length?cats.map(function(c){var p=egr?Math.round(byCat[c]/egr*100):0;return '<div class="row"><span class="t">'+esc(c)+'</span><span class="mono">'+money(byCat[c])+'</span><span class="bar" style="grid-column:1/-1"><i style="width:'+p+'%;background:var(--red)"></i></span></div>';}).join(""):'<div class="empty"><span>Los egresos del periodo aparecen aquí agrupados.</span></div>')+'</div></div>';
+}
+
+function vTaller(){
+  var list=S.data.ordenes.filter(match),t0=today(),op=S.data.ordenes.filter(function(o){return (o.etapa||0)<3;});
+  var k=[["En taller",String(op.reduce(function(a,o){return a+eqTotal(o);},0)),"extintores sin entregar","var(--blue)"],["Órdenes abiertas",String(op.length),"recibidas o en servicio","var(--muted)"],["Entregar hoy",String(op.filter(function(o){return o.entrega===t0;}).length),"programadas para hoy","var(--amber)"],["Atrasadas",String(op.filter(function(o){return o.entrega&&o.entrega<t0;}).length),"pasó su fecha","var(--red)"],["Listas",String(op.filter(function(o){return (o.etapa||0)===2;}).length),"esperando al cliente","var(--green)"]];
+  return '<div class="kpis sm">'+k.map(function(x){return '<div class="kpi" style="--k:'+x[3]+'"><span class="eyebrow">'+x[0]+'</span><span class="v">'+x[1]+'</span><span class="n">'+x[2]+'</span></div>';}).join("")+'</div>'+'<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><span class="s" style="color:var(--muted);font-size:14px">Mueve cada orden conforme avanza. Al aceptar una cotización se abre su orden aquí.</span>'+(S.readOnly||!db?"":'<button type="button" class="btn sm" data-act="new:ordenes">+ Nueva orden</button>')+'</div>'+
+  '<div class="kanban">'+STAGES.map(function(st,si){
+    var items=list.filter(function(o){return (o.etapa||0)===si;}).sort(function(a,b){return String(a.entrega||"9")<String(b.entrega||"9")?-1:1;});
+    if(si===3)items=items.slice(-8).reverse();
+    return '<div class="col" style="--k:'+st[1]+'"><div class="col-h"><h2>'+st[0]+'</h2><span class="mono" style="color:var(--muted)">'+list.filter(function(o){return (o.etapa||0)===si;}).length+'</span></div>'+
+      (items.length?items.map(function(o){var late=si<3&&o.entrega&&o.entrega<today();return '<div class="card"><div style="display:flex;justify-content:space-between;gap:8px"><button type="button" class="link" style="padding:0;font-family:var(--mono);font-size:12px" data-act="otOpen" data-id="'+o.id+'">'+esc(o.folio)+' →</button><span class="mono" style="color:'+(late?"var(--rose)":"var(--muted)")+'">'+(o.entrega?"entrega "+fmtDate(o.entrega).slice(0,5):"sin fecha")+'</span></div><b style="font-weight:600;overflow-wrap:anywhere">'+esc(o.cliente)+'</b>'+(function(){var pg=progress(o);return pg.t&&si<3?'<span class="mono" style="color:'+(pg.n===pg.t?"var(--green)":"var(--amber)")+'">'+pg.n+'/'+pg.t+' listos</span><div class="bar"><i style="width:'+Math.round(pg.n/pg.t*100)+'%;background:var(--green)"></i></div>':"";})()+'<span class="s" style="color:var(--muted);font-size:13px;overflow-wrap:anywhere">'+esc(o.detalle)+'</span>'+
+        (S.readOnly||!db?"":'<div class="card-a">'+(si>0?'<button type="button" class="btn ghost sm" data-act="otMove" data-id="'+o.id+'" data-v="-1" aria-label="Regresar etapa">←</button>':"")+(si<2?'<button type="button" class="btn sm" data-act="otMove" data-id="'+o.id+'" data-v="1">Avanzar →</button>':si===2?'<button type="button" class="btn sm" data-act="otOpen" data-id="'+o.id+'" data-v="entrega">Entregar</button>':"")+'<button type="button" class="btn ghost sm" data-act="otOpen" data-id="'+o.id+'">Control</button></div>')+'</div>';}).join(""):'<div class="empty" style="padding:14px"><span>'+(si===0?"Sin órdenes nuevas.":"Vacío.")+'</span></div>')+'</div>';
+  }).join("")+'</div>';
+}
+
+function vInv(){
+  var CORD=["Extintores","Agentes y polvo","Refacciones","Señalamientos","Otros"];var list=S.data.inventario.filter(match).sort(function(a,b){var ca=CORD.indexOf(a.categoria||"Otros"),cb=CORD.indexOf(b.categoria||"Otros");return (ca<0?9:ca)-(cb<0?9:cb)||String(a.nombre).localeCompare(String(b.nombre),"es");});
+  var shop=S.data.inventario.filter(function(i){return (+i.stock||0)<(+i.min||0);}).map(function(i){return {n:i.nombre,u:i.unidad,q:Math.max(0,(+i.optimo||0)-(+i.stock||0))};});
+  var shopTxt="Pedido JASA Extintores:\n"+shop.map(function(x){return "• "+x.n+": "+x.q+(x.u?" "+x.u:"");}).join("\n");
+  return '<div class="grid2"><div class="box"><div class="box-h"><h2>Existencias</h2>'+(S.readOnly||!db?"":'<button type="button" class="btn sm" data-act="new:inventario">+ Nuevo artículo</button>')+'</div>'+
+  (list.length?'<div class="tbl-wrap"><table><thead><tr><th>ARTÍCULO</th><th class="num">EXISTENCIA</th><th>NIVEL</th><th></th></tr></thead><tbody>'+list.map(function(i){var s=+i.stock||0,mn=+i.min||0,op=+i.optimo||0,pct=op?Math.min(100,Math.round(s/op*100)):0,col=s<mn?"var(--red-2)":s<mn*1.3?"var(--amber)":"var(--green)";
+    return '<tr><td><b style="font-weight:600">'+esc(i.nombre)+'</b>'+(i.porCapturar?' <span class="pill" style="color:var(--blue)">por capturar</span>':"")+'<div style="color:var(--muted);font-size:12px">'+(i.categoria?esc(i.categoria)+' · ':"")+(i.ubicacion?esc(i.ubicacion)+' · ':"")+'mín '+mn+' · ópt '+op+(i.unidad?" "+esc(i.unidad):"")+(i.consumo?' · <span style="color:var(--blue)">se descuenta al entregar</span>':"")+'</div></td><td class="num">'+(S.readOnly||!db?'<span class="mono">'+s+'</span>':'<span class="stepper"><button type="button" data-act="stock" data-id="'+i.id+'" data-v="-1" aria-label="Restar uno">−</button><span class="mono" style="min-width:36px;text-align:center">'+s+'</span><button type="button" data-act="stock" data-id="'+i.id+'" data-v="1" aria-label="Sumar uno">+</button></span>')+'</td><td style="min-width:110px"><div class="bar"><i style="width:'+pct+'%;background:'+col+'"></i></div></td><td class="num">'+(S.readOnly||!db?"":'<button type="button" class="link" data-act="edit:inventario" data-id="'+i.id+'">Editar</button>')+'</td></tr>';}).join("")+'</tbody></table></div>':emptyBox("Inventario vacío","Agrega polvo PQS, CO₂, manómetros, válvulas, etiquetas y extintores nuevos con su mínimo y óptimo.","new:inventario","Nuevo artículo"))+
+  '</div><div class="box"><div class="box-h"><h2>Lista de compras</h2></div>'+(shop.length?shop.map(function(x){return '<div class="row"><span class="t">'+esc(x.n)+'</span><span class="mono" style="color:var(--amber)">+'+x.q+(x.u?" "+esc(x.u):"")+'</span></div>';}).join("")+'<div class="actions"><a class="btn wa" target="_blank" rel="noopener" href="'+esc("https://wa.me/?text="+encodeURIComponent(shopTxt))+'">Enviar pedido por WhatsApp</a></div>':'<div class="empty"><span>Todo está arriba del mínimo. Lo que baje del mínimo aparece aquí con la cantidad para llegar al óptimo.</span></div>')+'</div></div>';
+}
+
+function render(){
+  renderNav();
+  var t=TITLES[S.screen];document.getElementById("crumb").textContent=t[0];document.getElementById("title").textContent=t[1];
+  var html=statusNote();
+  if(S.screen==="panel")html+=vPanel();
+  else if(S.screen==="quotes")html+=vQuotes();
+  else if(S.screen==="clientes"||S.screen==="proveedores")html+=vDir(S.screen);
+  else if(S.screen==="finanzas")html+=vFin();
+  else if(S.screen==="taller"){var oo=S.otSel&&byId("ordenes",S.otSel);html+=oo?vOrden(oo):vTaller();}
+  else if(S.screen==="pendientes")html+=vPend();
+  else html+=vInv();
+  var view=document.getElementById("view"),ae=document.activeElement,keep=ae&&view.contains(ae)&&ae.id?ae.id:null;
+  view.innerHTML=html;
+  if(keep){var el=document.getElementById(keep);if(el)el.focus();}
+  fitSheet();
+  var sn=document.getElementById("syncNote");
+  sn.textContent={ok:"Guardado en claude.ai",loading:"Conectando…",slow:"Sin respuesta de la base",error:"Sin conexión",revoked:"Sin acceso",nodb:"Sin base de datos"}[S.dbState]||"";
+}
+
+/* ---------- acciones ---------- */
+function setQuoteLines(q,lines){return patch("quotes",q.id,{lines:lines});}
+document.addEventListener("click",function(e){
+  var b=e.target.closest("[data-act]");if(!b)return;
+  var a=b.getAttribute("data-act"),v=b.getAttribute("data-v"),id=b.getAttribute("data-id");
+  if(a==="closeDrawer"){if(b.classList.contains("overlay")&&e.target!==b)return;S.drawer=null;renderDrawer();return;}
+  if(a==="go"){S.screen=v;S.otSel=null;S.confirm=null;render();window.scrollTo(0,0);return;}
+  if(a==="goPaste"){S.screen="quotes";render();setTimeout(function(){var p=document.getElementById("pasteBox");if(p)p.focus();},20);return;}
+  if(a.indexOf("new:")===0){openForm(a.slice(4));return;}
+  if(a.indexOf("edit:")===0){openForm(a.slice(5),id);return;}
+  if(a==="eqAdd"){var list=document.getElementById("eqList");if(!list.children.length)list.insertAdjacentHTML("beforebegin",'<div class="eq-head"><span>Tipo</span><span>Capacidad</span><span>Cantidad</span><span></span></div>');var last=list.lastElementChild;var e=last?{tipo:last.querySelector(".eq-tipo").value,cap:last.querySelector(".eq-cap").value,qty:1,servicio:last.querySelector(".eq-svc")?last.querySelector(".eq-svc").value:""}:null;list.insertAdjacentHTML("beforeend",eqRowHTML(e));eqSummary();var nq=list.lastElementChild.querySelector(".eq-tipo");if(nq)nq.focus();return;}
+  if(a==="eqFromClient"){var nm=(document.getElementById("f_cliente").value||"").trim().toLowerCase();var cl=S.data.clientes.find(function(c){return String(c.nombre||"").trim().toLowerCase()===nm;});
+    if(!cl){toast(nm?"No encontré ese cliente en Clientes. Revisa que el nombre sea igual.":"Escribe primero el nombre del cliente.");return;}
+    var det=eqList(cl);if(!det.length){toast("Ese cliente no tiene extintores registrados.");return;}
+    var lst=document.getElementById("eqList");if(!lst.children.length)lst.insertAdjacentHTML("beforebegin",'<div class="eq-head"><span>Tipo</span><span>Capacidad</span><span>Cantidad</span><span></span></div>');
+    lst.innerHTML=det.map(function(e){return eqRowHTML({tipo:e.tipo,cap:e.cap,qty:e.qty,servicio:"Recarga"});}).join("");eqSummary();toast("Equipos de "+cl.nombre+" agregados");return;}
+  if(a==="eqDel"){b.closest(".eq-row").remove();eqSummary();return;}
+  if(a==="askDelete"){document.getElementById("delConfirm").innerHTML='<div class="confirm">¿Eliminar este registro? No se puede deshacer. <button type="button" class="btn sm" data-act="doDelete">Sí, eliminar</button><button type="button" class="btn ghost sm" data-act="noDelete">Cancelar</button></div>';return;}
+  if(a==="noDelete"){document.getElementById("delConfirm").innerHTML="";return;}
+  if(a==="doDelete"){var d=S.drawer;remove(d.kind,d.id).then(function(){S.drawer=null;renderDrawer();toast("Eliminado");});return;}
+  if(a==="openQuote"){S.sel=id;S.screen="quotes";render();return;}
+  if(a==="importPaste"){
+    var p=parseRequest(S.paste);
+    if(!p.lines.length){S.pasteMsg="No encontré partidas. Pega el mensaje completo, desde *SOLICITUD DE COTIZACIÓN*.";render();return;}
+    if(S.data.quotes.some(function(x){return x.folio===p.folio;})){S.pasteMsg="La solicitud "+p.folio+" ya está en la bandeja.";render();return;}
+    var pf=fillFromList(p.lines);p.lines=pf.lines;
+    write("quotes",null,p).then(function(nid){S.sel=nid;S.paste="";S.pasteMsg="Solicitud "+p.folio+" agregada."+(pf.n?" "+pf.n+(pf.n===1?" precio tomado":" precios tomados")+" de tu lista.":"");render();},function(){});
+    return;
+  }
+  var q=S.sel&&byId("quotes",S.sel);
+  if(a==="addLine"&&q){setQuoteLines(q,(q.lines||[]).concat([{art:"",qty:1,price:""}])).then(function(){setTimeout(function(){var ins=document.querySelectorAll('[data-k="art"]');if(ins.length)ins[ins.length-1].focus();},50);});return;}
+  if(a==="delLine"&&q){var L=(q.lines||[]).slice();L.splice(+b.getAttribute("data-i"),1);setQuoteLines(q,L);return;}
+  if(a==="qStatus"&&q){patch("quotes",q.id,v==="Respondida"?{status:v,respondida:today()}:{status:v}).then(function(){toast("Marcada como "+v.toLowerCase());});return;}
+  if(a==="qAccept"&&q&&!q.otFolio){
+    var folio=nextOT();
+    write("ordenes",null,{folio:folio,cliente:q.cliente,detalle:(q.lines||[]).map(function(l){return l.qty+" × "+String(l.art).toLowerCase();}).join(" · ").slice(0,140),entrega:"",etapa:0,creado:Date.now(),cotizacion:q.folio})
+      .then(function(){return patch("quotes",q.id,{status:"Aceptada",otFolio:folio});})
+      .then(function(){toast("Orden "+folio+" abierta en Taller");},function(){});
+    return;
+  }
+  if(a==="askDeleteQuote"){document.getElementById("qConfirm").innerHTML='<div class="confirm">¿Eliminar la cotización '+esc(q.folio)+'? <button type="button" class="btn sm" data-act="doDeleteQuote">Sí, eliminar</button><button type="button" class="btn ghost sm" data-act="noDeleteQuote">Cancelar</button></div>';return;}
+  if(a==="noDeleteQuote"){document.getElementById("qConfirm").innerHTML="";return;}
+  if(a==="doDeleteQuote"&&q){remove("quotes",q.id).then(function(){S.sel=null;toast("Cotización eliminada");render();});return;}
+  if(a==="fillPrices"&&q){var f=fillFromList(q.lines||[]);if(!f.n){toast(S.data.precios.length?"No encontré precios guardados para estas partidas.":"Tu lista de precios está vacía. Guarda precios desde una cotización.");return;}setQuoteLines(q,f.lines).then(function(){toast(f.n+(f.n===1?" precio llenado":" precios llenados")+" de tu lista");});return;}
+  if(a==="savePrices"&&q){savePrices(q);return;}
+  if((a==="sheetPdf"||a==="sheetPng")&&q){exportSheet(a==="sheetPdf"?"pdf":"png",q);return;}
+  if(a==="delPrice"){remove("precios",id).then(function(){toast("Precio quitado de tu lista");});return;}
+  if(a==="pnToggle"){var tk=byId("pendientes",id);if(!tk)return;var h=(tk.hechos||[]).slice(),ix=h.indexOf(v);if(ix>=0)h.splice(ix,1);else h.push(v);patch("pendientes",id,{hechos:h});return;}
+  if(a==="otOpen"){S.otSel=id;S.dlv={};render();if(v==="entrega"){var en=document.getElementById("entrega");if(en)en.scrollIntoView();}else window.scrollTo(0,0);return;}
+  if(a==="otBack"){S.otSel=null;render();window.scrollTo(0,0);return;}
+  var oc=S.otSel&&byId("ordenes",S.otSel);
+  if(a==="allReady"&&oc){patch("ordenes",oc.id,{unidades:cleanUnits(unitsOf(oc).map(function(u){u.listo=true;return u;}))});return;}
+  if(a==="otDeliver"&&oc){deliver(oc);return;}
+  if(a==="otReport"&&oc){exportDoc("pdf",jasaReportHTML(oc,findClient(oc.cliente),LOGO),"Reporte-JASA-"+String(oc.folio).replace(/[^A-Za-z0-9-]/g,"")+".pdf","otStatus","Envíaselo al cliente; también lo puede descargar en su portal.");return;}
+  if(a==="portalShare"){var pc=byId("clientes",id);if(!pc)return;var code=pc.codigoPortal||newPortalCode();if(!pc.codigoPortal)patch("clientes",id,{codigoPortal:code});
+    var msg="Hola, le escribimos de JASA Extintores. Este es su acceso al portal de clientes, donde puede consultar sus extintores y descargar sus reportes de inspección:\nhttps://jasaextintores.com/clientes\nCódigo de acceso: "+code;
+    if(pc.tel){var la=document.createElement("a");la.href=waLink(pc.tel,msg);la.target="_blank";la.rel="noopener";document.body.appendChild(la);la.click();la.remove();toast("Código "+code);}
+    else{try{navigator.clipboard.writeText(msg).then(function(){toast("Código "+code+" copiado con el mensaje");},function(){toast("Código: "+code);});}catch(er){toast("Código: "+code);}}
+    return;}
+  if(a==="logout"&&SB){SB.auth.signOut().then(function(){location.reload();});return;}
+  if(a==="importAsk"){document.getElementById("importFile").click();return;}
+  if(a==="importDo"&&S.importData){doImport();return;}
+  if(a==="otPdf"&&oc){exportDoc("pdf",orderSheetHTML(oc),"Orden-JASA-"+String(oc.folio).replace(/[^A-Za-z0-9-]/g,"")+".pdf","otStatus","Imprímelo o compártelo para firma.");return;}
+  if(a==="finTab"){S.finTab=v;render();return;}
+  if(a==="otMove"){var o=byId("ordenes",id);if(!o)return;var n=Math.max(0,Math.min(3,(o.etapa||0)+(+v)));var up={etapa:n};if(n===3)up.entregado=today();patch("ordenes",id,up);return;}
+  if(a==="stock"){var it=byId("inventario",id);if(!it)return;patch("inventario",id,{stock:Math.max(0,(+it.stock||0)+(+v))});return;}
+  if(a==="backup"){backup();return;}
+});
+document.addEventListener("input",function(e){
+  if(e.target.id==="dEntrego"){S.dlv.entrego=e.target.value;return;}
+  if(e.target.id==="dRecibe"){S.dlv.recibe=e.target.value;return;}
+  if(e.target.id==="search"){S.search=e.target.value;render();}
+  if(e.target.id==="pasteBox"){S.paste=e.target.value;}
+});
+document.addEventListener("change",function(e){
+  var t=e.target;
+  if(t.id==="finMes"){S.finMes=t.value;render();return;}
+  if(t.hasAttribute("data-unit")){
+    var ot=S.otSel&&byId("ordenes",S.otSel);if(!ot)return;
+    var uk=t.getAttribute("data-uk"),key=t.getAttribute("data-unit");
+    var us=unitsOf(ot).map(function(u){if(u.key===key)u[uk]=uk==="listo"?t.checked:t.value.trim();return u;});
+    patch("ordenes",ot.id,{unidades:cleanUnits(us)});return;
+  }
+  if(t.hasAttribute("data-line")){
+    var q=byId("quotes",S.sel);if(!q)return;
+    var i=+t.getAttribute("data-line"),k=t.getAttribute("data-k"),L=(q.lines||[]).map(function(l){return Object.assign({},l);});
+    if(!L[i])return;
+    L[i][k]=k==="qty"?(parseInt(t.value,10)||0):k==="price"?(t.value===""?"":(parseFloat(t.value)||0)):t.value;
+    setQuoteLines(q,L);
+  }
+  if(t.classList&&t.classList.contains("eq-tipo")){var cs=t.closest(".eq-row").querySelector(".eq-cap");var caps=EXT_CAPS[t.value]||[];cs.innerHTML=caps.map(function(c){return '<option value="'+esc(c)+'">'+esc(c.charAt(0)+c.slice(1).toLowerCase())+'</option>';}).join("");return;}
+  if(t.classList&&t.classList.contains("eq-qty")){eqSummary();return;}
+  if(S.drawer&&S.drawer.kind==="ordenes"&&t.id==="f_cliente"){var cl=findClient(t.value);if(cl){var fc=document.getElementById("f_contacto"),ft=document.getElementById("f_tel");if(fc&&!fc.value)fc.value=cl.contacto||"";if(ft&&!ft.value)ft.value=cl.tel||"";}}
+  if(S.drawer&&t.name==="tipo"){var c=document.getElementById("f_categoria");if(c)c.value=t.value==="ingreso"?"Ventas":"Insumos";}
+});
+document.addEventListener("submit",function(e){e.preventDefault();if(e.target.id==="drawerForm")submitDrawer(e.target);});
+document.addEventListener("keydown",function(e){if(e.key==="Escape"&&S.drawer){S.drawer=null;renderDrawer();}});
+
+function backup(){
+  var out={exportado:new Date().toISOString()};COLS.forEach(function(c){out[c]=S.data[c];});
+  saveBlob("jasa-respaldo-"+today()+".json",new Blob([JSON.stringify(out,null,2)],{type:"application/json"})).then(function(){toast("Respaldo guardado");},function(e){if(e&&e.code!=="declined")toast("No se pudo descargar el respaldo.");});
+}
+function newPortalCode(){var A="ABCDEFGHJKLMNPQRSTUVWXYZ23456789",b=new Uint8Array(10),o="";crypto.getRandomValues(b);for(var i=0;i<10;i++){o+=A[b[i]%A.length];if(i===3||i===7)o+="-";}return o;}
+
+/*@reporte*/
+/* Reporte de inspección y servicio de JASA Extintores.
+   Se comparte entre el panel (admin) y el portal de clientes; tools/build.py lo inserta en ambos. */
+function jasaReportHTML(o, cli, logo) {
+  function e(v) { return String(v == null ? "" : v).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+  function p2(n) { return String(n).padStart(2, "0"); }
+  function fd(s) { if (!s) return ""; var p = String(s).split("-"); return p.length === 3 ? p[2] + "/" + p[1] + "/" + p[0] : s; }
+  function fm(s) { if (!s) return ""; var p = String(s).split("-"); return p.length >= 2 ? p[1] + "/" + p[0] : s; }
+  function addM(k, n) { var p = k.split("-").map(Number), d = new Date(p[0], p[1] - 1 + n, 1); return d.getFullYear() + "-" + p2(d.getMonth() + 1); }
+  function tl(t) { return t === "CO2" ? "CO₂" : t === "AGUA" ? "Agua" : t === "TIPO K" ? "Tipo K" : t === "TIPO D" ? "Tipo D" : t === "AGENTE LIMPIO" ? "Agente limpio" : (t || ""); }
+  cli = cli || {};
+  var old = {}, rows = [];
+  (o.unidades || []).forEach(function (u) { old[u.key] = u; });
+  (o.equiposDet || []).forEach(function (r, i) {
+    for (var k = 0; k < (+r.qty || 0); k++) {
+      var u = old[i + "-" + k] || {};
+      rows.push({ eq: tl(r.tipo) + " " + String(r.cap || "").toLowerCase(), svc: r.servicio || "Recarga", serie: u.serie || "", fab: u.fab || "", ph: u.ph || "", et: u.etiqueta || "", ok: !!u.listo });
+    }
+  });
+  var entregada = (+o.etapa || 0) === 3;
+  var fecha = o.entregado || o.recibido || "";
+  var prox = entregada && o.entregado ? addM(o.entregado.slice(0, 7), 12) : (cli.proximaRecarga || "");
+  var n = Math.max(rows.length, 8), body = "";
+  for (var i = 0; i < n; i++) {
+    var r = rows[i];
+    body += "<tr><td>" + (r ? i + 1 : "") + "</td><td>" + (r ? e(r.eq) : "") + "</td><td>" + (r ? e(r.svc) : "") + "</td><td>" + (r ? e(r.serie) : "") + "</td><td>" + (r ? e(fm(r.fab)) : "") + "</td><td>" + (r ? e(fm(r.ph)) : "") + "</td><td>" + (r ? e(r.et) : "") + "</td><td>" + (r ? (r.ok || entregada ? "Conforme" : "En proceso") : "") + "</td></tr>";
+  }
+  return '<div class="sheet"><div class="sh-top"><div class="sh-logo"><img alt="JASA Extintores" width="300" height="136" src="' + (logo || "") + '"></div>' +
+    '<div class="sh-co"><b>JASA EXTINTORES SA DE CV</b><span>MUTUALISTA 412 COL. BUENA VISTA SUR</span><span>PIEDRAS NEGRAS, COAHUILA</span><span>JEX180118NA0</span><span class="sh-tel">878 783 3216 · WhatsApp 878 117 4728</span></div></div>' +
+    '<div class="sh-row"><div class="sh-title" style="font-size:24px">REPORTE DE INSPECCIÓN Y SERVICIO</div><div class="sh-num"><div><span>ORDEN:</span><b>' + e(o.folio) + '</b></div><div><span>FECHA:</span><b>' + e(fd(fecha)) + '</b></div><div><span>PRÓX. RECARGA:</span><b>' + e(fm(prox) || "—") + '</b></div></div></div>' +
+    '<div class="sh-row"><dl class="sh-client"><dt>Cliente:</dt><dd>' + e(cli.nombre || o.cliente) + '</dd><dt>Ciudad:</dt><dd>' + e(cli.ciudad || "") + '</dd><dt>Recibido:</dt><dd>' + e(fd(o.recibido)) + '</dd><dt>Entregado:</dt><dd>' + e(entregada ? fd(o.entregado) : "EN PROCESO") + '</dd><dt>Extintores:</dt><dd>' + rows.length + '</dd></dl>' +
+    '<div class="sh-cond"><b>OBSERVACIONES</b><div>' + e(o.notas || "") + '</div></div></div>' +
+    '<table class="sh-table"><colgroup><col style="width:5%"><col style="width:17%"><col style="width:15%"><col style="width:14%"><col style="width:11%"><col style="width:12%"><col style="width:14%"><col style="width:12%"></colgroup>' +
+    '<thead><tr><th>#</th><th>Equipo</th><th>Servicio</th><th>No. de serie</th><th>Fabricación</th><th>Próx. P. H.</th><th>Etiqueta NOM-154</th><th>Resultado</th></tr></thead><tbody>' + body + '</tbody></table>' +
+    '<div class="sh-legal">Servicio de mantenimiento y recarga conforme a la NOM-154-SCFI-2005 y a la NOM-002-STPS-2010. P. H. = prueba hidrostática. Conserve este reporte para sus inspecciones de Protección Civil.</div>' +
+    '<div class="sh-sign" style="grid-template-columns:repeat(2,1fr)"><div><span>TÉCNICO RESPONSABLE (JASA)</span><small>' + e(o.entrego || o.recibio || "") + '</small></div><div><span>RECIBE DE CONFORMIDAD (CLIENTE)</span><small>' + e(o.recibioCliente || "") + '</small></div></div></div>';
+}
+var JASA_SHEET_CSS = ".sheet{width:816px;background:#ffffff;color:#111111;padding:36px 40px 40px;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.3;box-sizing:border-box}" +
+  ".sheet *{box-sizing:border-box}" +
+  ".sh-top{display:flex;justify-content:space-between;align-items:center;border:1px solid #444;border-bottom:0;padding:10px 14px}" +
+  ".sh-logo img{display:block;width:210px;height:auto}" +
+  ".sh-co{display:flex;flex-direction:column;align-items:flex-end;text-align:right;gap:2px;font-weight:700;font-size:11.5px}" +
+  ".sh-co b{color:#c00000;font-size:16px}.sh-co .sh-tel{color:#777;font-weight:400}" +
+  ".sh-row{display:grid;grid-template-columns:1fr 210px;border:1px solid #444;border-bottom:0}" +
+  ".sh-title{text-align:center;color:#c00000;font-weight:700;font-size:30px;letter-spacing:.02em;padding:8px;border-right:1px solid #444;display:flex;align-items:center;justify-content:center}" +
+  ".sh-num{display:flex;flex-direction:column;justify-content:center;padding:6px 10px;color:#c00000;font-weight:700;gap:2px}" +
+  ".sh-num div{display:flex;justify-content:space-between;gap:8px}" +
+  ".sh-client{margin:0;padding:10px 12px;display:grid;grid-template-columns:72px 1fr;gap:5px 8px;align-items:baseline;border-right:1px solid #444;min-height:110px}" +
+  ".sh-client dt{color:#999;font-size:10.5px;text-align:right}" +
+  ".sh-client dd{margin:0;font-size:13px;text-transform:uppercase;min-height:16px;border-bottom:1px solid #eee;overflow-wrap:anywhere}" +
+  ".sh-cond{padding:8px 10px;font-size:11px;display:flex;flex-direction:column;gap:6px}" +
+  ".sh-cond div{text-transform:uppercase;overflow-wrap:anywhere;white-space:pre-line}" +
+  ".sh-table{width:100%;border-collapse:collapse;table-layout:fixed;border:1px solid #444}" +
+  ".sh-table th{font-family:Arial,Helvetica,sans-serif;background:#fff;color:#c00000;font-weight:400;font-size:10.5px;border:1px solid #aaa;border-top:2px solid #444;border-bottom:2px solid #444;padding:4px 5px;text-align:center;letter-spacing:0;text-transform:none}" +
+  ".sh-table td{color:#111;border:1px solid #bbb;padding:5px 5px;height:24px;font-size:11px;vertical-align:middle;overflow-wrap:anywhere}" +
+  ".sh-legal{border:1px solid #444;border-top:0;padding:8px 12px;font-size:10px;color:#555}" +
+  ".sh-sign{display:grid;grid-template-columns:repeat(2,1fr);border:1px solid #444;border-top:0}" +
+  ".sh-sign div{padding:46px 10px 8px;text-align:center;font-size:10.5px;border-right:1px solid #444}" +
+  ".sh-sign div:last-child{border-right:0}" +
+  ".sh-sign span{display:block;border-top:1px solid #444;padding-top:4px;font-weight:700}" +
+  ".sh-sign small{display:block;color:#666;font-size:10px;margin-top:2px;min-height:12px}";
+/*@/reporte*/
+
+/* ---------- modo Supabase (jasaextintores.com/admin) ---------- */
+var SUPA_URL="https://psggoagcdokwrkykgufr.supabase.co",SUPA_KEY="sb_publishable_jwx2IRxOqdCW-SjmKcYW2A_lrJTFJa3",SB=null;
+function makeSupaDb(sb){
+  var cache={},subs={};
+  function snap(c){var m=cache[c]||{};var arr=Object.keys(m).map(function(id){var d=m[id];return {id:id,exists:true,data:function(){return d;},metadata:{fromCache:false,hasPendingWrites:false}};});return {docs:arr,size:arr.length,empty:!arr.length,metadata:{fromCache:false,hasPendingWrites:false},docChanges:function(){return [];}};}
+  function emit(c){(subs[c]||[]).forEach(function(l){l.next(snap(c));});}
+  function fail(e){return {code:e&&e.code==="42501"?"invalid_argument":"unavailable",message:e&&e.message};}
+  function load(c){return sb.from("docs").select("id,data").eq("col",c).limit(10000).then(function(r){if(r.error)throw r.error;var m={};r.data.forEach(function(x){m[x.id]=x.data;});cache[c]=m;emit(c);});}
+  function merge(a,b){var o=Object.assign({},a);Object.keys(b).forEach(function(k){var v=b[k];if(v&&typeof v==="object"&&!Array.isArray(v)&&o[k]&&typeof o[k]==="object"&&!Array.isArray(o[k]))o[k]=merge(o[k],v);else o[k]=v;});return o;}
+  function rid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,8);}
+  sb.channel("jasa-docs").on("postgres_changes",{event:"*",schema:"public",table:"docs"},function(p){
+    var row=(p.new&&p.new.col)?p.new:p.old;if(!row||!row.col||!cache[row.col])return;
+    if(p.eventType==="DELETE")delete cache[row.col][row.id];else cache[row.col][row.id]=p.new.data;emit(row.col);
+  }).subscribe();
+  setInterval(function(){if(document.hidden)return;Object.keys(subs).forEach(function(c){load(c).catch(function(){});});},60000);
+  return {reload:function(){return Promise.all(Object.keys(subs).map(load));},collection:function(c){return {
+    doc:function(id){id=id||rid();return {id:id,
+      set:function(b){var d=JSON.parse(JSON.stringify(b));(cache[c]=cache[c]||{})[id]=d;emit(c);return sb.from("docs").upsert({col:c,id:id,data:d,updated_at:new Date().toISOString()}).then(function(r){if(r.error)throw fail(r.error);});},
+      update:function(b){var cur=(cache[c]||{})[id];if(!cur)return Promise.reject({code:"invalid_argument"});var d=merge(cur,JSON.parse(JSON.stringify(b)));cache[c][id]=d;emit(c);return sb.from("docs").update({data:d,updated_at:new Date().toISOString()}).eq("col",c).eq("id",id).then(function(r){if(r.error)throw fail(r.error);});},
+      delete:function(){if(cache[c])delete cache[c][id];emit(c);return sb.from("docs").delete().eq("col",c).eq("id",id).then(function(r){if(r.error)throw fail(r.error);});}
+    };},
+    onSnapshot:function(next,error){(subs[c]=subs[c]||[]).push({next:next});load(c).catch(function(e){if(error)error(fail(e));});return function(){};}
+  };}};
+}
+function showLogin(msg){
+  document.getElementById("loginRoot").innerHTML='<div class="login"><form id="loginForm" autocomplete="on"><div class="brand" style="padding:0"><b>JASA</b><span class="eyebrow">Administración</span></div>'+
+    '<div class="field"><label for="lgMail">Correo</label><input class="inp" id="lgMail" type="email" autocomplete="username" required></div>'+
+    '<div class="field"><label for="lgPass">Contraseña</label><input class="inp" id="lgPass" type="password" autocomplete="current-password" required></div>'+
+    '<button class="btn" type="submit">Entrar</button><div class="err" id="lgErr" role="alert">'+esc(msg||"")+'</div>'+
+    '<span class="hint">¿Olvidaste tu contraseña? El administrador la cambia en Supabase, en Authentication › Users.</span></form></div>';
+  var m=document.getElementById("lgMail");if(m)m.focus();
+}
+function startSupabase(){
+  S.dbState="loading";render();
+  loadScript("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js").then(function(){
+    SB=window.supabase.createClient(SUPA_URL,SUPA_KEY);
+    return SB.auth.getSession();
+  }).then(function(r){
+    var ses=r&&r.data&&r.data.session;if(!ses){showLogin();return;}
+    return SB.from("staff").select("email").limit(1).then(function(q){
+      if(q.error||!q.data||!q.data.length){showLogin("El correo "+ses.user.email+" no tiene acceso al panel.");SB.auth.signOut();return;}
+      document.getElementById("loginRoot").innerHTML="";
+      db=makeSupaDb(SB);startDb();
+      ["backupBtn","importBtn","logoutBtn"].forEach(function(i){document.getElementById(i).hidden=false;});
+      var w=document.getElementById("whoNote");w.textContent=ses.user.email;w.hidden=false;
+    });
+  }).catch(function(){S.dbState="error";render();});
+}
+document.addEventListener("submit",function(e){
+  if(e.target.id!=="loginForm")return;e.preventDefault();e.stopImmediatePropagation();
+  var er=document.getElementById("lgErr");er.textContent="Entrando…";
+  SB.auth.signInWithPassword({email:document.getElementById("lgMail").value.trim(),password:document.getElementById("lgPass").value}).then(function(r){
+    if(r.error){er.textContent="Correo o contraseña incorrectos.";return;}
+    startSupabase();
+  });
+},true);
+document.addEventListener("change",function(e){
+  if(e.target.id!=="importFile")return;var f=e.target.files&&e.target.files[0];if(!f)return;
+  var rd=new FileReader();rd.onload=function(){
+    var data;try{data=JSON.parse(rd.result);}catch(er){toast("Ese archivo no es un respaldo de JASA.");return;}
+    var cnt=COLS.map(function(c){return [c,Array.isArray(data[c])?data[c].length:0];}).filter(function(x){return x[1];});
+    if(!cnt.length){toast("Ese archivo no tiene datos de JASA.");return;}
+    S.importData=data;
+    document.getElementById("drawerRoot").innerHTML='<div class="overlay"><div class="drawer" role="dialog" aria-modal="true" aria-label="Importar respaldo"><div class="box-h"><h2>Importar respaldo</h2><button type="button" class="btn ghost sm" data-act="closeDrawer">Cerrar</button></div><div class="plan">'+
+      '<span>Se van a cargar estos registros. Los que ya existan con el mismo identificador se reemplazan; los demás no se tocan.</span><ul>'+cnt.map(function(x){return '<li>'+esc(COL_LABEL[x[0]]||x[0])+': '+x[1]+'</li>';}).join("")+'</ul>'+
+      '<div><button type="button" class="btn" data-act="importDo">Importar</button></div><span class="hint" id="impStatus"></span></div></div></div>';
+  };rd.readAsText(f);e.target.value="";
+});
+var COL_LABEL={quotes:"Cotizaciones",clientes:"Clientes",proveedores:"Proveedores",movs:"Movimientos de finanzas",ordenes:"Órdenes de taller",inventario:"Inventario",precios:"Lista de precios",pendientes:"Pendientes"};
+function doImport(){
+  var data=S.importData,rows=[];COLS.forEach(function(c){(data[c]||[]).forEach(function(x){var d=Object.assign({},x);var id=d.id;delete d.id;if(id)rows.push({col:c,id:String(id),data:d,updated_at:new Date().toISOString()});});});
+  var st=document.getElementById("impStatus"),i=0;
+  function next(){if(i>=rows.length){S.importData=null;document.getElementById("drawerRoot").innerHTML="";db.reload().then(function(){toast(rows.length+" registros importados");});return;}
+    var chunk=rows.slice(i,i+200);st.textContent="Importando "+Math.min(i+200,rows.length)+" de "+rows.length+"…";
+    SB.from("docs").upsert(chunk).then(function(r){if(r.error){st.textContent="Se detuvo: "+r.error.message;return;}i+=200;next();});}
+  next();
+}
+
+/* ---------- arranque ---------- */
+drawLogo();
+if(document.fonts){document.fonts.load('900 150px "Saira Condensed"').then(drawLogo,function(){});document.fonts.load('600 34px "Barlow Condensed"').then(drawLogo,function(){});if(document.fonts.ready)document.fonts.ready.then(function(){drawLogo();fitSheet();});}
+render();
+if(window.claude&&window.claude.use){
+  window.claude.use("db").then(function(d){
+    if(!d){S.dbState="nodb";render();return;}
+    db=d;startDb();
+  },function(){S.dbState="nodb";render();});
+  window.claude.use("user").then(function(u){
+    if(!u)return;var r=u.can&&u.can("data.write");
+    Promise.resolve(r).then(function(ok){if(ok===false){S.readOnly=true;render();}});
+  },function(){});
+  window.claude.use("downloads").then(function(d){if(d){dl=d;document.getElementById("backupBtn").hidden=false;}},function(){});
+}else{startSupabase();}
+})();
+</script>
+
+</body></html>

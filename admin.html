@@ -142,6 +142,10 @@ textarea.inp{resize:vertical;min-height:120px;font-family:var(--mono);font-size:
 .sh-total{border-top:1px solid #444;padding-top:4px}
 .sh-total b{font-size:14px!important}
 .hint{font-size:13px;color:var(--muted)}
+.sh-legal{border:1px solid #444;border-top:0;padding:8px 12px;font-size:10px;color:#555}
+.login{position:fixed;inset:0;z-index:40;background:var(--bg);display:flex;align-items:center;justify-content:center;padding-block:24px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.login form{width:min(380px,100%);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:24px;display:flex;flex-direction:column;gap:14px}
+.login .err{color:var(--rose);font-size:14px;min-height:1.2em}
 .eq-list{display:flex;flex-direction:column;gap:8px}
 .eq-row{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) 72px 34px;gap:6px;align-items:center}
 .eq-x{width:34px;height:36px;border:1px solid var(--line);background:var(--panel-2);border-radius:3px;cursor:pointer;color:var(--muted)}
@@ -204,6 +208,10 @@ textarea.inp{resize:vertical;min-height:120px;font-family:var(--mono);font-size:
     <div class="side-foot">
       <span id="syncNote">Conectando…</span>
       <button type="button" class="link" data-act="backup" id="backupBtn" hidden style="text-align:left;padding:0">Descargar respaldo</button>
+      <button type="button" class="link" data-act="importAsk" id="importBtn" hidden style="text-align:left;padding:0">Importar respaldo</button>
+      <input type="file" id="importFile" accept=".json,application/json" hidden>
+      <span id="whoNote" hidden></span>
+      <button type="button" class="link" data-act="logout" id="logoutBtn" hidden style="text-align:left;padding:0;color:var(--muted)">Cerrar sesión</button>
     </div>
   </aside>
   <main>
@@ -221,6 +229,7 @@ textarea.inp{resize:vertical;min-height:120px;font-family:var(--mono);font-size:
   </main>
 </div>
 <div id="drawerRoot"></div>
+<div id="loginRoot"></div>
 <div id="toast" class="toast" hidden role="status"></div>
 
 <script>
@@ -311,7 +320,7 @@ var PN_REP=[["no","Solo una vez"],["lunsab","Diario (lunes a sábado)"],["diario
 var CAT_ING=["Ventas","Servicios","Capacitación","Otros ingresos"],CAT_EGR=["Insumos","Vehículo","Gastos fijos","Nómina","Impuestos","Otros gastos"];
 var STAGES=[["Recibido","var(--muted)"],["En servicio","var(--amber)"],["Listo para entregar","var(--green)"],["Entregado","var(--faint)"]];
 var FORMS={
-  clientes:{t:"cliente",f:[["nombre","Nombre o razón social","text",1],["contacto","Contacto","text"],["tel","Teléfono (10 dígitos)","tel"],["ciudad","Ciudad","text"],["equiposDet","Extintores del cliente","equipos"],["proximaRecarga","Próxima recarga","month"],["saldo","Por cobrar ($)","number"],["notas","Notas","textarea"]]},
+  clientes:{t:"cliente",f:[["nombre","Nombre o razón social","text",1],["contacto","Contacto","text"],["tel","Teléfono (10 dígitos)","tel"],["ciudad","Ciudad","text"],["equiposDet","Extintores del cliente","equipos"],["proximaRecarga","Próxima recarga","month"],["saldo","Por cobrar ($)","number"],["codigoPortal","Código del portal de clientes","text",0,null,"Se genera con el botón Portal. Bórralo para quitarle el acceso."],["notas","Notas","textarea"]]},
   proveedores:{t:"proveedor",f:[["nombre","Proveedor","text",1],["contacto","Contacto","text"],["tel","Teléfono","tel"],["ciudad","Ciudad","text"],["surte","Qué surte","text"],["saldo","Por pagar ($)","number"]]},
   movs:{t:"movimiento",f:[["tipo","Tipo","select",1,[["ingreso","Ingreso"],["egreso","Egreso"]]],["fecha","Fecha","date",1],["concepto","Concepto","text",1],["quien","Cliente o proveedor","text"],["categoria","Categoría","select",0,CAT_ING.concat(CAT_EGR).map(function(c){return [c,c];})],["monto","Monto ($)","number",1]]},
   ordenes:{t:"orden de taller",f:[["cliente","Cliente","text",1],["contacto","Contacto","text"],["tel","Teléfono / WhatsApp","tel"],["recibido","Fecha de ingreso","date",1],["entrega","Entrega programada","date"],["equiposDet","Equipos recibidos","equipos"],["recibio","Recibió en JASA","text",0,null,"Nombre de quien recibe los equipos"],["notas","Notas","textarea",0,null,"Estado del equipo, piezas a cambiar, planta…"],["etapa","Etapa","select",1,STAGES.map(function(s,i){return [String(i),s[0]];})]]},
@@ -502,7 +511,7 @@ function orderSheetHTML(o){
 }
 function vOrden(o){
   var ro=S.readOnly||!db,us=unitsOf(o),pg=progress(o),si=o.etapa||0,pct=pg.t?Math.round(pg.n/pg.t*100):0,cli=findClient(o.cliente),cm=today().slice(0,7);
-  var out='<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><button type="button" class="btn ghost sm" data-act="otBack">← Tablero</button><div style="display:flex;gap:8px;flex-wrap:wrap">'+(ro?"":'<button type="button" class="btn ghost sm" data-act="edit:ordenes" data-id="'+o.id+'">Editar orden</button>')+'<button type="button" class="btn sm" data-act="otPdf">Descargar orden PDF</button></div></div><span class="hint" id="otStatus" aria-live="polite"></span>';
+  var out='<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><button type="button" class="btn ghost sm" data-act="otBack">← Tablero</button><div style="display:flex;gap:8px;flex-wrap:wrap">'+(ro?"":'<button type="button" class="btn ghost sm" data-act="edit:ordenes" data-id="'+o.id+'">Editar orden</button>')+'<button type="button" class="btn ghost sm" data-act="otPdf">Orden PDF</button><button type="button" class="btn sm" data-act="otReport">Reporte de inspección PDF</button></div></div><span class="hint" id="otStatus" aria-live="polite"></span>';
   out+='<div class="box"><div class="box-h"><div style="display:flex;flex-direction:column;gap:2px;min-width:0"><span class="mono" style="color:var(--muted)">'+esc(o.folio)+(o.cotizacion?" · cotización "+esc(o.cotizacion):"")+'</span><h2 style="overflow-wrap:anywhere">'+esc(o.cliente)+'</h2></div><span class="pill" style="color:'+STAGES[si][1]+'">'+STAGES[si][0]+'</span></div>'+
     '<div class="q-meta">'+[["Recibido",fmtDate(o.recibido||tsISO(o.creado))],["Recibió en JASA",o.recibio||"—"],["Entrega estimada",o.entrega?fmtDate(o.entrega):"—"],["Contacto",o.contacto||(cli&&cli.contacto)||"—"],["Teléfono",o.tel||(cli&&cli.tel)||"—"],["Notas",o.notas||"—"]].map(function(m){return '<div><span class="eyebrow">'+m[0]+'</span><span>'+esc(m[1])+'</span></div>';}).join("")+'</div></div>';
   out+='<div class="box"><div class="box-h"><h2>Extintores</h2><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span class="mono" style="color:'+(pg.t&&pg.n===pg.t?"var(--green)":"var(--muted)")+'">'+pg.n+' de '+pg.t+' listos</span>'+(ro||!pg.t||pg.n===pg.t?"":'<button type="button" class="btn ghost sm" data-act="allReady">Marcar todos listos</button>')+'</div></div>'+
@@ -583,7 +592,7 @@ function renderNav(){
   document.getElementById("nav").innerHTML=items.map(function(n){return '<button type="button" class="nav-b" data-act="go" data-v="'+n[0]+'"'+(S.screen===n[0]?' aria-current="page"':"")+'><span>'+n[1]+'</span><span class="cnt">'+n[2]+'</span></button>';}).join("");
 }
 function statusNote(){
-  if(S.dbState==="nodb")return '<div class="notice"><b>Este panel guarda sus datos en claude.ai.</b> Ábrelo desde tu enlace de claude.ai con tu cuenta iniciada para ver y registrar cotizaciones, clientes, taller e inventario.</div>';
+  if(S.dbState==="nodb")return '<div class="notice"><b>No se pudo conectar con la base de datos.</b> Recarga la página.</div>';
   if(S.dbState==="slow")return '<div class="notice"><b>La base de datos aún no responde.</b> Lo que ves puede no estar al día. Sigue intentando sola.</div>';
   if(S.dbState==="error"||S.dbState==="revoked")return '<div class="notice"><b>Se perdió la conexión con la base de datos.</b> Recarga la página para volver a conectar.</div>';
   if(S.readOnly)return '<div class="notice"><b>Acceso de solo lectura.</b> Puedes consultar, pero no registrar cambios.</div>';
@@ -655,7 +664,7 @@ function vDir(kind){
     if(isCli){var pr=x.proximaRecarga,col=!pr?"var(--muted)":pr<cur?"var(--rose)":pr<=soon?"var(--amber)":"var(--muted)";var tot=eqTotal(x),det=eqList(x);c4='<span style="color:'+col+'">'+(tot?tot+(tot===1?" extintor · ":" extintores · "):"")+(pr?(pr<cur?"vencido ":"vence ")+fmtMonth(pr):"sin fecha")+'</span>'+(det.length?'<div class="eq-chips">'+det.map(function(e){return '<span class="eq-chip">'+e.qty+' × '+esc(tipoLabel(e.tipo))+' '+esc(String(e.cap).toLowerCase())+'</span>';}).join("")+'</div>':"");c3=esc(x.tel||"—");}
     else{c4=esc(x.surte||"—");c3=esc(x.tel||"—")+(x.ciudad?'<div class="s" style="color:var(--muted);font-size:12px">'+esc(x.ciudad)+'</div>':"");}
     var s=+x.saldo||0;
-    return '<tr><td><b style="font-weight:600">'+esc(x.nombre)+'</b>'+(isCli&&x.ciudad?'<div style="color:var(--muted);font-size:12px">'+esc(x.ciudad)+'</div>':"")+'</td><td>'+esc(x.contacto||"—")+'</td><td>'+c3+'</td><td>'+c4+'</td><td class="num" style="color:'+(s?(isCli?"var(--amber)":"var(--rose)"):"var(--green)")+'">'+(s?money(s):(isCli?"Al corriente":"Sin saldo"))+'</td><td class="num">'+(x.tel?'<a class="link" target="_blank" rel="noopener" href="'+esc(waLink(x.tel,"Hola, le escribimos de JASA Extintores."))+'">WhatsApp</a>':"")+(S.readOnly||!db?"":'<button type="button" class="link" data-act="edit:'+kind+'" data-id="'+x.id+'">Editar</button>')+'</td></tr>';
+    return '<tr><td><b style="font-weight:600">'+esc(x.nombre)+'</b>'+(isCli&&x.ciudad?'<div style="color:var(--muted);font-size:12px">'+esc(x.ciudad)+'</div>':"")+'</td><td>'+esc(x.contacto||"—")+'</td><td>'+c3+'</td><td>'+c4+'</td><td class="num" style="color:'+(s?(isCli?"var(--amber)":"var(--rose)"):"var(--green)")+'">'+(s?money(s):(isCli?"Al corriente":"Sin saldo"))+'</td><td class="num">'+(x.tel?'<a class="link" target="_blank" rel="noopener" href="'+esc(waLink(x.tel,"Hola, le escribimos de JASA Extintores."))+'">WhatsApp</a>':"")+(isCli&&!S.readOnly&&db?'<button type="button" class="link" data-act="portalShare" data-id="'+x.id+'" title="'+esc(x.codigoPortal?"Código: "+x.codigoPortal:"Generar código de acceso")+'">Portal</button>':"")+(S.readOnly||!db?"":'<button type="button" class="link" data-act="edit:'+kind+'" data-id="'+x.id+'">Editar</button>')+'</td></tr>';
   }).join("");
   return '<div class="box"><div class="box-h"><div style="display:flex;flex-direction:column;gap:2px"><span class="s" style="color:var(--muted);font-size:13px">'+(isCli?"Cartera con equipos registrados y fecha de su próxima recarga.":"Proveedores y saldos pendientes de pago.")+'</span><span class="mono" style="color:var(--muted)">'+list.length+' registros · '+(isCli?"por cobrar ":"por pagar ")+money(total)+'</span></div>'+(S.readOnly||!db?"":'<button type="button" class="btn sm" data-act="new:'+kind+'">+ Nuevo '+(isCli?"cliente":"proveedor")+'</button>')+'</div>'+
     (list.length?'<div class="tbl-wrap"><table><thead><tr>'+head.map(function(h,i){return '<th'+(i>=4?' class="num"':"")+'>'+h.toUpperCase()+'</th>';}).join("")+'</tr></thead><tbody>'+rows+'</tbody></table></div>':emptyBox(S.search?"Sin resultados":"Aún no hay "+(isCli?"clientes":"proveedores"),S.search?"Prueba con otra búsqueda.":(isCli?"Agrega tus clientes con sus extintores y la fecha de su próxima recarga.":"Agrega a quién le compras polvo, CO₂, válvulas o señalamientos."),S.search?null:"new:"+kind,isCli?"Nuevo cliente":"Nuevo proveedor"))+'</div>';
@@ -773,6 +782,15 @@ document.addEventListener("click",function(e){
   var oc=S.otSel&&byId("ordenes",S.otSel);
   if(a==="allReady"&&oc){patch("ordenes",oc.id,{unidades:cleanUnits(unitsOf(oc).map(function(u){u.listo=true;return u;}))});return;}
   if(a==="otDeliver"&&oc){deliver(oc);return;}
+  if(a==="otReport"&&oc){exportDoc("pdf",jasaReportHTML(oc,findClient(oc.cliente),LOGO),"Reporte-JASA-"+String(oc.folio).replace(/[^A-Za-z0-9-]/g,"")+".pdf","otStatus","Envíaselo al cliente; también lo puede descargar en su portal.");return;}
+  if(a==="portalShare"){var pc=byId("clientes",id);if(!pc)return;var code=pc.codigoPortal||newPortalCode();if(!pc.codigoPortal)patch("clientes",id,{codigoPortal:code});
+    var msg="Hola, le escribimos de JASA Extintores. Este es su acceso al portal de clientes, donde puede consultar sus extintores y descargar sus reportes de inspección:\nhttps://jasaextintores.com/clientes\nCódigo de acceso: "+code;
+    if(pc.tel){var la=document.createElement("a");la.href=waLink(pc.tel,msg);la.target="_blank";la.rel="noopener";document.body.appendChild(la);la.click();la.remove();toast("Código "+code);}
+    else{try{navigator.clipboard.writeText(msg).then(function(){toast("Código "+code+" copiado con el mensaje");},function(){toast("Código: "+code);});}catch(er){toast("Código: "+code);}}
+    return;}
+  if(a==="logout"&&SB){SB.auth.signOut().then(function(){location.reload();});return;}
+  if(a==="importAsk"){document.getElementById("importFile").click();return;}
+  if(a==="importDo"&&S.importData){doImport();return;}
   if(a==="otPdf"&&oc){exportDoc("pdf",orderSheetHTML(oc),"Orden-JASA-"+String(oc.folio).replace(/[^A-Za-z0-9-]/g,"")+".pdf","otStatus","Imprímelo o compártelo para firma.");return;}
   if(a==="finTab"){S.finTab=v;render();return;}
   if(a==="otMove"){var o=byId("ordenes",id);if(!o)return;var n=Math.max(0,Math.min(3,(o.etapa||0)+(+v)));var up={etapa:n};if(n===3)up.entregado=today();patch("ordenes",id,up);return;}
@@ -810,9 +828,150 @@ document.addEventListener("submit",function(e){e.preventDefault();if(e.target.id
 document.addEventListener("keydown",function(e){if(e.key==="Escape"&&S.drawer){S.drawer=null;renderDrawer();}});
 
 function backup(){
-  if(!dl)return;
   var out={exportado:new Date().toISOString()};COLS.forEach(function(c){out[c]=S.data[c];});
-  dl.save({filename:"jasa-respaldo-"+today()+".json",data:JSON.stringify(out,null,2)}).then(function(){toast("Respaldo guardado");},function(e){if(e&&e.code!=="declined")toast("No se pudo descargar el respaldo.");});
+  saveBlob("jasa-respaldo-"+today()+".json",new Blob([JSON.stringify(out,null,2)],{type:"application/json"})).then(function(){toast("Respaldo guardado");},function(e){if(e&&e.code!=="declined")toast("No se pudo descargar el respaldo.");});
+}
+function newPortalCode(){var A="ABCDEFGHJKLMNPQRSTUVWXYZ23456789",b=new Uint8Array(10),o="";crypto.getRandomValues(b);for(var i=0;i<10;i++){o+=A[b[i]%A.length];if(i===3||i===7)o+="-";}return o;}
+
+/*@reporte*/
+/* Reporte de inspección y servicio de JASA Extintores.
+   Se comparte entre el panel (admin) y el portal de clientes; tools/build.py lo inserta en ambos. */
+function jasaReportHTML(o, cli, logo) {
+  function e(v) { return String(v == null ? "" : v).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+  function p2(n) { return String(n).padStart(2, "0"); }
+  function fd(s) { if (!s) return ""; var p = String(s).split("-"); return p.length === 3 ? p[2] + "/" + p[1] + "/" + p[0] : s; }
+  function fm(s) { if (!s) return ""; var p = String(s).split("-"); return p.length >= 2 ? p[1] + "/" + p[0] : s; }
+  function addM(k, n) { var p = k.split("-").map(Number), d = new Date(p[0], p[1] - 1 + n, 1); return d.getFullYear() + "-" + p2(d.getMonth() + 1); }
+  function tl(t) { return t === "CO2" ? "CO₂" : t === "AGUA" ? "Agua" : t === "TIPO K" ? "Tipo K" : t === "TIPO D" ? "Tipo D" : t === "AGENTE LIMPIO" ? "Agente limpio" : (t || ""); }
+  cli = cli || {};
+  var old = {}, rows = [];
+  (o.unidades || []).forEach(function (u) { old[u.key] = u; });
+  (o.equiposDet || []).forEach(function (r, i) {
+    for (var k = 0; k < (+r.qty || 0); k++) {
+      var u = old[i + "-" + k] || {};
+      rows.push({ eq: tl(r.tipo) + " " + String(r.cap || "").toLowerCase(), svc: r.servicio || "Recarga", serie: u.serie || "", fab: u.fab || "", ph: u.ph || "", et: u.etiqueta || "", ok: !!u.listo });
+    }
+  });
+  var entregada = (+o.etapa || 0) === 3;
+  var fecha = o.entregado || o.recibido || "";
+  var prox = entregada && o.entregado ? addM(o.entregado.slice(0, 7), 12) : (cli.proximaRecarga || "");
+  var n = Math.max(rows.length, 8), body = "";
+  for (var i = 0; i < n; i++) {
+    var r = rows[i];
+    body += "<tr><td>" + (r ? i + 1 : "") + "</td><td>" + (r ? e(r.eq) : "") + "</td><td>" + (r ? e(r.svc) : "") + "</td><td>" + (r ? e(r.serie) : "") + "</td><td>" + (r ? e(fm(r.fab)) : "") + "</td><td>" + (r ? e(fm(r.ph)) : "") + "</td><td>" + (r ? e(r.et) : "") + "</td><td>" + (r ? (r.ok || entregada ? "Conforme" : "En proceso") : "") + "</td></tr>";
+  }
+  return '<div class="sheet"><div class="sh-top"><div class="sh-logo"><img alt="JASA Extintores" width="300" height="136" src="' + (logo || "") + '"></div>' +
+    '<div class="sh-co"><b>JASA EXTINTORES SA DE CV</b><span>MUTUALISTA 412 COL. BUENA VISTA SUR</span><span>PIEDRAS NEGRAS, COAHUILA</span><span>JEX180118NA0</span><span class="sh-tel">878 783 3216 · WhatsApp 878 117 4728</span></div></div>' +
+    '<div class="sh-row"><div class="sh-title" style="font-size:24px">REPORTE DE INSPECCIÓN Y SERVICIO</div><div class="sh-num"><div><span>ORDEN:</span><b>' + e(o.folio) + '</b></div><div><span>FECHA:</span><b>' + e(fd(fecha)) + '</b></div><div><span>PRÓX. RECARGA:</span><b>' + e(fm(prox) || "—") + '</b></div></div></div>' +
+    '<div class="sh-row"><dl class="sh-client"><dt>Cliente:</dt><dd>' + e(cli.nombre || o.cliente) + '</dd><dt>Ciudad:</dt><dd>' + e(cli.ciudad || "") + '</dd><dt>Recibido:</dt><dd>' + e(fd(o.recibido)) + '</dd><dt>Entregado:</dt><dd>' + e(entregada ? fd(o.entregado) : "EN PROCESO") + '</dd><dt>Extintores:</dt><dd>' + rows.length + '</dd></dl>' +
+    '<div class="sh-cond"><b>OBSERVACIONES</b><div>' + e(o.notas || "") + '</div></div></div>' +
+    '<table class="sh-table"><colgroup><col style="width:5%"><col style="width:17%"><col style="width:15%"><col style="width:14%"><col style="width:11%"><col style="width:12%"><col style="width:14%"><col style="width:12%"></colgroup>' +
+    '<thead><tr><th>#</th><th>Equipo</th><th>Servicio</th><th>No. de serie</th><th>Fabricación</th><th>Próx. P. H.</th><th>Etiqueta NOM-154</th><th>Resultado</th></tr></thead><tbody>' + body + '</tbody></table>' +
+    '<div class="sh-legal">Servicio de mantenimiento y recarga conforme a la NOM-154-SCFI-2005 y a la NOM-002-STPS-2010. P. H. = prueba hidrostática. Conserve este reporte para sus inspecciones de Protección Civil.</div>' +
+    '<div class="sh-sign" style="grid-template-columns:repeat(2,1fr)"><div><span>TÉCNICO RESPONSABLE (JASA)</span><small>' + e(o.entrego || o.recibio || "") + '</small></div><div><span>RECIBE DE CONFORMIDAD (CLIENTE)</span><small>' + e(o.recibioCliente || "") + '</small></div></div></div>';
+}
+var JASA_SHEET_CSS = ".sheet{width:816px;background:#ffffff;color:#111111;padding:36px 40px 40px;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.3;box-sizing:border-box}" +
+  ".sheet *{box-sizing:border-box}" +
+  ".sh-top{display:flex;justify-content:space-between;align-items:center;border:1px solid #444;border-bottom:0;padding:10px 14px}" +
+  ".sh-logo img{display:block;width:210px;height:auto}" +
+  ".sh-co{display:flex;flex-direction:column;align-items:flex-end;text-align:right;gap:2px;font-weight:700;font-size:11.5px}" +
+  ".sh-co b{color:#c00000;font-size:16px}.sh-co .sh-tel{color:#777;font-weight:400}" +
+  ".sh-row{display:grid;grid-template-columns:1fr 210px;border:1px solid #444;border-bottom:0}" +
+  ".sh-title{text-align:center;color:#c00000;font-weight:700;font-size:30px;letter-spacing:.02em;padding:8px;border-right:1px solid #444;display:flex;align-items:center;justify-content:center}" +
+  ".sh-num{display:flex;flex-direction:column;justify-content:center;padding:6px 10px;color:#c00000;font-weight:700;gap:2px}" +
+  ".sh-num div{display:flex;justify-content:space-between;gap:8px}" +
+  ".sh-client{margin:0;padding:10px 12px;display:grid;grid-template-columns:72px 1fr;gap:5px 8px;align-items:baseline;border-right:1px solid #444;min-height:110px}" +
+  ".sh-client dt{color:#999;font-size:10.5px;text-align:right}" +
+  ".sh-client dd{margin:0;font-size:13px;text-transform:uppercase;min-height:16px;border-bottom:1px solid #eee;overflow-wrap:anywhere}" +
+  ".sh-cond{padding:8px 10px;font-size:11px;display:flex;flex-direction:column;gap:6px}" +
+  ".sh-cond div{text-transform:uppercase;overflow-wrap:anywhere;white-space:pre-line}" +
+  ".sh-table{width:100%;border-collapse:collapse;table-layout:fixed;border:1px solid #444}" +
+  ".sh-table th{font-family:Arial,Helvetica,sans-serif;background:#fff;color:#c00000;font-weight:400;font-size:10.5px;border:1px solid #aaa;border-top:2px solid #444;border-bottom:2px solid #444;padding:4px 5px;text-align:center;letter-spacing:0;text-transform:none}" +
+  ".sh-table td{color:#111;border:1px solid #bbb;padding:5px 5px;height:24px;font-size:11px;vertical-align:middle;overflow-wrap:anywhere}" +
+  ".sh-legal{border:1px solid #444;border-top:0;padding:8px 12px;font-size:10px;color:#555}" +
+  ".sh-sign{display:grid;grid-template-columns:repeat(2,1fr);border:1px solid #444;border-top:0}" +
+  ".sh-sign div{padding:46px 10px 8px;text-align:center;font-size:10.5px;border-right:1px solid #444}" +
+  ".sh-sign div:last-child{border-right:0}" +
+  ".sh-sign span{display:block;border-top:1px solid #444;padding-top:4px;font-weight:700}" +
+  ".sh-sign small{display:block;color:#666;font-size:10px;margin-top:2px;min-height:12px}";
+/*@/reporte*/
+
+/* ---------- modo Supabase (jasaextintores.com/admin) ---------- */
+var SUPA_URL="https://psggoagcdokwrkykgufr.supabase.co",SUPA_KEY="sb_publishable_jwx2IRxOqdCW-SjmKcYW2A_lrJTFJa3",SB=null;
+function makeSupaDb(sb){
+  var cache={},subs={};
+  function snap(c){var m=cache[c]||{};var arr=Object.keys(m).map(function(id){var d=m[id];return {id:id,exists:true,data:function(){return d;},metadata:{fromCache:false,hasPendingWrites:false}};});return {docs:arr,size:arr.length,empty:!arr.length,metadata:{fromCache:false,hasPendingWrites:false},docChanges:function(){return [];}};}
+  function emit(c){(subs[c]||[]).forEach(function(l){l.next(snap(c));});}
+  function fail(e){return {code:e&&e.code==="42501"?"invalid_argument":"unavailable",message:e&&e.message};}
+  function load(c){return sb.from("docs").select("id,data").eq("col",c).limit(10000).then(function(r){if(r.error)throw r.error;var m={};r.data.forEach(function(x){m[x.id]=x.data;});cache[c]=m;emit(c);});}
+  function merge(a,b){var o=Object.assign({},a);Object.keys(b).forEach(function(k){var v=b[k];if(v&&typeof v==="object"&&!Array.isArray(v)&&o[k]&&typeof o[k]==="object"&&!Array.isArray(o[k]))o[k]=merge(o[k],v);else o[k]=v;});return o;}
+  function rid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,8);}
+  sb.channel("jasa-docs").on("postgres_changes",{event:"*",schema:"public",table:"docs"},function(p){
+    var row=(p.new&&p.new.col)?p.new:p.old;if(!row||!row.col||!cache[row.col])return;
+    if(p.eventType==="DELETE")delete cache[row.col][row.id];else cache[row.col][row.id]=p.new.data;emit(row.col);
+  }).subscribe();
+  setInterval(function(){if(document.hidden)return;Object.keys(subs).forEach(function(c){load(c).catch(function(){});});},60000);
+  return {reload:function(){return Promise.all(Object.keys(subs).map(load));},collection:function(c){return {
+    doc:function(id){id=id||rid();return {id:id,
+      set:function(b){var d=JSON.parse(JSON.stringify(b));(cache[c]=cache[c]||{})[id]=d;emit(c);return sb.from("docs").upsert({col:c,id:id,data:d,updated_at:new Date().toISOString()}).then(function(r){if(r.error)throw fail(r.error);});},
+      update:function(b){var cur=(cache[c]||{})[id];if(!cur)return Promise.reject({code:"invalid_argument"});var d=merge(cur,JSON.parse(JSON.stringify(b)));cache[c][id]=d;emit(c);return sb.from("docs").update({data:d,updated_at:new Date().toISOString()}).eq("col",c).eq("id",id).then(function(r){if(r.error)throw fail(r.error);});},
+      delete:function(){if(cache[c])delete cache[c][id];emit(c);return sb.from("docs").delete().eq("col",c).eq("id",id).then(function(r){if(r.error)throw fail(r.error);});}
+    };},
+    onSnapshot:function(next,error){(subs[c]=subs[c]||[]).push({next:next});load(c).catch(function(e){if(error)error(fail(e));});return function(){};}
+  };}};
+}
+function showLogin(msg){
+  document.getElementById("loginRoot").innerHTML='<div class="login"><form id="loginForm" autocomplete="on"><div class="brand" style="padding:0"><b>JASA</b><span class="eyebrow">Administración</span></div>'+
+    '<div class="field"><label for="lgMail">Correo</label><input class="inp" id="lgMail" type="email" autocomplete="username" required></div>'+
+    '<div class="field"><label for="lgPass">Contraseña</label><input class="inp" id="lgPass" type="password" autocomplete="current-password" required></div>'+
+    '<button class="btn" type="submit">Entrar</button><div class="err" id="lgErr" role="alert">'+esc(msg||"")+'</div>'+
+    '<span class="hint">¿Olvidaste tu contraseña? El administrador la cambia en Supabase, en Authentication › Users.</span></form></div>';
+  var m=document.getElementById("lgMail");if(m)m.focus();
+}
+function startSupabase(){
+  S.dbState="loading";render();
+  loadScript("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js").then(function(){
+    SB=window.supabase.createClient(SUPA_URL,SUPA_KEY);
+    return SB.auth.getSession();
+  }).then(function(r){
+    var ses=r&&r.data&&r.data.session;if(!ses){showLogin();return;}
+    return SB.from("staff").select("email").limit(1).then(function(q){
+      if(q.error||!q.data||!q.data.length){showLogin("El correo "+ses.user.email+" no tiene acceso al panel.");SB.auth.signOut();return;}
+      document.getElementById("loginRoot").innerHTML="";
+      db=makeSupaDb(SB);startDb();
+      ["backupBtn","importBtn","logoutBtn"].forEach(function(i){document.getElementById(i).hidden=false;});
+      var w=document.getElementById("whoNote");w.textContent=ses.user.email;w.hidden=false;
+    });
+  }).catch(function(){S.dbState="error";render();});
+}
+document.addEventListener("submit",function(e){
+  if(e.target.id!=="loginForm")return;e.preventDefault();e.stopImmediatePropagation();
+  var er=document.getElementById("lgErr");er.textContent="Entrando…";
+  SB.auth.signInWithPassword({email:document.getElementById("lgMail").value.trim(),password:document.getElementById("lgPass").value}).then(function(r){
+    if(r.error){er.textContent="Correo o contraseña incorrectos.";return;}
+    startSupabase();
+  });
+},true);
+document.addEventListener("change",function(e){
+  if(e.target.id!=="importFile")return;var f=e.target.files&&e.target.files[0];if(!f)return;
+  var rd=new FileReader();rd.onload=function(){
+    var data;try{data=JSON.parse(rd.result);}catch(er){toast("Ese archivo no es un respaldo de JASA.");return;}
+    var cnt=COLS.map(function(c){return [c,Array.isArray(data[c])?data[c].length:0];}).filter(function(x){return x[1];});
+    if(!cnt.length){toast("Ese archivo no tiene datos de JASA.");return;}
+    S.importData=data;
+    document.getElementById("drawerRoot").innerHTML='<div class="overlay"><div class="drawer" role="dialog" aria-modal="true" aria-label="Importar respaldo"><div class="box-h"><h2>Importar respaldo</h2><button type="button" class="btn ghost sm" data-act="closeDrawer">Cerrar</button></div><div class="plan">'+
+      '<span>Se van a cargar estos registros. Los que ya existan con el mismo identificador se reemplazan; los demás no se tocan.</span><ul>'+cnt.map(function(x){return '<li>'+esc(COL_LABEL[x[0]]||x[0])+': '+x[1]+'</li>';}).join("")+'</ul>'+
+      '<div><button type="button" class="btn" data-act="importDo">Importar</button></div><span class="hint" id="impStatus"></span></div></div></div>';
+  };rd.readAsText(f);e.target.value="";
+});
+var COL_LABEL={quotes:"Cotizaciones",clientes:"Clientes",proveedores:"Proveedores",movs:"Movimientos de finanzas",ordenes:"Órdenes de taller",inventario:"Inventario",precios:"Lista de precios",pendientes:"Pendientes"};
+function doImport(){
+  var data=S.importData,rows=[];COLS.forEach(function(c){(data[c]||[]).forEach(function(x){var d=Object.assign({},x);var id=d.id;delete d.id;if(id)rows.push({col:c,id:String(id),data:d,updated_at:new Date().toISOString()});});});
+  var st=document.getElementById("impStatus"),i=0;
+  function next(){if(i>=rows.length){S.importData=null;document.getElementById("drawerRoot").innerHTML="";db.reload().then(function(){toast(rows.length+" registros importados");});return;}
+    var chunk=rows.slice(i,i+200);st.textContent="Importando "+Math.min(i+200,rows.length)+" de "+rows.length+"…";
+    SB.from("docs").upsert(chunk).then(function(r){if(r.error){st.textContent="Se detuvo: "+r.error.message;return;}i+=200;next();});}
+  next();
 }
 
 /* ---------- arranque ---------- */
@@ -829,6 +988,6 @@ if(window.claude&&window.claude.use){
     Promise.resolve(r).then(function(ok){if(ok===false){S.readOnly=true;render();}});
   },function(){});
   window.claude.use("downloads").then(function(d){if(d){dl=d;document.getElementById("backupBtn").hidden=false;}},function(){});
-}else{S.dbState="nodb";render();}
+}else{startSupabase();}
 })();
 </script>
