@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Ficha de extintor · JASA Extintores</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#0d0d0d">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@800;900&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/* Ficha pública: lo primero que se ve es si el extintor está vigente; abajo, sus fechas y su última revisión */
+:root{
+  --bg:#0d0d0d; --panel:#171514; --line:#2f2a28; --ink:#f3eeea; --muted:#a8a09b;
+  --red:#e10f0f; --red-2:#ff3b30; --amber:#f2b01e; --green:#5fcf6a; --rose:#ff8a7d;
+  --display:'Saira Condensed','Arial Narrow',Impact,sans-serif;
+  --body:'Barlow',-apple-system,'Segoe UI',Roboto,sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.5 var(--body);padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+.wrap{max-width:560px;margin:0 auto;padding-block:20px 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:14px}
+.brand{display:flex;align-items:baseline;gap:8px;text-decoration:none;color:inherit}
+.brand b{font-family:var(--display);font-weight:900;font-size:30px;line-height:.9;color:var(--red);font-style:italic}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.state{border-radius:6px;padding:18px;display:flex;flex-direction:column;gap:4px;border:1px solid var(--line);border-top:4px solid var(--k)}
+.state b{font-family:var(--display);font-weight:900;text-transform:uppercase;font-size:34px;line-height:.95;color:var(--k)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:16px;display:flex;flex-direction:column;gap:10px}
+h2{margin:0;font-family:var(--display);font-weight:800;text-transform:uppercase;font-size:22px;line-height:1}
+dl{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;margin:0}
+dt{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding-top:3px}
+dd{margin:0}
+.mono{font-family:var(--mono)}
+ul{margin:0;padding-left:18px}
+.btn{display:inline-flex;justify-content:center;background:#1f9d55;color:#fff;text-decoration:none;border-radius:3px;padding:12px 16px;font-family:var(--display);font-weight:800;text-transform:uppercase;font-size:18px}
+.foot{color:var(--muted);font-size:13px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="brand" href="https://jasaextintores.com/"><b>JASA</b><span class="eyebrow">Ficha de extintor</span></a>
+  <div id="out"><p class="foot">Buscando el extintor…</p></div>
+  <div class="foot">JASA Extintores · Mutualista 412, Piedras Negras, Coahuila · Tel. 878 783 3216 · WhatsApp 878 117 4728</div>
+</div>
+<script>
+(function(){
+"use strict";
+/*@reporte*/
+/*@/reporte*/
+var SUPA_URL="https://psggoagcdokwrkykgufr.supabase.co",SUPA_KEY="sb_publishable_jwx2IRxOqdCW-SjmKcYW2A_lrJTFJa3";
+var MES=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+function esc(v){return String(v==null?"":v).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+function fm(k){if(!k)return "—";var p=k.split("-");return MES[+p[1]-1]+" "+p[0];}
+function fd(s){return s?s.split("-").reverse().join("/"):"—";}
+function tl(t){return t==="CO2"?"CO₂":t==="AGUA"?"Agua":t==="TIPO K"?"Tipo K":t==="TIPO D"?"Tipo D":t==="AGENTE LIMPIO"?"Agente limpio":(t||"");}
+var m=(location.pathname+location.search+location.hash).match(/JX-?\d{1,6}/i),folio=m?("JX-"+m[0].replace(/\D/g,"").padStart(6,"0")):"";
+var out=document.getElementById("out");
+if(!folio){out.innerHTML='<div class="card"><h2>Escanea la etiqueta</h2><p>Esta página muestra la ficha del extintor cuyo código QR escaneaste.</p></div>';return;}
+fetch(SUPA_URL+"/rest/v1/rpc/ficha_extintor",{method:"POST",headers:{"apikey":SUPA_KEY,"Content-Type":"application/json"},body:JSON.stringify({folio:folio})})
+.then(function(r){return r.json();}).then(function(d){
+  if(!d){out.innerHTML='<div class="card"><h2>No encontramos el folio '+esc(folio)+'</h2><p>Revisa la etiqueta o llámanos al 878 783 3216.</p></div>';return;}
+  if(!d.asignado){out.innerHTML='<div class="card"><span class="eyebrow">'+esc(d.folio)+'</span><h2>Etiqueta aún sin registrar</h2><p>Este folio todavía no tiene un extintor asignado. Lo registra el técnico de JASA en su próxima visita.</p></div>';return;}
+  var cm=new Date().toISOString().slice(0,7),venc=d.vence&&d.vence<cm,phv=d.ph&&d.ph<cm,u=d.ultima||{},p=u.puntos||{};
+  var k=d.estado==="baja"?["Fuera de servicio","var(--rose)"]:venc?["Recarga vencida","var(--rose)"]:phv?["Prueba hidrostática vencida","var(--amber)"]:["Vigente","var(--green)"];
+  var malos=JASA_PUNTOS.filter(function(x){return jasaPuntoMalo(x.k,p[x.k]);}).map(function(x){return x.l+": "+JASA_OPT_LABEL[p[x.k]];});
+  out.innerHTML='<div class="state" style="--k:'+k[1]+'"><span class="eyebrow">'+esc(d.folio)+'</span><b>'+k[0]+'</b><span>'+esc(tl(d.tipo)+" "+String(d.cap||"").toLowerCase())+(d.ubicacion?" · "+esc(d.ubicacion):"")+'</span></div>'+
+    '<div class="card"><h2>Fechas</h2><dl><dt>Última recarga</dt><dd>'+fm(d.recarga)+'</dd><dt>Próxima recarga</dt><dd style="color:'+(venc?"var(--rose)":"inherit")+'">'+fm(d.vence)+'</dd><dt>Prueba hidrostática</dt><dd style="color:'+(phv?"var(--amber)":"inherit")+'">'+fm(d.ph)+'</dd></dl><span class="foot">Deben coincidir con la etiqueta de servicio pegada en el extintor.</span></div>'+
+    '<div class="card"><h2>Última revisión</h2>'+(u.fecha?'<dl><dt>Fecha</dt><dd>'+fd(u.fecha)+'</dd><dt>Resultado</dt><dd style="color:'+(u.resultado==="Conforme"?"var(--green)":"var(--amber)")+'">'+esc(u.resultado||"")+'</dd><dt>Detectado</dt><dd>'+(malos.length?'<ul>'+malos.map(function(x){return '<li>'+esc(x)+'</li>';}).join("")+'</ul>':'Todo en buen estado')+'</dd>'+(u.comentario?'<dt>Comentarios</dt><dd>'+esc(u.comentario)+'</dd>':'')+'</dl>':'<p>Todavía no tiene revisiones registradas.</p>')+'</div>'+
+    '<a class="btn" target="_blank" rel="noopener" href="https://wa.me/528781174728?text='+encodeURIComponent("Hola, escaneé el extintor "+d.folio+" y quiero información sobre su servicio.")+'">Escribir a JASA por WhatsApp</a>'+
+    '<a class="foot" href="/tecnico/#'+esc(d.folio)+'">¿Eres técnico de JASA? Revisar en la app</a>';
+}).catch(function(){out.innerHTML='<div class="card"><h2>Sin conexión</h2><p>No pudimos cargar la ficha. Revisa tu internet e inténtalo de nuevo.</p></div>';});
+})();
+</script>
+</body>
+</html>

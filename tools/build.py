@@ -39,4 +39,8 @@ head = (
 portal = inject((ROOT / "src" / "clientes.html").read_text(encoding="utf-8"))
 (ROOT / "clientes").mkdir(exist_ok=True)
 (ROOT / "clientes" / "index.html").write_text(portal, encoding="utf-8")
-print("Listo: admin/index.html y clientes/index.html")
+for src, out in (("tecnico.html", "tecnico"), ("ficha.html", "e")):
+    page = inject((ROOT / "src" / src).read_text(encoding="utf-8"))
+    (ROOT / out).mkdir(exist_ok=True)
+    (ROOT / out / "index.html").write_text(page, encoding="utf-8")
+print("Listo: admin/, clientes/, tecnico/ y e/ (ficha pública)")

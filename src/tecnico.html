@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>JASA Técnico</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#0d0d0d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="JASA Técnico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@800;900&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/* App de campo: una sola columna, botones grandes para usarse con una mano dentro de la planta del cliente */
+:root{
+  --bg:#0d0d0d; --panel:#171514; --panel-2:#211d1c; --line:#2f2a28;
+  --ink:#f3eeea; --muted:#a8a09b; --faint:#6f6864;
+  --red:#e10f0f; --red-2:#ff3b30; --amber:#f2b01e; --green:#5fcf6a; --rose:#ff8a7d; --blue:#7fb2e5;
+  --display:'Saira Condensed','Arial Narrow',Impact,sans-serif;
+  --body:'Barlow',-apple-system,'Segoe UI',Roboto,sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.45 var(--body);padding-top:env(safe-area-inset-top,0px);padding-bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+[hidden]{display:none!important}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+.wrap{max-width:640px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header{position:sticky;top:0;z-index:5;background:rgba(13,13,13,.96);border-bottom:1px solid var(--line)}
+header .wrap{display:flex;align-items:center;justify-content:space-between;gap:10px;padding-block:10px}
+.brand{display:flex;align-items:baseline;gap:8px}
+.brand b{font-family:var(--display);font-weight:900;font-size:28px;line-height:.9;color:var(--red);font-style:italic}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.sync{font-family:var(--mono);font-size:11px;color:var(--muted);text-align:right}
+.sync.warn{color:var(--amber)}
+main .wrap{padding-block:16px 24px;display:flex;flex-direction:column;gap:14px}
+h1,h2{margin:0;font-family:var(--display);text-transform:uppercase;line-height:.95;text-wrap:balance}
+h1{font-size:34px;font-weight:900}
+h2{font-size:22px;font-weight:800}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;background:var(--red);border:0;color:#fff;border-radius:3px;padding:15px 16px;cursor:pointer;font-family:var(--display);font-weight:800;text-transform:uppercase;font-size:19px;letter-spacing:.03em;text-decoration:none}
+.btn:active{background:var(--red-2)}
+.btn.ghost{background:transparent;border:1px solid var(--line);color:var(--ink)}
+.btn.sm{padding:9px 12px;font-size:15px;width:auto}
+.btn[disabled]{opacity:.5}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.inp{background:var(--bg);border:1px solid var(--line);border-radius:3px;padding:12px;width:100%;min-width:0;font-size:16px}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+input[type=month]{min-width:0;max-width:100%}
+.err{color:var(--rose);font-size:14px;min-height:1.2em}
+.hint{font-size:14px;color:var(--muted)}
+.prog{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.prog b{font-family:var(--display);font-weight:900;font-size:40px;line-height:.9}
+.bar{height:8px;background:var(--panel-2);border-radius:4px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--green)}
+.list{display:flex;flex-direction:column}
+.row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;align-items:center;width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--line);padding:12px 2px;cursor:pointer}
+.row:last-child{border-bottom:0}
+.row .s{font-size:13px;color:var(--muted)}
+.pill{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;border:1px solid currentColor;border-radius:999px;padding:2px 8px;white-space:nowrap}
+.pt{display:grid;grid-template-columns:minmax(0,1fr) 92px 92px;gap:6px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line)}
+.pt:last-child{border-bottom:0}
+.opt{border:1px solid var(--line);background:var(--panel-2);border-radius:3px;padding:11px 4px;font-weight:600;cursor:pointer;text-align:center}
+.opt[aria-pressed="true"].good{background:rgba(95,207,106,.18);border-color:var(--green);color:var(--green)}
+.opt[aria-pressed="true"].bad{background:rgba(255,59,48,.18);border-color:var(--red-2);color:var(--rose)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:var(--panel-2);border-radius:3px;padding:8px 10px;font-size:14px;cursor:pointer}
+.chip[aria-pressed="true"]{border-color:var(--amber);color:var(--amber)}
+.ficha{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:15px}
+.ficha dt{font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:var(--muted);text-transform:uppercase;padding-top:3px}
+.ficha dd{margin:0}
+.res{font-family:var(--display);font-weight:900;text-transform:uppercase;font-size:22px}
+video{width:100%;border-radius:6px;background:#000;aspect-ratio:3/4;object-fit:cover}
+.scanbox{position:relative}
+.scanbox::after{content:"";position:absolute;inset:22% 14%;border:3px solid var(--red-2);border-radius:6px;pointer-events:none}
+canvas.sig{width:100%;height:180px;background:#fff;border-radius:6px;touch-action:none}
+.dock{position:fixed;left:0;right:0;bottom:0;background:rgba(13,13,13,.97);border-top:1px solid var(--line);padding-block:10px calc(10px + env(safe-area-inset-bottom,0px))}
+.dock .wrap{display:flex;gap:8px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(96px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:4px;font-weight:600;z-index:30;max-width:calc(100% - 32px)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header><div class="wrap"><span class="brand"><b>JASA</b><span class="eyebrow">Técnico</span></span><span class="sync" id="sync"></span></div></header>
+<main><div class="wrap" id="app"><p class="hint">Cargando…</p></div></main>
+<div class="dock" id="dock" hidden><div class="wrap" id="dockIn"></div></div>
+<div class="toast" id="toast" hidden role="status"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+<script>
+(function(){
+"use strict";
+var SUPA_URL="https://psggoagcdokwrkykgufr.supabase.co",SUPA_KEY="sb_publishable_jwx2IRxOqdCW-SjmKcYW2A_lrJTFJa3";
+/*@reporte*/
+/*@/reporte*/
+var sb=window.supabase.createClient(SUPA_URL,SUPA_KEY);
+var S={user:null,clientes:[],ext:{},view:"home",cur:null,draft:null,stream:null,online:navigator.onLine};
+var KV="jasaVisita",KQ="jasaCola",KR="jasaReviso";
+var TIPOS=[["PQS","PQS"],["CO2","CO₂"],["TIPO K","Tipo K"],["AGUA","Agua"],["AFFF","Espuma AFFF"],["TIPO D","Tipo D"],["AGENTE LIMPIO","Agente limpio"]];
+var COMENT=["Vencido","Requiere recarga","Señalamiento","Obstruido","Despresurizado","Cambio de manguera","Sin seguro","Golpeado"];
+var MESES=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+function $(id){return document.getElementById(id);}
+function esc(v){return String(v==null?"":v).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+function pad(n){return String(n).padStart(2,"0");}
+function today(){var d=new Date();return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());}
+function fm(k){if(!k)return "—";var p=k.split("-");return p[1]+"/"+p[0];}
+function tl(t){var m=TIPOS.find(function(x){return x[0]===t;});return m?m[1]:(t||"");}
+function load(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch(e){return d;}}
+function save(k,v){try{if(v==null)localStorage.removeItem(k);else localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+function toast(m){var t=$("toast");t.textContent=m;t.hidden=false;clearTimeout(toast._t);toast._t=setTimeout(function(){t.hidden=true;},2600);}
+function rid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
+
+/* ---------- cola de envío (funciona sin señal) ---------- */
+function queue(){return load(KQ,[]);}
+function enqueue(op){var q=queue().filter(function(x){return !(x.col===op.col&&x.id===op.id);});q.push(op);save(KQ,q);flush();}
+var flushing=false;
+function flush(){
+  var q=queue();updSync();if(flushing||!q.length||!S.user)return;flushing=true;
+  var op=q[0];
+  sb.from("docs").upsert({col:op.col,id:op.id,data:op.data,updated_at:new Date().toISOString()}).then(function(r){
+    flushing=false;if(r.error){updSync(true);return;}
+    save(KQ,queue().filter(function(x){return !(x.col===op.col&&x.id===op.id&&x.t===op.t);}));flush();
+  },function(){flushing=false;updSync(true);});
+}
+function updSync(fail){var n=queue().length,el=$("sync");el.textContent=n?(n+(n===1?" cambio":" cambios")+" por subir"+(fail||!navigator.onLine?" · sin señal":"")):"Todo guardado";el.className="sync"+(n?" warn":"");}
+window.addEventListener("online",flush);setInterval(flush,20000);
+
+/* ---------- datos ---------- */
+function loadData(){
+  return Promise.all([sb.from("docs").select("id,data").eq("col","clientes").limit(5000),sb.from("docs").select("id,data").eq("col","extintores").limit(20000)]).then(function(r){
+    if(r[0].error||r[1].error)throw r[0].error||r[1].error;
+    S.clientes=r[0].data.map(function(x){return Object.assign({id:x.id},x.data);}).sort(function(a,b){return String(a.nombre).localeCompare(String(b.nombre),"es");});
+    S.ext={};r[1].data.forEach(function(x){S.ext[x.id]=Object.assign({},x.data,{folio:x.id});});
+    save("jasaCache",{clientes:S.clientes,ext:S.ext});
+  },function(){var c=load("jasaCache",null);if(c){S.clientes=c.clientes;S.ext=c.ext;toast("Sin señal: usando la última copia guardada.");}});
+}
+function extOf(cli){var n=String(cli||"").trim().toLowerCase();return Object.keys(S.ext).map(function(k){return S.ext[k];}).filter(function(x){return String(x.cliente||"").trim().toLowerCase()===n&&x.estado!=="baja"&&x.estado!=="sin asignar";}).sort(function(a,b){return String(a.ubicacion||"").localeCompare(String(b.ubicacion||""),"es");});}
+function nextFolio(){var n=Object.keys(S.ext).reduce(function(a,k){var m=k.match(/^JX-(\d+)$/);return m?Math.max(a,+m[1]):a;},0);return "JX-"+String(n+1).padStart(6,"0");}
+
+/* ---------- visita ---------- */
+function visit(){return S.cur||(S.cur=load(KV,null));}
+function saveVisit(){var v=S.cur;save(KV,v);if(!v)return;
+  var items=Object.keys(v.items).map(function(k){return v.items[k];}).sort(function(a,b){return (a.n||0)-(b.n||0);});
+  enqueue({col:"inspecciones",id:v.id,t:Date.now(),data:{cliente:v.cliente,fecha:v.fecha,reviso:v.reviso,responsable:v.responsable||"",items:items,estado:v.estado||"en curso",firma:v.firma||"",cotizacion:v.cotizacion||"",creado:v.creado,tecnico:S.user.email}});
+}
+function resultado(it){
+  var cm=today().slice(0,7);if(it.forzar)return it.forzar;
+  var bad=JASA_PUNTOS.some(function(p){return jasaPuntoMalo(p.k,(it.puntos||{})[p.k]);});
+  return bad||jasaVencido(it.vence,cm)||(it.ph&&it.ph<cm)?"Requiere servicio":"Conforme";
+}
+
+/* ---------- vistas ---------- */
+function dock(html){$("dockIn").innerHTML=html||"";$("dock").hidden=!html;}
+function render(){stopCam();var v=S.view,h="";
+  if(v==="login")h=vLogin();else if(v==="home")h=vHome();else if(v==="visit")h=vVisit();else if(v==="scan")h=vScan();else if(v==="form")h=vForm();else if(v==="finish")h=vFinish();else if(v==="done")h=vDone();
+  $("app").innerHTML=h;window.scrollTo(0,0);
+  if(v==="scan"&&!S.manual)startCam();if(v==="finish")initSig();updSync();
+}
+function vLogin(){dock("");return '<h1>Entrar</h1><form class="card" id="loginForm"><div class="field"><label for="lgMail">Correo</label><input class="inp" id="lgMail" type="email" autocomplete="username" required></div><div class="field"><label for="lgPass">Contraseña</label><input class="inp" id="lgPass" type="password" autocomplete="current-password" required></div><div class="err" id="lgErr" role="alert"></div><button class="btn" type="submit">Entrar</button><span class="hint">Usa el mismo correo y contraseña del panel de JASA.</span></form>';}
+function vHome(){
+  var v=visit(),rev=load(KR,"")||String(S.user.email).split("@")[0];
+  dock("");
+  return (v&&v.estado!=="completa"?'<div class="card"><span class="eyebrow">Inspección en curso</span><h2>'+esc(v.cliente)+'</h2><span class="hint">'+Object.keys(v.items).length+' extintores revisados</span><button type="button" class="btn" data-act="resume">Continuar</button></div>':"")+
+    '<h1>Nueva inspección</h1><form class="card" id="newForm"><div class="field"><label for="nfCli">Cliente</label><input class="inp" id="nfCli" list="cliList" required autocomplete="off" placeholder="Escribe o elige"><datalist id="cliList">'+S.clientes.map(function(c){return '<option value="'+esc(c.nombre)+'">';}).join("")+'</datalist></div>'+
+    '<div class="field"><label for="nfResp">Responsable del cliente</label><input class="inp" id="nfResp" autocomplete="off" placeholder="Quién te recibe"></div>'+
+    '<div class="field"><label for="nfRev">Revisó (tu nombre)</label><input class="inp" id="nfRev" autocomplete="off" value="'+esc(rev)+'"></div>'+
+    '<button class="btn" type="submit">Empezar</button></form>'+
+    '<button type="button" class="btn ghost" data-act="logout">Cerrar sesión</button>';
+}
+function vVisit(){
+  var v=visit(),list=extOf(v.cliente),done=v.items,n=Object.keys(done).length,tot=Math.max(list.length,n),pct=tot?Math.round(n/tot*100):0;
+  var extra=Object.keys(done).filter(function(f){return !list.some(function(x){return x.folio===f;});}).map(function(f){return S.ext[f]||{folio:f,ubicacion:done[f].ubicacion};});
+  dock('<button type="button" class="btn" data-act="scan">Escanear QR</button><button type="button" class="btn ghost" style="width:auto" data-act="finishAsk">Terminar</button>');
+  return '<div><span class="eyebrow">Inspección · '+esc(v.fecha.split("-").reverse().join("/"))+'</span><h1>'+esc(v.cliente)+'</h1></div>'+
+    '<div class="card"><div class="prog"><span class="hint">Revisados</span><b>'+n+' <span style="font-size:22px;color:var(--muted)">de '+tot+'</span></b></div><div class="bar"><i style="width:'+pct+'%"></i></div></div>'+
+    '<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><h2>Extintores</h2><button type="button" class="btn ghost sm" data-act="manual">Sin QR / escribir folio</button></div><div class="list">'+
+    (list.concat(extra).length?list.concat(extra).map(function(x){var it=done[x.folio];return '<button type="button" class="row" data-act="open" data-f="'+esc(x.folio)+'"><span><b style="font-weight:600">'+esc(x.ubicacion||"Sin ubicación")+'</b><div class="s">'+esc(x.folio)+' · '+esc(tl(x.tipo)+" "+String(x.cap||"").toLowerCase())+'</div></span>'+(it?'<span class="pill" style="color:'+(it.resultado==="Conforme"?"var(--green)":"var(--amber)")+'">'+(it.resultado==="Conforme"?"Conforme":"Revisar")+'</span>':'<span class="pill" style="color:var(--muted)">Pendiente</span>')+'</button>';}).join(""):'<p class="hint">Este cliente todavía no tiene extintores con QR. Escanea cada etiqueta nueva y dalo de alta ahí mismo.</p>')+
+    '</div></div>';
+}
+function vScan(){dock('<button type="button" class="btn ghost" data-act="back">Cancelar</button>');
+  return (S.manual?'<h1>Escribir folio</h1><span class="hint">Úsalo cuando la etiqueta está dañada o el extintor todavía no tiene QR.</span><button type="button" class="btn ghost sm" data-act="scan">Mejor escanear</button>':'<h1>Escanear</h1><div class="scanbox"><video id="vid" playsinline muted></video></div><canvas id="cv" hidden></canvas><span class="hint" id="scanMsg">Apunta al código QR de la etiqueta.</span>')+
+    '<form class="card" id="folioForm"><div class="field"><label for="ffFolio">'+(S.manual?'Folio de la etiqueta':'¿No lee? Escribe el folio')+'</label><input class="inp" id="ffFolio" placeholder="JX-000245" autocapitalize="characters" autocomplete="off"></div><button class="btn ghost" type="submit">Buscar folio</button></form>';
+}
+function vForm(){
+  var d=S.draft,x=S.ext[d.folio]||{},nuevo=!x.estado||x.estado==="sin asignar",cm=today().slice(0,7);
+  dock('<button type="button" class="btn" data-act="saveItem">Guardar y seguir</button><button type="button" class="btn ghost" style="width:auto" data-act="back">Cancelar</button>');
+  var tipoSel='<select class="inp" id="fTipo">'+TIPOS.map(function(t){return '<option value="'+t[0]+'"'+(d.tipo===t[0]?" selected":"")+'>'+t[1]+'</option>';}).join("")+'</select>';
+  var ventas='<div class="two"><div class="field"><label for="fRec">Última recarga</label><input class="inp" id="fRec" type="month" value="'+esc(d.recarga||"")+'"></div><div class="field"><label for="fVen">Vence</label><input class="inp" id="fVen" type="month" value="'+esc(d.vence||"")+'"></div></div><div class="field"><label for="fPh">Próxima prueba hidrostática</label><input class="inp" id="fPh" type="month" value="'+esc(d.ph||"")+'"></div>';
+  var datos=nuevo?'<div class="card"><span class="eyebrow">Alta de extintor · '+esc(d.folio)+'</span><div class="field"><label for="fUbi">Ubicación</label><input class="inp" id="fUbi" value="'+esc(d.ubicacion||"")+'" placeholder="Ej. Recepción, pasillo 3" autocomplete="off"></div><div class="two"><div class="field"><label for="fTipo">Tipo</label>'+tipoSel+'</div><div class="field"><label for="fCap">Capacidad</label><input class="inp" id="fCap" value="'+esc(d.cap||"")+'" placeholder="4.5 KG" autocomplete="off"></div></div><div class="field"><label for="fSerie">No. de serie (opcional)</label><input class="inp" id="fSerie" value="'+esc(d.serie||"")+'" autocomplete="off"></div>'+ventas+'</div>'
+    :'<div class="card"><span class="eyebrow">'+esc(d.folio)+'</span><h2>'+esc(x.ubicacion||"")+'</h2><dl class="ficha"><dt>Equipo</dt><dd>'+esc(tl(x.tipo)+" "+String(x.cap||"").toLowerCase())+'</dd><dt>Recarga</dt><dd>'+fm(x.recarga)+' · vence <span style="color:'+(x.vence&&x.vence<cm?"var(--rose)":"inherit")+'">'+fm(x.vence)+'</span></dd><dt>P.H.</dt><dd>'+fm(x.ph)+'</dd>'+(x.ultima&&x.ultima.fecha?'<dt>Última</dt><dd>'+esc(x.ultima.resultado||"")+' · '+esc(x.ultima.fecha.split("-").reverse().join("/"))+'</dd>':"")+'</dl><details><summary class="hint" style="cursor:pointer">Corregir fechas o ubicación</summary><div style="display:flex;flex-direction:column;gap:10px;margin-top:10px"><div class="field"><label for="fUbi">Ubicación</label><input class="inp" id="fUbi" value="'+esc(d.ubicacion||"")+'" autocomplete="off"></div>'+ventas+'</div></details></div>';
+  var pts='<div class="card"><h2>Revisión</h2>'+JASA_PUNTOS.map(function(p){var v=d.puntos[p.k];return '<div class="pt"><span>'+p.l+'</span><button type="button" class="opt good" data-act="pt" data-k="'+p.k+'" data-v="'+p.o[0]+'" aria-pressed="'+(v===p.o[0])+'">'+JASA_OPT_LABEL[p.o[0]]+'</button><button type="button" class="opt bad" data-act="pt" data-k="'+p.k+'" data-v="'+p.o[1]+'" aria-pressed="'+(v===p.o[1])+'">'+JASA_OPT_LABEL[p.o[1]]+'</button></div>';}).join("")+'</div>';
+  var com='<div class="card"><h2>Comentarios</h2><div class="chips">'+COMENT.map(function(c){return '<button type="button" class="chip" data-act="chip" data-v="'+c+'" aria-pressed="'+(d.chips.indexOf(c)>=0)+'">'+c+'</button>';}).join("")+'</div><textarea class="inp" id="fCom" rows="2" placeholder="Otro comentario">'+esc(d.nota||"")+'</textarea></div>';
+  var res=resultado(d);
+  var rs='<div class="card"><span class="eyebrow">Resultado</span><span class="res" id="resTxt" style="color:'+(res==="Conforme"?"var(--green)":res==="Retirar de servicio"?"var(--rose)":"var(--amber)")+'">'+res+'</span><label class="hint" style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="fRet"'+(d.forzar==="Retirar de servicio"?" checked":"")+' style="width:20px;height:20px;accent-color:var(--red)"> Retirar de servicio</label></div>';
+  return datos+pts+com+rs;
+}
+function vFinish(){var v=visit(),items=Object.keys(v.items).map(function(k){return v.items[k];}),bad=items.filter(function(i){return i.resultado!=="Conforme";}).length;
+  dock('<button type="button" class="btn" data-act="finishDo">Terminar y enviar</button><button type="button" class="btn ghost" style="width:auto" data-act="backVisit">Volver</button>');
+  return '<h1>Terminar</h1><div class="card"><span class="hint">'+items.length+' extintores revisados · '+(items.length-bad)+' conformes · '+bad+' requieren atención.'+(bad?' Se armará una cotización con lo encontrado.':'')+'</span>'+
+    '<div class="field"><label for="fiResp">Nombre de quien recibe</label><input class="inp" id="fiResp" value="'+esc(v.responsable||"")+'" autocomplete="off"></div>'+
+    '<div class="field"><label>Firma del cliente</label><canvas class="sig" id="sig"></canvas><button type="button" class="btn ghost sm" data-act="sigClear">Borrar firma</button></div></div>';
+}
+function vDone(){var v=S.done||{};dock('<button type="button" class="btn" data-act="home">Nueva inspección</button>');
+  return '<h1>Inspección enviada</h1><div class="card"><h2>'+esc(v.cliente||"")+'</h2><span class="hint">'+(v.n||0)+' extintores revisados. El reporte ya está en el panel, en Inspecciones'+(v.cot?', con una cotización armada de '+v.cot+(v.cot===1?' partida':' partidas'):"")+'.'+' Si arriba dice que hay cambios por subir, se envían solos al tener señal.'+'</span></div>';}
+
+/* ---------- formulario ---------- */
+function openItem(folio){
+  folio=String(folio||"").trim().toUpperCase();var m=folio.match(/JX-?(\d{1,6})/);if(m)folio="JX-"+m[1].padStart(6,"0");
+  if(!/^JX-\d{6}$/.test(folio)){toast("Ese código no es una etiqueta de JASA.");return false;}
+  var v=visit(),x=S.ext[folio],prev=v.items[folio];
+  if(x&&x.estado&&x.estado!=="sin asignar"&&x.cliente&&String(x.cliente).trim().toLowerCase()!==String(v.cliente).trim().toLowerCase()){if(!confirmBox("Este extintor está registrado con "+x.cliente+". ¿Revisarlo de todos modos?"))return false;}
+  var base=prev||{};var src=x||{};
+  S.draft={folio:folio,ubicacion:base.ubicacion||src.ubicacion||"",tipo:base.tipo||src.tipo||"PQS",cap:base.cap||src.cap||"",serie:src.serie||"",recarga:base.recarga||src.recarga||"",vence:base.vence||src.vence||"",ph:base.ph||src.ph||"",
+    puntos:Object.assign(JASA_PUNTOS.reduce(function(a,p){a[p.k]=p.o[0];return a;},{}),base.puntos||{}),chips:(base.chips||[]).slice(),nota:base.nota||"",forzar:base.forzar||""};
+  if(!prev&&src.vence&&src.vence<today().slice(0,7))S.draft.chips.push("Vencido");
+  S.view="form";render();return true;
+}
+function confirmBox(msg){return window.confirm(msg);}
+function readForm(){var d=S.draft;["fUbi:ubicacion","fCap:cap","fSerie:serie","fRec:recarga","fVen:vence","fPh:ph","fCom:nota"].forEach(function(p){var a=p.split(":"),el=$(a[0]);if(el)d[a[1]]=el.value.trim();});var t=$("fTipo");if(t)d.tipo=t.value;var r=$("fRet");d.forzar=r&&r.checked?"Retirar de servicio":"";if(d.cap&&/^\d+(\.\d+)?$/.test(d.cap))d.cap+=" KG";d.cap=String(d.cap||"").toUpperCase();}
+function saveItem(){
+  readForm();var d=S.draft,v=visit(),x=S.ext[d.folio]||{};
+  if(!d.ubicacion){toast("Escribe la ubicación del extintor.");return;}
+  if(!d.cap){toast("Escribe la capacidad.");return;}
+  var cm=today().slice(0,7);
+  var it={folio:d.folio,n:(v.items[d.folio]||{}).n||(Object.keys(v.items).length+1),ubicacion:d.ubicacion,tipo:d.tipo,cap:d.cap,recarga:d.recarga,vence:d.vence,ph:d.ph,puntos:d.puntos,chips:d.chips,nota:d.nota,forzar:d.forzar,
+    comentario:d.chips.concat(d.nota?[d.nota]:[]).join(", "),vencido:jasaVencido(d.vence,cm),hora:new Date().toISOString()};
+  it.resultado=resultado(it);v.items[d.folio]=it;saveVisit();
+  var ex=Object.assign({},x,{folio:d.folio,cliente:v.cliente,ubicacion:d.ubicacion,tipo:d.tipo,cap:d.cap,serie:d.serie||x.serie||"",recarga:d.recarga,vence:d.vence,ph:d.ph,estado:x.estado&&x.estado!=="sin asignar"?x.estado:"servicio",
+    ultima:{fecha:v.fecha,resultado:it.resultado,puntos:d.puntos,comentario:it.comentario,tecnico:v.reviso,inspeccion:v.id}});
+  delete ex.creado;S.ext[d.folio]=ex;enqueue({col:"extintores",id:d.folio,t:Date.now(),data:ex});
+  toast(d.folio+" guardado · "+it.resultado);S.view="visit";render();
+}
+
+/* ---------- cotización con lo encontrado ---------- */
+function buildQuote(v){
+  var lines={},add=function(t,q){lines[t]=(lines[t]||0)+(q||1);},cm=today().slice(0,7);
+  Object.keys(v.items).forEach(function(k){var i=v.items[k],eq=(i.tipo==="CO2"?"CO2":i.tipo)+" "+String(i.cap||"").toUpperCase(),p=i.puntos||{},ch=(i.chips||[]).join(" ");
+    if(i.vencido||/recarga|vencido|despresurizado/i.test(ch))add("RECARGA DE EXTINTOR "+String(i.cap||"").toUpperCase()+" "+(i.tipo==="CO2"?"CO2":i.tipo));
+    if(i.ph&&i.ph<cm)add("PRUEBA HIDROSTÁTICA DE EXTINTOR "+eq);
+    if(p.manguera==="mal"||/manguera/i.test(ch))add("CAMBIO DE MANGUERA DE EXTINTOR "+eq);
+    if(p.seguro==="mal"||p.sello==="mal"||/seguro/i.test(ch))add("SEGURO Y SELLO DE EXTINTOR");
+    if(p.corneta==="mal")add("CAMBIO DE CORNETA O DIFUSOR "+eq);
+    if(p.portamanguera==="mal")add("PORTAMANGUERA DE EXTINTOR");
+    if(p.recipiente==="mal"||p.pintura==="mal"||/golpeado/i.test(ch))add("MANTENIMIENTO Y PINTURA DE EXTINTOR "+eq);
+    if(p.letrero==="no"||/señalamiento/i.test(ch))add("SEÑALAMIENTO DE EXTINTOR");
+    if(p.pedestal==="no")add("PEDESTAL PARA EXTINTOR");
+  });
+  return Object.keys(lines).map(function(a){return {art:a,qty:lines[a],price:""};});
+}
+function finish(){
+  var v=visit(),resp=$("fiResp").value.trim(),c=$("sig");
+  if(!Object.keys(v.items).length){toast("Todavía no hay extintores revisados.");return;}
+  v.responsable=resp;v.firma=sigUsed?c.toDataURL("image/png"):"";
+  var lines=buildQuote(v),cli=S.clientes.find(function(x){return String(x.nombre).trim().toLowerCase()===String(v.cliente).trim().toLowerCase();})||{};
+  if(lines.length){var qid="ins-"+v.id,d=v.fecha.replace(/-/g,"").slice(2);
+    enqueue({col:"quotes",id:qid,t:Date.now(),data:{folio:"INS-"+d+"-"+v.id.slice(-3).toUpperCase(),fecha:v.fecha,cliente:v.cliente,dirigido:resp,tel:cli.tel||"",ciudad:cli.ciudad||"",cond:"Hallazgos de la inspección del "+v.fecha.split("-").reverse().join("/"),status:"Nueva",origen:"inspeccion",inspeccion:v.id,creado:Date.now(),lines:lines}});
+    v.cotizacion=qid;}
+  v.estado="completa";saveVisit();
+  S.done={cliente:v.cliente,n:Object.keys(v.items).length,cot:lines.length};S.cur=null;save(KV,null);S.view="done";render();
+}
+
+/* ---------- cámara y QR ---------- */
+var raf=null;
+function startCam(){
+  var vid=$("vid"),cv=$("cv"),msg=$("scanMsg");if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){msg.textContent="Este navegador no permite usar la cámara. Escribe el folio abajo.";return;}
+  navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"},audio:false}).then(function(st){
+    S.stream=st;vid.srcObject=st;vid.play();var ctx=cv.getContext("2d",{willReadFrequently:true}),last=0;
+    var tick=function(ts){if(!S.stream)return;raf=requestAnimationFrame(tick);if(ts-last<180||vid.readyState<2)return;last=ts;
+      var w=vid.videoWidth,h=vid.videoHeight,sc=Math.min(1,640/Math.max(w,h));cv.width=w*sc;cv.height=h*sc;ctx.drawImage(vid,0,0,cv.width,cv.height);
+      var img=ctx.getImageData(0,0,cv.width,cv.height),code=window.jsQR(img.data,img.width,img.height,{inversionAttempts:"dontInvert"});
+      if(code&&code.data){var m=code.data.match(/JX-?\d{1,6}/i);if(m){if(navigator.vibrate)navigator.vibrate(60);stopCam();openItem(m[0]);}else msg.textContent="Ese QR no es de una etiqueta de JASA.";}};
+    raf=requestAnimationFrame(tick);
+  },function(){msg.textContent="No se pudo abrir la cámara. Da permiso a la cámara en el navegador o escribe el folio abajo.";});
+}
+function stopCam(){if(raf)cancelAnimationFrame(raf);raf=null;if(S.stream){S.stream.getTracks().forEach(function(t){t.stop();});S.stream=null;}}
+
+/* ---------- firma ---------- */
+var sigUsed=false;
+function initSig(){var c=$("sig");if(!c)return;sigUsed=false;var r=c.getBoundingClientRect();c.width=r.width*2;c.height=r.height*2;var x=c.getContext("2d");x.scale(2,2);x.lineWidth=2.4;x.lineCap="round";x.strokeStyle="#111";var on=false;
+  function pos(e){var b=c.getBoundingClientRect();return [e.clientX-b.left,e.clientY-b.top];}
+  c.addEventListener("pointerdown",function(e){on=true;sigUsed=true;c.setPointerCapture(e.pointerId);var p=pos(e);x.beginPath();x.moveTo(p[0],p[1]);});
+  c.addEventListener("pointermove",function(e){if(!on)return;var p=pos(e);x.lineTo(p[0],p[1]);x.stroke();});
+  c.addEventListener("pointerup",function(){on=false;});}
+
+/* ---------- eventos ---------- */
+document.addEventListener("click",function(e){var b=e.target.closest("[data-act]");if(!b)return;var a=b.getAttribute("data-act");
+  if(a==="logout"){sb.auth.signOut().then(function(){location.reload();});return;}
+  if(a==="resume"||a==="backVisit"){S.view="visit";render();return;}
+  if(a==="scan"){S.manual=false;S.view="scan";render();return;}
+  if(a==="manual"){S.manual=true;S.view="scan";render();setTimeout(function(){var f=$("ffFolio");if(f)f.focus();},50);return;}
+  if(a==="back"){S.view=visit()?"visit":"home";render();return;}
+  if(a==="open"){openItem(b.getAttribute("data-f"));return;}
+  if(a==="pt"){readForm();S.draft.puntos[b.getAttribute("data-k")]=b.getAttribute("data-v");var y=window.scrollY;render();window.scrollTo(0,y);return;}
+  if(a==="chip"){readForm();var c=b.getAttribute("data-v"),i=S.draft.chips.indexOf(c);if(i>=0)S.draft.chips.splice(i,1);else S.draft.chips.push(c);var y2=window.scrollY;render();window.scrollTo(0,y2);return;}
+  if(a==="saveItem"){saveItem();return;}
+  if(a==="finishAsk"){S.view="finish";render();return;}
+  if(a==="sigClear"){render();return;}
+  if(a==="finishDo"){finish();return;}
+  if(a==="home"){S.view="home";render();return;}
+});
+document.addEventListener("change",function(e){if(e.target.id==="fRet"){readForm();var y=window.scrollY;render();window.scrollTo(0,y);}});
+document.addEventListener("submit",function(e){e.preventDefault();var f=e.target;
+  if(f.id==="loginForm"){$("lgErr").textContent="Entrando…";sb.auth.signInWithPassword({email:$("lgMail").value.trim(),password:$("lgPass").value}).then(function(r){if(r.error){$("lgErr").textContent=/invalid/i.test(r.error.message)?"Correo o contraseña incorrectos.":"No se pudo entrar: "+r.error.message;return;}boot();});return;}
+  if(f.id==="newForm"){var cli=$("nfCli").value.trim();if(!cli){toast("Elige el cliente.");return;}var rev=$("nfRev").value.trim();save(KR,rev);
+    S.cur={id:rid(),cliente:(S.clientes.find(function(x){return String(x.nombre).trim().toLowerCase()===cli.toLowerCase();})||{nombre:cli}).nombre,fecha:today(),reviso:rev,responsable:$("nfResp").value.trim(),items:{},estado:"en curso",creado:Date.now()};
+    saveVisit();S.view="visit";render();return;}
+  if(f.id==="folioForm"){openItem($("ffFolio").value);return;}
+});
+
+/* ---------- arranque ---------- */
+function boot(){
+  sb.auth.getSession().then(function(r){var ses=r&&r.data&&r.data.session;if(!ses){S.view="login";render();return;}
+    S.user=ses.user;return sb.from("staff").select("email").limit(1).then(function(q){
+      if(!q.error&&(!q.data||!q.data.length)){sb.auth.signOut();S.view="login";render();$("lgErr").textContent="Tu correo no tiene acceso. Pide que te agreguen al personal.";return;}
+      return loadData().then(function(){S.view=visit()&&visit().estado!=="completa"?"visit":"home";render();flush();
+        var hm=location.hash.match(/JX-?\d{1,6}/i);if(hm){try{history.replaceState(null,"",location.pathname);}catch(e){}if(visit()&&visit().estado!=="completa")openItem(hm[0]);else toast("Empieza o continúa una inspección para revisar "+hm[0].toUpperCase()+".");}});
+    },function(){var c=load("jasaCache",null);if(c){S.clientes=c.clientes;S.ext=c.ext;}S.view=visit()?"visit":"home";render();});
+  });
+}
+boot();
+})();
+</script>
+</body>
+</html>

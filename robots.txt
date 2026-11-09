@@ -3,5 +3,7 @@ Allow: /
 Disallow: /admin.html
 Disallow: /admin/
 Disallow: /clientes/
+Disallow: /tecnico/
+Disallow: /e/
 
 Sitemap: https://jasaextintores.com/sitemap.xml

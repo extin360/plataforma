@@ -10,20 +10,26 @@ ayuda con la configuración. Todo el texto para el usuario va en español de Mé
 | Sitio público | https://jasaextintores.com | `index.html`, `img/` | Netlify publica `main` de GitHub `jasa-extin/jasa-extintores` |
 | Panel interno | https://jasaextintores.com/admin | `admin.html` → `tools/build.py` genera `admin/index.html` | Netlify |
 | Portal de clientes | https://jasaextintores.com/clientes | `src/clientes.html` → `clientes/index.html` | Netlify |
-| Reporte de inspección PDF | — | `src/reporte.js` (lo inserta el build en panel y portal) | — |
+| App del técnico | https://jasaextintores.com/tecnico | `src/tecnico.html` → `tecnico/index.html` | Netlify |
+| Ficha pública del QR | https://jasaextintores.com/e/JX-000245 | `src/ficha.html` → `e/index.html` (`_redirects` manda `/e/*` ahí) | Netlify |
+| Reportes PDF y puntos de inspección | — | `src/reporte.js` (lo inserta el build en panel, portal, app y ficha) | — |
 | Base de datos | Supabase `psggoagcdokwrkykgufr` | `supabase/*.sql` (se pegan en SQL Editor) | Supabase |
 | Panel viejo (solo lectura) | claude.ai artifact BHJcxnzgNkVbLfyVe49MNu | `admin.html` en modo claude.ai | Artifact |
 
-Después de cambiar `admin.html`, `src/clientes.html` o `src/reporte.js`: `python3 tools/build.py` y commit de
-los archivos generados.
+Después de cambiar `admin.html` o cualquier archivo de `src/`: `python3 tools/build.py` y commit de los archivos
+generados.
 
 ## Datos (Supabase)
 
 - Una tabla `public.docs (col, id, data jsonb)`; `col` = colección: `quotes`, `clientes`, `proveedores`,
-  `movs`, `ordenes`, `inventario`, `precios`, `pendientes`.
+  `movs`, `ordenes`, `inventario`, `precios`, `pendientes`, `extintores` (id = folio JX-000001), `inspecciones`.
 - Acceso: RLS; solo correos en `public.staff` leen y escriben (`public.is_staff()`). `anon` no lee nada.
 - Clientes del portal: función `public.portal(codigo)` con el `codigoPortal` del cliente (XXXX-XXXX-XX).
 - Sitio público: función `public.solicitar_cotizacion(datos)` crea una cotización `Nueva` con `origen: web`.
+- Ficha del QR: función `public.ficha_extintor(folio)` (sin cliente ni serie).
+- Etiquetas: impresora Zebra ZD420, se imprimen desde el panel (Extintores › Generar etiquetas) con QR a `/e/<folio>`.
+- Inspección: los puntos están en `JASA_PUNTOS` (mismo orden que el formato en papel de JASA). Al terminar, la app
+  crea la inspección y una cotización `origen: inspeccion` con lo encontrado. La app guarda sin señal en localStorage.
 - Llave publicable en el código (es pública por diseño). Nunca poner la Secret key ni contraseñas en el repo.
 - Registro de usuarios cerrado: el personal se da de alta en Authentication › Users y en `public.staff`.
 
