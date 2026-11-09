@@ -22,14 +22,18 @@ generados.
 ## Datos (Supabase)
 
 - Una tabla `public.docs (col, id, data jsonb)`; `col` = colección: `quotes`, `clientes`, `proveedores`,
-  `movs`, `ordenes`, `inventario`, `precios`, `pendientes`, `extintores` (id = folio JX-000001), `inspecciones`.
+  `movs`, `ordenes`, `inventario`, `precios`, `pendientes`, `extintores` (id = folio `PREFIJO-001` del cliente, o
+  `JX-000001` para etiquetas en blanco; `jasaFolio()` los normaliza), `inspecciones`, `visitas`.
+- `public.staff` tiene `rol` (`admin` | `tecnico`) y `nombre` (`supabase/04_puestos.sql`). El técnico solo ve en la app
+  sus `visitas` programadas; es filtro de la app, no de RLS (pendiente: permisos por puesto en la base).
 - Acceso: RLS; solo correos en `public.staff` leen y escriben (`public.is_staff()`). `anon` no lee nada.
 - Clientes del portal: función `public.portal(codigo)` con el `codigoPortal` del cliente (XXXX-XXXX-XX).
 - Sitio público: función `public.solicitar_cotizacion(datos)` crea una cotización `Nueva` con `origen: web`.
 - Ficha del QR: función `public.ficha_extintor(folio)` (sin cliente ni serie).
 - Etiquetas: impresora Zebra ZD420, se imprimen desde el panel (Extintores › Generar etiquetas) con QR a `/e/<folio>`.
 - Inspección: los puntos están en `JASA_PUNTOS` (mismo orden que el formato en papel de JASA). Al terminar, la app
-  crea la inspección y una cotización `origen: inspeccion` con lo encontrado. La app guarda sin señal en localStorage.
+  manda la inspección `por revisar`; en el panel se revisa, `jasaHallazgos()` agrupa lo encontrado por categoría y un
+  botón crea la cotización `origen: inspeccion` (la inspección queda `revisada`). La app guarda sin señal en localStorage.
 - Llave publicable en el código (es pública por diseño). Nunca poner la Secret key ni contraseñas en el repo.
 - Registro de usuarios cerrado: el personal se da de alta en Authentication › Users y en `public.staff`.
 
