@@ -942,9 +942,9 @@ function makeSupaDb(sb){
 function showLogin(msg){
   document.getElementById("loginRoot").innerHTML='<div class="login"><form id="loginForm" autocomplete="on"><div class="brand" style="padding:0"><b>JASA</b><span class="eyebrow">Administración</span></div>'+
     '<div class="field"><label for="lgMail">Correo</label><input class="inp" id="lgMail" type="email" autocomplete="username" required></div>'+
-    '<div class="field"><label for="lgPass">Contraseña</label><input class="inp" id="lgPass" type="password" autocomplete="current-password" required></div>'+
+    '<div class="field"><label for="lgPass">Contraseña</label><div style="display:flex;gap:6px"><input class="inp" id="lgPass" type="password" autocomplete="current-password" required><button type="button" class="btn ghost sm" id="lgShow" aria-pressed="false" onclick="var i=document.getElementById(\'lgPass\'),v=i.type===\'password\';i.type=v?\'text\':\'password\';this.textContent=v?\'Ocultar\':\'Mostrar\';this.setAttribute(\'aria-pressed\',v);">Mostrar</button></div><small class="hint">Revisa mayúsculas y que no haya un espacio al final.</small></div>'+
     '<button class="btn" type="submit">Entrar</button><div class="err" id="lgErr" role="alert">'+esc(msg||"")+'</div>'+
-    '<span class="hint">¿Olvidaste tu contraseña? El administrador la cambia en Supabase, en Authentication › Users.</span></form></div>';
+    '<span class="hint">¿Olvidaste tu contraseña? En Supabase, Authentication › Users, borra tu usuario y vuelve a crearlo con “Create new user”; tu acceso al panel se conserva.</span></form></div>';
   var m=document.getElementById("lgMail");if(m)m.focus();
 }
 function startSupabase(){
