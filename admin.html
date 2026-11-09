@@ -954,7 +954,7 @@ function startSupabase(){
   }).then(function(r){
     var ses=r&&r.data&&r.data.session;if(!ses){showLogin();return;}
     return SB.from("staff").select("email").limit(1).then(function(q){
-      if(q.error||!q.data||!q.data.length){showLogin("El correo "+ses.user.email+" no tiene acceso al panel.");SB.auth.signOut();return;}
+      if(q.error||!q.data||!q.data.length){showLogin(q.error?"No se pudo revisar tu acceso: "+q.error.message:"El correo "+ses.user.email+" entró, pero no está en la lista de personal (public.staff).");SB.auth.signOut();return;}
       document.getElementById("loginRoot").innerHTML="";
       db=makeSupaDb(SB);startDb();
       ["backupBtn","importBtn","logoutBtn"].forEach(function(i){document.getElementById(i).hidden=false;});
@@ -966,7 +966,10 @@ document.addEventListener("submit",function(e){
   if(e.target.id!=="loginForm")return;e.preventDefault();e.stopImmediatePropagation();
   var er=document.getElementById("lgErr");er.textContent="Entrando…";
   SB.auth.signInWithPassword({email:document.getElementById("lgMail").value.trim(),password:document.getElementById("lgPass").value}).then(function(r){
-    if(r.error){er.textContent="Correo o contraseña incorrectos.";return;}
+    if(r.error){var m=String(r.error.message||""),c=String(r.error.code||"");
+      er.textContent=/not confirmed/i.test(m)||c==="email_not_confirmed"?"Tu correo no está confirmado en Supabase. Pide que lo confirmen (Authentication › Users).":
+        /invalid login|invalid_credentials/i.test(m+c)?"Correo o contraseña incorrectos.":
+        /rate|too many/i.test(m)?"Demasiados intentos. Espera unos minutos.":"No se pudo entrar: "+m;return;}
     startSupabase();
   });
 },true);
