@@ -237,7 +237,7 @@ textarea.inp{resize:vertical;min-height:120px;font-family:var(--mono);font-size:
 <script>
 (function(){
 "use strict";
-var COLS=["quotes","clientes","proveedores","movs","ordenes","inventario","precios","pendientes","extintores","inspecciones"];
+var COLS=["quotes","clientes","proveedores","movs","ordenes","inventario","precios","pendientes","extintores","inspecciones","visitas"];
 var S={screen:"panel",data:{},ready:{},sel:null,finTab:"todos",finMes:null,search:"",paste:"",pasteMsg:"",drawer:null,otSel:null,dlv:{},confirm:null,readOnly:false,dbState:"loading"};
 COLS.forEach(function(c){S.data[c]=[];S.ready[c]=false;});
 var db=null, dl=null;
@@ -324,11 +324,12 @@ var CAT_ING=["Ventas","Servicios","Capacitación","Otros ingresos"],CAT_EGR=["In
 var STAGES=[["Por recoger","var(--blue)"],["Recibido","var(--muted)"],["En reparación","var(--amber)"],["En entrega","var(--green)"],["Entregado","var(--faint)"]];
 var DONE=4,READY=3;
 var FORMS={
-  clientes:{t:"cliente",f:[["nombre","Nombre o razón social","text",1],["contacto","Contacto","text"],["tel","Teléfono (10 dígitos)","tel"],["ciudad","Ciudad","text"],["equiposDet","Extintores del cliente","equipos"],["proximaRecarga","Próxima recarga","month"],["saldo","Por cobrar ($)","number"],["codigoPortal","Código del portal de clientes","text",0,null,"Se genera con el botón Portal. Bórralo para quitarle el acceso."],["notas","Notas","textarea"]]},
+  clientes:{t:"cliente",f:[["nombre","Nombre o razón social","text",1],["contacto","Contacto","text"],["tel","Teléfono (10 dígitos)","tel"],["ciudad","Ciudad","text"],["equiposDet","Extintores del cliente","equipos"],["proximaRecarga","Próxima recarga","month"],["saldo","Por cobrar ($)","number"],["prefijo","Prefijo de folios de sus extintores","text",0,null,"Ej. EAP1: sus extintores serán EAP1-001, EAP1-002… Déjalo vacío y se sugiere solo."],["codigoPortal","Código del portal de clientes","text",0,null,"Se genera con el botón Portal. Bórralo para quitarle el acceso."],["notas","Notas","textarea"]]},
   proveedores:{t:"proveedor",f:[["nombre","Proveedor","text",1],["contacto","Contacto","text"],["tel","Teléfono","tel"],["ciudad","Ciudad","text"],["surte","Qué surte","text"],["saldo","Por pagar ($)","number"]]},
   movs:{t:"movimiento",f:[["tipo","Tipo","select",1,[["ingreso","Ingreso"],["egreso","Egreso"]]],["fecha","Fecha","date",1],["concepto","Concepto","text",1],["quien","Cliente o proveedor","text"],["categoria","Categoría","select",0,CAT_ING.concat(CAT_EGR).map(function(c){return [c,c];})],["monto","Monto ($)","number",1]]},
   ordenes:{t:"orden de taller",f:[["cliente","Cliente","text",1],["contacto","Contacto","text"],["tel","Teléfono / WhatsApp","tel"],["recibido","Fecha de ingreso","date",1],["entrega","Entrega programada","date"],["equiposDet","Equipos recibidos","equipos"],["recibio","Recibió en JASA","text",0,null,"Nombre de quien recibe los equipos"],["notas","Notas","textarea",0,null,"Estado del equipo, piezas a cambiar, planta…"],["etapa","Etapa","select",1,STAGES.map(function(s,i){return [String(i),s[0]];})]]},
   inventario:{t:"artículo",f:[["nombre","Artículo","text",1],["categoria","Categoría","select",0,[["Extintores","Extintores"],["Señalamientos","Señalamientos"],["Refacciones","Refacciones"],["Agentes y polvo","Agentes y polvo"],["Otros","Otros"]]],["unidad","Unidad","text",0,null,"kg, pza, rollos…"],["ubicacion","Ubicación","text",0,null,"Ej. Anaquel 2"],["stock","Existencia","number",1],["min","Mínimo","number",1],["optimo","Óptimo (para pedir)","number",1],["consumo","Se descuenta al entregar una orden","select",0,[["","No"],["PQS","Sí: polvo PQS (kg recargados)"],["CO2","Sí: CO₂ (kg recargados)"],["ETIQUETA","Sí: 1 etiqueta por extintor"]]]]},
+  visitas:{t:"visita",f:[["cliente","Cliente","text",1],["fecha","Fecha","date",1],["tecnico","Técnico","select",1,function(){var o=(S.staff||[]).map(function(x){return [x.email,(x.nombre||x.email)+(x.rol==="tecnico"?" · técnico":"")];});return o.length?o:[["","Sin personal cargado"]];}],["tipo","Tipo de visita","select",1,[["Inspección","Inspección"],["Recolección","Recolección"],["Entrega","Entrega"],["Visita comercial","Visita comercial"]]],["notas","Notas para el técnico","textarea",0,null,"Ej. Preguntar por Leonardo en recepción"]]},
   extintores:{t:"extintor",f:[["folio","Folio (se asigna solo)","text",0,null,"Déjalo vacío para asignar el siguiente"],["cliente","Cliente","text",1],["ubicacion","Ubicación","text",1,null,"Ej. Recepción, pasillo 3, almacén"],["tipo","Tipo","select",1,[["PQS","PQS"],["CO2","CO₂"],["TIPO K","Tipo K"],["AGUA","Agua"],["AFFF","Espuma AFFF"],["TIPO D","Tipo D"],["AGENTE LIMPIO","Agente limpio"]]],["cap","Capacidad","text",1,null,"Ej. 4.5 KG, 9 KG, 6 L"],["marca","Marca","text"],["serie","No. de serie","text"],["fab","Fabricación","month"],["recarga","Última recarga","month"],["vence","Vence la recarga","month"],["ph","Próxima prueba hidrostática","month"],["estado","Estado","select",1,[["servicio","En servicio"],["reserva","Reserva del cliente"],["prestamo","Préstamo de JASA"],["taller","En taller"],["baja","Dado de baja"],["sin asignar","Etiqueta sin asignar"]]],["notas","Notas","textarea"]]},
   pendientes:{t:"pendiente",f:[["titulo","Actividad","text",1],["cat","Tipo","select",1,PN_CATS.map(function(c){return [c,c];})],["fecha","Fecha","date",1],["hora","Hora (opcional)","time"],["repite","Repetir","select",1,PN_REP],["hasta","Repetir hasta (opcional)","date",0,null,"Vacío = se repite siempre"],["notas","Notas","textarea",0,null,"Dirección, contacto, montos…"]]},
   quotes:{t:"cotización",f:[["cliente","Cliente","text",1],["dirigido","Dirigido a","text"],["tel","Teléfono (WhatsApp)","tel"],["direccion","Dirección","text"],["ciudad","Ciudad","text"],["rfc","RFC","text"],["cond","Condiciones","text",0,null,"Ej. Servicio a domicilio"],["entregaTxt","Tiempo de entrega","text",0,null,"Ej. 2 días hábiles"],["vigencia","Vigencia de precios","text",0,null,"Ej. 15 días"]]}
@@ -341,6 +342,7 @@ function openForm(kind,id){
     if(kind==="ordenes"){var t0=today();def={etapa:"1",recibido:t0,entrega:addWorkDays(t0,3)};}
     if(kind==="pendientes")def={fecha:S.pnDay||today(),repite:"no",cat:"Administrativo"};
     if(kind==="extintores")def={estado:"servicio",tipo:"PQS",cliente:S.extCli||""};
+    if(kind==="visitas")def={fecha:today(),tipo:"Inspección",tecnico:((S.staff||[]).find(function(x){return x.rol==="tecnico";})||{}).email||""};
     if(kind==="inventario")def={stock:0,min:0,optimo:0};
   }
   S.drawer={kind:kind,id:id||null,vals:Object.assign({},def,rec||{})};
@@ -357,9 +359,10 @@ function renderDrawer(){
     if(type==="equipos"){var det=Array.isArray(val)?val:[];if(!det.length&&(+v.equipos||0)>0)det=[{tipo:"PQS",cap:"6 KG",qty:+v.equipos}];
       return '<div class="field"><label>'+esc(lab)+'</label>'+(det.length?'<div class="eq-head"><span>Tipo</span><span>Capacidad</span><span>Cantidad</span><span></span></div>':"")+'<div class="eq-list" id="eqList">'+det.map(eqRowHTML).join("")+'</div>'+
         '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-top:4px"><div style="display:flex;gap:6px;flex-wrap:wrap"><button type="button" class="btn ghost sm" data-act="eqAdd">+ Agregar extintor</button>'+(withSvc()?'<button type="button" class="btn ghost sm" data-act="eqFromClient">Usar equipos del cliente</button>':"")+'</div><span class="eq-sum" id="eqSum"></span></div></div>';}
+    if(typeof opts==="function")opts=opts(v);
     if(type==="select")ctl='<select class="inp" id="'+id+'" name="'+k+'">'+opts.map(function(o){return '<option value="'+esc(o[0])+'"'+(String(val)===o[0]?" selected":"")+'>'+esc(o[1])+'</option>';}).join("")+'</select>';
     else if(type==="textarea")ctl='<textarea class="inp" id="'+id+'" name="'+k+'" style="font-family:var(--body);font-size:15px;min-height:80px">'+esc(val)+'</textarea>';
-    else if((d.kind==="ordenes"||d.kind==="extintores")&&k==="cliente")ctl='<input class="inp" id="'+id+'" name="'+k+'" type="text" list="cliList" autocomplete="off" required value="'+esc(val)+'"><datalist id="cliList">'+S.data.clientes.map(function(c){return '<option value="'+esc(c.nombre)+'">';}).join("")+'</datalist>';
+    else if((d.kind==="ordenes"||d.kind==="extintores"||d.kind==="visitas")&&k==="cliente")ctl='<input class="inp" id="'+id+'" name="'+k+'" type="text" list="cliList" autocomplete="off" required value="'+esc(val)+'"><datalist id="cliList">'+S.data.clientes.map(function(c){return '<option value="'+esc(c.nombre)+'">';}).join("")+'</datalist>';
     else ctl='<input class="inp" autocomplete="off" id="'+id+'" name="'+k+'" type="'+type+'"'+(type==="number"?' step="any" inputmode="decimal"':"")+(req?" required":"")+' value="'+esc(val)+'">';
     return '<div class="field"><label for="'+id+'">'+esc(lab)+(req?" *":"")+'</label>'+ctl+(hint?'<small>'+esc(hint)+'</small>':"")+'</div>';
   }).join("");
@@ -376,6 +379,8 @@ function submitDrawer(form){
     if(f[2]==="equipos"){var det=[];document.querySelectorAll("#eqList .eq-row").forEach(function(r){var q=parseInt(r.querySelector(".eq-qty").value,10)||0;var sv=r.querySelector(".eq-svc");if(q>0){var o={tipo:r.querySelector(".eq-tipo").value,cap:r.querySelector(".eq-cap").value,qty:q};if(sv)o.servicio=sv.value;det.push(o);}});body.equiposDet=det;body.equipos=det.reduce(function(a,e){return a+e.qty;},0);return;}
     var el=form.elements[f[0]];var x=el.value.trim();if(f[2]==="number")x=x===""?0:(parseFloat(x)||0);body[f[0]]=x;});
   if(d.kind==="inventario")body.porCapturar=false;
+  if(d.kind==="clientes"){body.prefijo=String(body.prefijo||"").toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,6);if(!body.prefijo)body.prefijo=uniquePrefix(body.nombre,d.id);
+    var clash=S.data.clientes.find(function(c){return c.id!==d.id&&String(c.prefijo||"").toUpperCase()===body.prefijo;});if(clash){toast("El prefijo "+body.prefijo+" ya es de "+clash.nombre+".");return;}}
   if(d.kind==="extintores"){body.folio=String(body.folio||"").trim().toUpperCase();if(d.id)delete body.folio;}
   if(d.kind==="ordenes"){
     body.etapa=+body.etapa;body.etapaV=2;
@@ -390,8 +395,9 @@ function submitDrawer(form){
     if(d.kind==="ordenes"){body.folio=nextOT();body.creado=Date.now();}
     if(d.kind==="quotes"){body.folio="MAN-"+Date.now().toString().slice(-6);body.fecha=today();body.status="Nueva";body.creado=Date.now();body.lines=[];}
     if(d.kind==="clientes")body.desde=today();
+    if(d.kind==="visitas"){body.estado="programada";body.creado=Date.now();}
     if(d.kind==="pendientes"){body.hechos=[];body.creado=Date.now();}
-    if(d.kind==="extintores"){body.folio=(body.folio||nextFolio()).toUpperCase();if(byId("extintores",body.folio)){toast("Ese folio ya existe.");return;}}
+    if(d.kind==="extintores"){body.folio=(body.folio?jasaFolio(body.folio)||body.folio:(body.cliente?nextFolioFor(body.cliente):nextFolio())).toUpperCase();if(byId("extintores",body.folio)){toast("Ese folio ya existe.");return;}}
     p=write(d.kind,d.kind==="extintores"?body.folio:null,body).then(function(id){if(d.kind==="quotes"){S.sel=id;S.screen="quotes";}});
   }
   p.then(function(){S.drawer=null;renderDrawer();toast(d.id?"Cambios guardados":"Agregado");render();},function(){});
@@ -602,9 +608,43 @@ function vPend(){
 var EXT_EST={servicio:["En servicio","var(--green)"],reserva:["Reserva","var(--blue)"],prestamo:["Préstamo","var(--blue)"],taller:["En taller","var(--amber)"],baja:["Baja","var(--faint)"],"sin asignar":["Sin asignar","var(--faint)"]};
 function folioNum(f){var m=String(f||"").match(/^JX-(\d+)$/);return m?+m[1]:0;}
 function nextFolio(){var n=S.data.extintores.reduce(function(a,x){return Math.max(a,folioNum(x.id));},0);return "JX-"+String(n+1).padStart(6,"0");}
+function uniquePrefix(nombre,selfId){var base=jasaPrefijo(nombre),p=base,i=2;while(S.data.clientes.some(function(c){return c.id!==selfId&&String(c.prefijo||"").toUpperCase()===p;})){p=(base.slice(0,5)+i);i++;}return p;}
+function prefixOf(cliente){var c=findClient(cliente);if(c&&c.prefijo)return c.prefijo;var p=uniquePrefix(cliente,c&&c.id);if(c&&!S.readOnly)patch("clientes",c.id,{prefijo:p}).catch(function(){});return p;}
+function nextFolioFor(cliente,offset){var p=prefixOf(cliente),re=new RegExp("^"+p+"-(\\d+)$"),n=S.data.extintores.reduce(function(a,x){var m=String(x.id).match(re);return m?Math.max(a,+m[1]):a;},0);return p+"-"+String(n+1+(offset||0)).padStart(3,"0");}
+var MES_TXT={ENE:1,JAN:1,FEB:2,MAR:3,ABR:4,APR:4,MAY:5,JUN:6,JUL:7,AGO:8,AUG:8,SEP:9,SET:9,OCT:10,NOV:11,DIC:12,DEC:12};
+function parseMes(t){t=String(t||"").trim().toUpperCase();if(!t)return "";var m=t.match(/^(\d{4})-(\d{1,2})/);if(m)return m[1]+"-"+pad(m[2]);
+  m=t.match(/^(\d{1,2})[\/\-.](\d{2,4})$/);if(m){var y=m[2].length===2?"20"+m[2]:m[2];return y+"-"+pad(m[1]);}
+  m=t.match(/^([A-Z]{3})[A-Z]*\.?\s*[\/\-]?\s*(\d{2,4})$/);if(m&&MES_TXT[m[1]]){var y2=m[2].length===2?"20"+m[2]:m[2];return y2+"-"+pad(MES_TXT[m[1]]);}return "";}
+function parseTipo(t){t=String(t||"").toUpperCase();return /CO\s*2|CO2|^COZ|CO₂/.test(t)?"CO2":/TIPO\s*K|^K$/.test(t)?"TIPO K":/AFFF|ESPUMA/.test(t)?"AFFF":/AGUA|H2O/.test(t)?"AGUA":/TIPO\s*D|^D$/.test(t)?"TIPO D":/LIMPIO|HALO/.test(t)?"AGENTE LIMPIO":"PQS";}
+function parseCap(t){var m=String(t||"").toUpperCase().replace(",",".").match(/(\d+(?:\.\d+)?)\s*(KG|L|LTS?)?/);if(!m)return "";return m[1]+" "+(m[2]&&m[2][0]==="L"?"L":"KG");}
+function parsePrecarga(txt){
+  return String(txt||"").split(/\r?\n/).map(function(l){return l.trim();}).filter(Boolean).map(function(l,i){
+    var c=l.split(/\t|\s*[|;]\s*/).map(function(x){return x.trim();});
+    var num="";if(/^\d{1,4}$/.test(c[0])){num=c.shift();}
+    return {numero:num||String(i+1),ubicacion:(c[0]||"").toUpperCase(),tipo:parseTipo(c[1]),cap:parseCap(c[2]),recarga:parseMes(c[3]),vence:parseMes(c[4])};
+  }).filter(function(r){return r.ubicacion;});
+}
+function precargaDrawer(){
+  document.getElementById("drawerRoot").innerHTML='<div class="overlay" data-act="closeDrawer"><div class="drawer" role="dialog" aria-modal="true" aria-label="Precargar extintores" style="width:min(720px,100%)"><div class="box-h"><h2>Precargar extintores</h2><button type="button" class="btn ghost sm" data-act="closeDrawer">Cerrar</button></div><div class="plan">'+
+    '<span>Cliente: <b>'+esc(S.extCli)+'</b> · sus folios serán <b class="mono">'+esc(prefixOf(S.extCli))+'-001</b>, '+esc(prefixOf(S.extCli))+'-002…</span>'+
+    '<span class="hint">Pega desde Excel o escribe un extintor por línea con estas columnas: <b>No. · Ubicación · Tipo · Capacidad · Fecha de recarga · Fecha de vencimiento</b>. Ej.: <span class="mono">1	RECEPCION	CO2	4.5	07/25	07/26</span></span>'+
+    '<textarea class="inp" id="pcTxt" rows="9" placeholder="1	RECEPCION	CO2	4.5	JUL 25	JUL 26&#10;2	PASILLO RECEPCION	CO2	4.5	NOV 25	NOV 26"></textarea>'+
+    '<div id="pcPrev" class="tbl-wrap"></div>'+
+    '<div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn" data-act="pcDo">Crear y asignar folios</button></div><span class="hint" id="pcMsg"></span></div></div></div>';
+}
+function precargaPreview(){var rows=parsePrecarga((document.getElementById("pcTxt")||{}).value),el=document.getElementById("pcPrev");if(!el)return;
+  el.innerHTML=rows.length?'<table><thead><tr><th>FOLIO</th><th>NO.</th><th>UBICACIÓN</th><th>EQUIPO</th><th>RECARGA</th><th>VENCE</th></tr></thead><tbody>'+rows.map(function(r,i){return '<tr><td class="mono" style="font-size:12px">'+esc(nextFolioFor(S.extCli,i))+'</td><td>'+esc(r.numero)+'</td><td>'+esc(r.ubicacion)+'</td><td>'+esc(tipoLabel(r.tipo)+" "+r.cap.toLowerCase())+'</td><td class="mono" style="font-size:12px">'+(r.recarga?fmtMonth(r.recarga):'<span style="color:var(--amber)">—</span>')+'</td><td class="mono" style="font-size:12px">'+(r.vence?fmtMonth(r.vence):'<span style="color:var(--amber)">—</span>')+'</td></tr>';}).join("")+'</tbody></table>':'<span class="hint">Aquí verás cómo quedan antes de crearlos.</span>';}
+function precargaDo(){
+  var rows=parsePrecarga(document.getElementById("pcTxt").value),msg=document.getElementById("pcMsg");if(!rows.length){msg.textContent="Escribe o pega al menos un extintor.";return;}
+  var folios=rows.map(function(r,i){return nextFolioFor(S.extCli,i);}),ch=Promise.resolve();msg.textContent="Creando "+rows.length+" extintores…";
+  rows.forEach(function(r,i){ch=ch.then(function(){return write("extintores",folios[i],{folio:folios[i],cliente:S.extCli,numero:r.numero,ubicacion:r.ubicacion,tipo:r.tipo,cap:r.cap,recarga:r.recarga,vence:r.vence,ph:"",estado:"servicio",creado:Date.now()});});});
+  ch.then(function(){S.drawer=null;renderDrawer();toast(rows.length+" extintores creados: "+folios[0]+" a "+folios[folios.length-1]);render();},function(){msg.textContent="Se detuvo. Revisa tu conexión e inténtalo otra vez.";});
+}
+function lblDone(list){if(S.readOnly)return;list.forEach(function(x){if(x&&x.etiquetaPendiente)patch("extintores",x.id,{etiquetaPendiente:false}).catch(function(){});});}
 function extVencidos(){var cm=today().slice(0,7);return S.data.extintores.filter(function(x){return x.estado!=="sin asignar"&&x.estado!=="baja"&&x.vence&&x.vence<cm;});}
 var QRLIB=null;function getQR(){QRLIB=QRLIB||loadScript("https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js");return QRLIB;}
 function qrSvg(text){var q=window.qrcode(0,"M");q.addData(text);q.make();return q.createSvgTag({cellSize:4,margin:0,scalable:true});}
+S.lblSize=(function(){try{return localStorage.getItem("jasaLbl")||"";}catch(e){return "";}})();
 var LABEL_SIZES={"51x25":[51,25],"76x51":[76,51],"102x51":[102,51]};
 function printLabels(list,size){
   var dim=LABEL_SIZES[size]||LABEL_SIZES["51x25"],w=dim[0],h=dim[1],q=Math.min(h-4,w/2.3);
@@ -612,13 +652,13 @@ function printLabels(list,size){
   win.document.write("<!doctype html><html><head><meta charset='utf-8'><title>Etiquetas JASA</title><link rel='stylesheet' href='https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@900&family=IBM+Plex+Mono:wght@600&family=Barlow:wght@500&display=swap'><style>@page{size:"+w+"mm "+h+"mm;margin:0}*{box-sizing:border-box}body{margin:0;font-family:Barlow,Arial,sans-serif;color:#000}.l{width:"+w+"mm;height:"+h+"mm;display:flex;align-items:center;gap:2mm;padding:2mm;page-break-after:always;overflow:hidden}.q{width:"+q+"mm;height:"+q+"mm;flex:none}.q svg{width:100%;height:100%;display:block}.t{display:flex;flex-direction:column;justify-content:center;min-width:0;line-height:1}.e{font-size:"+(h<30?5.5:8)+"pt;letter-spacing:.18em}.j{font-family:'Saira Condensed',Impact,sans-serif;font-weight:900;font-style:italic;font-size:"+(h<30?17:28)+"pt;line-height:.9;border-bottom:1.2mm solid #000;padding-bottom:.6mm;margin-bottom:1mm}.f{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:"+(h<30?8:12)+"pt}.s{font-size:"+(h<30?5:7)+"pt;margin-top:.6mm}.u{font-size:"+(h<30?5.5:8)+"pt;margin-top:.5mm;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}</style></head><body><p style='font:14px Arial;padding:12px'>Preparando etiquetas…</p></body></html>");
   win.document.close();
   getQR().then(function(){
-    win.document.body.innerHTML=list.map(function(x){return "<div class='l'><div class='q'>"+qrSvg("https://jasaextintores.com/e/"+x.folio)+"</div><div class='t'><span class='e'>EXTINTORES</span><span class='j'>JASA</span><span class='f'>"+esc(x.folio)+"</span>"+(x.ubicacion?"<span class='u'>"+esc(x.ubicacion)+"</span>":"")+"<span class='s'>Escanea · 878 783 3216</span></div></div>";}).join("");
+    win.document.body.innerHTML=list.map(function(x){return "<div class='l'><div class='q'>"+qrSvg("https://jasaextintores.com/e/"+x.folio)+"</div><div class='t'><span class='e'>EXTINTORES</span><span class='j'>JASA</span><span class='f'>"+esc(x.folio)+"</span>"+(x.ubicacion||x.numero?"<span class='u'>"+esc((x.numero?"No. "+x.numero+" · ":"")+(x.ubicacion||""))+"</span>":"")+"<span class='s'>Escanea · 878 783 3216</span></div></div>";}).join("");
     var go=function(){win.focus();win.print();};
     if(win.document.fonts&&win.document.fonts.ready)win.document.fonts.ready.then(function(){setTimeout(go,300);});else setTimeout(go,800);
   },function(){toast("No se pudo cargar el generador de QR. Revisa tu conexión.");});
 }
 function genLabels(){
-  var n=Math.max(1,Math.min(200,parseInt((document.getElementById("lbCant")||{}).value,10)||0)),size=(document.getElementById("lbSize")||{}).value||"51x25";
+  var n=Math.max(1,Math.min(200,parseInt((document.getElementById("lbCant")||{}).value,10)||0)),size=(document.getElementById("lbSize")||{}).value||"51x25";S.lblSize=size;try{localStorage.setItem("jasaLbl",size);}catch(e){}
   var start=S.data.extintores.reduce(function(a,x){return Math.max(a,folioNum(x.id));},0),list=[];
   for(var i=1;i<=n;i++)list.push({folio:"JX-"+String(start+i).padStart(6,"0")});
   var ch=Promise.resolve();list.forEach(function(x){ch=ch.then(function(){return write("extintores",x.folio,{folio:x.folio,estado:"sin asignar",creado:Date.now()});});});
@@ -626,17 +666,17 @@ function genLabels(){
 }
 function vExt(){
   var cm=today().slice(0,7),soon=addMonths(cm,2),all=S.data.extintores,ro=S.readOnly||!db;
-  var clis=Object.keys(all.reduce(function(a,x){if(x.cliente)a[x.cliente]=1;return a;},{})).sort(function(a,b){return a.localeCompare(b,"es");});
-  var list=all.filter(function(x){return (!S.extCli||x.cliente===S.extCli)&&(S.extCli||x.estado!=="sin asignar"||S.extShowBlank)&&match(x);}).sort(function(a,b){return String(a.cliente||"~").localeCompare(String(b.cliente||"~"),"es")||String(a.ubicacion||"").localeCompare(String(b.ubicacion||""),"es")||(folioNum(a.id)-folioNum(b.id));});
+  var clis=Object.keys(all.reduce(function(a,x){if(x.cliente)a[x.cliente]=1;return a;},S.data.clientes.reduce(function(a,c){if(c.nombre)a[c.nombre]=1;return a;},{}))).sort(function(a,b){return a.localeCompare(b,"es");});
+  var list=all.filter(function(x){return (!S.extCli||x.cliente===S.extCli)&&(S.extCli||x.estado!=="sin asignar"||S.extShowBlank)&&match(x);}).sort(function(a,b){return String(a.cliente||"~").localeCompare(String(b.cliente||"~"),"es")||((+a.numero||9999)-(+b.numero||9999))||String(a.id).localeCompare(String(b.id));});
   var act=all.filter(function(x){return x.estado!=="sin asignar"&&x.estado!=="baja";});
   var k=[["Extintores",String(act.length),"registrados con QR","var(--red)"],["Vencidos",String(extVencidos().length),"recarga vencida","var(--rose)"],["Por vencer",String(act.filter(function(x){return x.vence&&x.vence>=cm&&x.vence<=soon;}).length),"próximos 2 meses","var(--amber)"],["Etiquetas listas",String(all.filter(function(x){return x.estado==="sin asignar";}).length),"impresas sin asignar","var(--muted)"],["Reserva y préstamo",String(act.filter(function(x){return x.estado==="reserva"||x.estado==="prestamo";}).length),"fuera de servicio normal","var(--blue)"]];
   var out='<div class="kpis sm">'+k.map(function(x){return '<div class="kpi" style="--k:'+x[3]+'"><span class="eyebrow">'+x[0]+'</span><span class="v">'+x[1]+'</span><span class="n">'+x[2]+'</span></div>';}).join("")+'</div>';
   out+='<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><label class="eyebrow" for="extCli">Cliente</label><select id="extCli" class="inp" style="width:auto;max-width:100%"><option value="">Todos</option>'+clis.map(function(c){return '<option'+(c===S.extCli?" selected":"")+'>'+esc(c)+'</option>';}).join("")+'</select>'+
-    (ro?"":'<span style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn ghost sm" data-act="extPrintList">Imprimir etiquetas de la lista</button><button type="button" class="btn ghost sm" data-act="extGenAsk">Generar etiquetas nuevas</button><button type="button" class="btn sm" data-act="new:extintores">+ Alta de extintor</button></span>')+'</div>';
+    (ro?"":'<span style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap">'+(S.extCli?'<button type="button" class="btn sm" data-act="pcAsk">Precargar extintores</button>':"")+(S.data.extintores.some(function(x){return x.etiquetaPendiente&&(!S.extCli||x.cliente===S.extCli);})?'<button type="button" class="btn ghost sm" data-act="extPrintPend">Imprimir etiquetas pendientes</button>':"")+'<button type="button" class="btn ghost sm" data-act="extPrintList">Imprimir etiquetas de la lista</button><button type="button" class="btn ghost sm" data-act="extGenAsk">Generar etiquetas nuevas</button><button type="button" class="btn sm" data-act="new:extintores">+ Alta de extintor</button></span>')+'</div>';
   out+='<div class="box"><div class="box-h"><h2>'+(S.extCli?esc(S.extCli):"Expedientes")+'</h2><span class="mono" style="color:var(--muted)">'+list.length+'</span></div>'+
     (list.length?'<div class="tbl-wrap"><table><thead><tr><th>FOLIO</th><th>CLIENTE · UBICACIÓN</th><th>EQUIPO</th><th>RECARGA · VENCE</th><th>P.H.</th><th>ÚLTIMA REVISIÓN</th><th>ESTADO</th><th></th></tr></thead><tbody>'+list.map(function(x){
       var st=EXT_EST[x.estado]||EXT_EST.servicio,venc=x.vence&&x.vence<cm,por=x.vence&&!venc&&x.vence<=soon,u=x.ultima||{};
-      return '<tr><td class="mono" style="font-size:12px">'+esc(x.id)+'</td><td><b style="font-weight:600">'+esc(x.cliente||"—")+'</b><div style="color:var(--muted);font-size:12px">'+esc(x.ubicacion||"")+'</div></td><td>'+esc(x.tipo?tipoLabel(x.tipo)+" "+String(x.cap||"").toLowerCase():"—")+(x.serie?'<div style="color:var(--muted);font-size:12px">Serie '+esc(x.serie)+'</div>':"")+'</td>'+
+      return '<tr><td class="mono" style="font-size:12px">'+esc(x.id)+'</td><td><b style="font-weight:600">'+esc(x.cliente||"—")+'</b><div style="color:var(--muted);font-size:12px">'+(x.numero?"No. "+esc(x.numero)+" · ":"")+esc(x.ubicacion||"")+(x.etiquetaPendiente?' · <span style="color:var(--amber)">etiqueta por imprimir</span>':"")+'</div></td><td>'+esc(x.tipo?tipoLabel(x.tipo)+" "+String(x.cap||"").toLowerCase():"—")+(x.serie?'<div style="color:var(--muted);font-size:12px">Serie '+esc(x.serie)+'</div>':"")+'</td>'+
         '<td class="mono" style="font-size:12px">'+(x.recarga?fmtMonth(x.recarga):"—")+' · <span style="color:'+(venc?"var(--rose)":por?"var(--amber)":"inherit")+'">'+(x.vence?fmtMonth(x.vence):"—")+'</span></td><td class="mono" style="font-size:12px">'+(x.ph?fmtMonth(x.ph):"—")+'</td>'+
         '<td>'+(u.fecha?'<span style="color:'+(u.resultado==="Conforme"?"var(--green)":"var(--amber)")+'">'+esc(u.resultado||"")+'</span><div style="color:var(--muted);font-size:12px">'+fmtDate(u.fecha)+(u.comentario?" · "+esc(u.comentario):"")+'</div>':'<span style="color:var(--muted)">—</span>')+'</td>'+
         '<td><span class="pill" style="color:'+st[1]+'">'+st[0]+'</span></td><td class="num" style="white-space:nowrap"><a class="link" target="_blank" rel="noopener" href="/e/'+encodeURIComponent(x.id)+'">Ficha</a>'+(ro?"":'<button type="button" class="link" data-act="extPrint" data-id="'+x.id+'">Etiqueta</button><button type="button" class="link" data-act="edit:extintores" data-id="'+x.id+'">Editar</button>')+'</td></tr>';
@@ -655,13 +695,45 @@ function extGenDrawer(){
 
 /* ---------- inspecciones ---------- */
 function inspStats(i){var it=i.items||[],ok=it.filter(function(x){return x.resultado==="Conforme";}).length;return {n:it.length,ok:ok,bad:it.length-ok};}
+function inspPend(){return S.data.inspecciones.filter(function(i){return i.estado==="por revisar";}).length;}
 function vInsp(){
-  var list=S.data.inspecciones.filter(match).sort(function(a,b){return String(b.fecha||"").localeCompare(String(a.fecha||""))||(b.creado||0)-(a.creado||0);});
-  return '<div class="hint">Las inspecciones se hacen en el celular con la app del técnico: <a href="/tecnico" target="_blank" rel="noopener" style="color:var(--amber)">jasaextintores.com/tecnico</a>. Al terminarlas llegan aquí con su reporte y una cotización armada.</div><span class="hint" id="inspStatus" aria-live="polite"></span>'+
+  if(S.inspSel&&byId("inspecciones",S.inspSel))return vInspDetail(byId("inspecciones",S.inspSel));
+  var ro=S.readOnly||!db,t0=today();
+  var vis=S.data.visitas.filter(function(x){return x.estado!=="completa"&&match(x);}).sort(function(a,b){return String(a.fecha).localeCompare(String(b.fecha));});
+  var who=function(e){var m=(S.staff||[]).find(function(x){return x.email===e;});return m&&m.nombre?m.nombre:e||"—";};
+  var list=S.data.inspecciones.filter(match).sort(function(a,b){return (a.estado==="por revisar"?0:1)-(b.estado==="por revisar"?0:1)||String(b.fecha||"").localeCompare(String(a.fecha||""))||(b.creado||0)-(a.creado||0);});
+  var stP={"por revisar":["Por revisar","var(--amber)"],revisada:["Revisada","var(--green)"],completa:["Por revisar","var(--amber)"],"en curso":["En curso","var(--blue)"]};
+  return '<div class="hint">El técnico hace la inspección en su celular (<a href="/tecnico" target="_blank" rel="noopener" style="color:var(--amber)">jasaextintores.com/tecnico</a>) y solo ve los clientes que le programes aquí. Al terminar llega como “Por revisar”: ábrela, revisa los hallazgos y crea la cotización con un botón.</div><span class="hint" id="inspStatus" aria-live="polite"></span>'+
+  '<div class="box"><div class="box-h"><h2>Visitas programadas</h2>'+(ro?"":'<button type="button" class="btn sm" data-act="new:visitas">+ Programar visita</button>')+'</div>'+
+  (vis.length?'<div class="tbl-wrap"><table><thead><tr><th>FECHA</th><th>CLIENTE</th><th>TÉCNICO</th><th>TIPO</th><th>ESTADO</th><th></th></tr></thead><tbody>'+vis.map(function(x){var late=x.fecha<t0;return '<tr><td class="mono" style="font-size:12px;color:'+(late?"var(--rose)":"inherit")+'">'+fmtDate(x.fecha)+'</td><td><b style="font-weight:600">'+esc(x.cliente)+'</b>'+(x.notas?'<div style="color:var(--muted);font-size:12px">'+esc(x.notas)+'</div>':"")+'</td><td>'+esc(who(x.tecnico))+'</td><td>'+esc(x.tipo||"")+'</td><td><span class="pill" style="color:'+(x.estado==="en curso"?"var(--blue)":"var(--muted)")+'">'+(x.estado==="en curso"?"En curso":"Programada")+'</span></td><td class="num">'+(ro?"":'<button type="button" class="link" data-act="edit:visitas" data-id="'+x.id+'">Editar</button>')+'</td></tr>';}).join("")+'</tbody></table></div>':emptyBox("Sin visitas programadas","Programa una visita y el técnico la verá en su celular con el cliente ya elegido.","new:visitas","Programar visita"))+'</div>'+
   '<div class="box"><div class="box-h"><h2>Inspecciones</h2><span class="mono" style="color:var(--muted)">'+list.length+'</span></div>'+
-  (list.length?'<div class="tbl-wrap"><table><thead><tr><th>FECHA</th><th>CLIENTE</th><th>REVISÓ</th><th class="num">EXTINTORES</th><th class="num">CONFORMES</th><th class="num">REQUIEREN</th><th>ESTADO</th><th></th></tr></thead><tbody>'+list.map(function(i){var st=inspStats(i);
-    return '<tr><td class="mono" style="font-size:12px">'+fmtDate(i.fecha)+'</td><td><b style="font-weight:600">'+esc(i.cliente)+'</b>'+(i.responsable?'<div style="color:var(--muted);font-size:12px">Responsable: '+esc(i.responsable)+'</div>':"")+'</td><td>'+esc(i.reviso||"—")+'</td><td class="num">'+st.n+'</td><td class="num" style="color:var(--green)">'+st.ok+'</td><td class="num" style="color:'+(st.bad?"var(--amber)":"var(--muted)")+'">'+st.bad+'</td><td><span class="pill" style="color:'+(i.estado==="completa"?"var(--green)":"var(--amber)")+'">'+(i.estado==="completa"?"Completa":"En curso")+'</span></td>'+
-      '<td class="num" style="white-space:nowrap"><button type="button" class="link" data-act="inspPdf" data-id="'+i.id+'">Reporte PDF</button>'+(i.cotizacion&&byId("quotes",i.cotizacion)?'<button type="button" class="link" data-act="openQuote" data-id="'+i.cotizacion+'">Cotización</button>':"")+'</td></tr>';}).join("")+'</tbody></table></div>':emptyBox("Aún no hay inspecciones","Cuando un técnico termine una visita con la app, aquí verás su reporte.",null))+'</div>';
+  (list.length?'<div class="tbl-wrap"><table><thead><tr><th>FECHA</th><th>CLIENTE</th><th>REVISÓ</th><th class="num">EXTINTORES</th><th class="num">CONFORMES</th><th class="num">REQUIEREN</th><th>ESTADO</th><th></th></tr></thead><tbody>'+list.map(function(i){var st=inspStats(i),p=stP[i.estado]||stP["en curso"];
+    return '<tr><td class="mono" style="font-size:12px">'+fmtDate(i.fecha)+'</td><td><button type="button" class="link" style="padding:0;color:var(--ink);font-weight:600;text-align:left" data-act="inspOpen" data-id="'+i.id+'">'+esc(i.cliente)+'</button>'+(i.responsable?'<div style="color:var(--muted);font-size:12px">Responsable: '+esc(i.responsable)+'</div>':"")+'</td><td>'+esc(i.reviso||"—")+'</td><td class="num">'+st.n+'</td><td class="num" style="color:var(--green)">'+st.ok+'</td><td class="num" style="color:'+(st.bad?"var(--amber)":"var(--muted)")+'">'+st.bad+'</td><td><span class="pill" style="color:'+p[1]+'">'+p[0]+'</span></td>'+
+      '<td class="num" style="white-space:nowrap"><button type="button" class="btn sm'+(i.estado==="por revisar"||i.estado==="completa"?"":" ghost")+'" data-act="inspOpen" data-id="'+i.id+'">'+(i.estado==="por revisar"||i.estado==="completa"?"Revisar":"Abrir")+'</button></td></tr>';}).join("")+'</tbody></table></div>':emptyBox("Aún no hay inspecciones","Cuando un técnico termine una visita con la app, aquí verás su reporte.",null))+'</div>';
+}
+function vInspDetail(i){
+  var st=inspStats(i),cm=today().slice(0,7),ro=S.readOnly||!db,cli=findClient(i.cliente)||{};
+  if(!S.hall||S.hall.id!==i.id)S.hall={id:i.id,rows:jasaHallazgos(i.items,cm).map(function(h){var pr=lookupPrice(h.art);return {cat:h.cat,art:h.art,qty:h.qty,on:true,price:pr==null?"":pr};})};
+  var bad=(i.items||[]).filter(function(x){return x.resultado!=="Conforme";});
+  var out='<div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><button type="button" class="btn ghost sm" data-act="inspBack">← Inspecciones</button><div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn ghost sm" data-act="inspPdf" data-id="'+i.id+'">Reporte PDF</button>'+(cli.tel?'<a class="btn wa sm" target="_blank" rel="noopener" href="'+esc(waLink(cli.tel,"Hola, le escribimos de JASA Extintores. Le compartimos el reporte de la inspección del "+fmtDate(i.fecha)+": "+st.n+" extintores revisados, "+st.ok+" conformes y "+st.bad+" que requieren atención. Le enviamos el PDF por este medio."))+'">Enviar reporte por WhatsApp</a>':"")+'</div></div><span class="hint" id="inspStatus" aria-live="polite"></span>';
+  out+='<div class="kpis sm">'+[["Revisados",st.n,"var(--muted)"],["Conformes",st.ok,"var(--green)"],["Requieren atención",st.bad,"var(--amber)"]].map(function(k){return '<div class="kpi" style="--k:'+k[2]+'"><span class="eyebrow">'+k[0]+'</span><span class="v">'+k[1]+'</span></div>';}).join("")+'</div>';
+  out+='<div class="box"><div class="box-h"><div><span class="mono" style="color:var(--muted)">'+fmtDate(i.fecha)+' · revisó '+esc(i.reviso||"")+'</span><h2>'+esc(i.cliente)+'</h2></div><span class="pill" style="color:'+(i.estado==="revisada"?"var(--green)":"var(--amber)")+'">'+(i.estado==="revisada"?"Revisada":"Por revisar")+'</span></div>'+
+    (bad.length?'<div class="tbl-wrap"><table><thead><tr><th>FOLIO</th><th>UBICACIÓN</th><th>EQUIPO</th><th>DETECTADO</th><th>COMENTARIOS</th></tr></thead><tbody>'+bad.map(function(x){var mal=JASA_PUNTOS.filter(function(p){return jasaPuntoMalo(p.k,(x.puntos||{})[p.k]);}).map(function(p){return p.l+": "+JASA_OPT_LABEL[x.puntos[p.k]];});if(x.vencido)mal.unshift("Recarga vencida "+fmtMonth(x.vence));return '<tr><td class="mono" style="font-size:12px">'+esc(x.folio)+'</td><td>'+esc(x.ubicacion)+'</td><td>'+esc(tipoLabel(x.tipo)+" "+String(x.cap||"").toLowerCase())+'</td><td style="color:var(--amber)">'+esc(mal.join(" · ")||x.resultado)+'</td><td>'+esc(x.comentario||"")+'</td></tr>';}).join("")+'</tbody></table></div>':'<div class="empty"><span>Todos los extintores salieron conformes.</span></div>')+'</div>';
+  var rows=S.hall.rows,tot=rows.reduce(function(a,r){return a+(r.on?(parseFloat(r.price)||0)*(+r.qty||0):0);},0);
+  out+='<div class="box"><div class="box-h"><h2>Para cotizar</h2><span class="hint">Marca lo que se cotiza; los precios salen de tu lista</span></div>'+
+    (rows.length?'<div class="tbl-wrap"><table><thead><tr><th></th><th>CONCEPTO</th><th class="num">CANT.</th><th class="num">PRECIO UNIT.</th></tr></thead><tbody>'+JASA_CATS.map(function(c){var rr=rows.filter(function(r){return r.cat===c;});if(!rr.length)return "";return '<tr><td colspan="4" class="eyebrow" style="color:var(--red-2);padding-top:14px">'+c+'</td></tr>'+rr.map(function(r){var ix=rows.indexOf(r);return '<tr><td><input type="checkbox" data-hall="'+ix+'" data-hk="on"'+(r.on?" checked":"")+(ro?" disabled":"")+' aria-label="Cotizar '+esc(r.art)+'" style="width:20px;height:20px;accent-color:var(--red)"></td><td><input class="inp" autocomplete="off" data-hall="'+ix+'" data-hk="art" value="'+esc(r.art)+'"'+(ro?" disabled":"")+'></td><td class="num"><input class="inp" style="width:70px;text-align:right" type="number" min="1" data-hall="'+ix+'" data-hk="qty" value="'+esc(r.qty)+'"'+(ro?" disabled":"")+'></td><td class="num"><input class="inp" style="width:110px;text-align:right" type="number" min="0" step="any" placeholder="$" data-hall="'+ix+'" data-hk="price" value="'+esc(r.price)+'"'+(ro?" disabled":"")+'></td></tr>';}).join("");}).join("")+'</tbody></table></div>'+
+      '<div class="totals"><span class="s" style="color:var(--muted)">Subtotal '+money(tot)+' · I.V.A. 8% '+money(tot*IVA)+'</span><span class="big">'+money(tot*(1+IVA))+'</span></div>'+
+      (ro?"":'<div class="actions">'+(i.cotizacion&&byId("quotes",i.cotizacion)?'<button type="button" class="btn" data-act="openQuote" data-id="'+i.cotizacion+'">Ver cotización '+esc(byId("quotes",i.cotizacion).folio)+'</button>':'<button type="button" class="btn" data-act="inspQuote">Crear cotización para '+esc(i.cliente)+'</button>')+(i.estado!=="revisada"?'<button type="button" class="btn ghost" data-act="inspReviewed">Marcar revisada sin cotizar</button>':"")+'</div>')
+    :'<div class="empty"><span>No hay nada que cotizar en esta inspección.</span>'+(ro||i.estado==="revisada"?"":'<button type="button" class="btn sm" data-act="inspReviewed">Marcar revisada</button>')+'</div>')+'</div>';
+  return out;
+}
+function inspQuote(i){
+  var rows=S.hall.rows.filter(function(r){return r.on&&r.art&&(+r.qty||0)>0;});if(!rows.length){toast("Marca al menos un concepto.");return;}
+  var cli=findClient(i.cliente)||{},d=String(i.fecha||today()).replace(/-/g,"").slice(2),qid="ins-"+i.id;
+  write("quotes",qid,{folio:"INS-"+d+"-"+String(i.id).slice(-3).toUpperCase(),fecha:today(),cliente:i.cliente,dirigido:i.responsable||cli.contacto||"",tel:cli.tel||"",ciudad:cli.ciudad||"",direccion:cli.direccion||"",rfc:cli.rfc||"",cond:"Hallazgos de la inspección del "+fmtDate(i.fecha),status:"Nueva",origen:"inspeccion",inspeccion:i.id,creado:Date.now(),
+    lines:rows.map(function(r){return {art:String(r.art).toUpperCase(),qty:+r.qty,price:r.price===""?"":+r.price};})})
+  .then(function(){return patch("inspecciones",i.id,{estado:"revisada",cotizacion:qid});})
+  .then(function(){S.sel=qid;S.screen="quotes";S.inspSel=null;render();window.scrollTo(0,0);toast("Cotización lista para enviar");},function(){});
 }
 function exportInsp(i){
   var st=document.getElementById("inspStatus");if(st)st.textContent="Preparando el reporte…";
@@ -686,7 +758,7 @@ function dueClients(){
 function renderNav(){
   var pend=S.data.quotes.filter(function(q){return q.status==="Nueva";}).length;
   var open=S.data.ordenes.filter(function(o){return (o.etapa||0)<DONE;}).length;
-  var items=[["panel","Panel",""],["quotes","Cotizaciones",pend||""],["clientes","Clientes",""],["proveedores","Proveedores",""],["finanzas","Finanzas",""],["taller","Taller",open||""],["inventario","Inventario",lowStock().length||""],["extintores","Extintores",extVencidos().length||""],["inspecciones","Inspecciones",""],["pendientes","Pendientes",(function(){var t0=today();var n=dayTasks(t0).filter(function(t){return !isDone(t,t0);}).length+overdue().length;return n||"";})()]];
+  var items=[["panel","Panel",""],["quotes","Cotizaciones",pend||""],["clientes","Clientes",""],["proveedores","Proveedores",""],["finanzas","Finanzas",""],["taller","Taller",open||""],["inventario","Inventario",lowStock().length||""],["extintores","Extintores",extVencidos().length||""],["inspecciones","Inspecciones",inspPend()||""],["pendientes","Pendientes",(function(){var t0=today();var n=dayTasks(t0).filter(function(t){return !isDone(t,t0);}).length+overdue().length;return n||"";})()]];
   document.getElementById("nav").innerHTML=items.map(function(n){return '<button type="button" class="nav-b" data-act="go" data-v="'+n[0]+'"'+(S.screen===n[0]?' aria-current="page"':"")+'><span>'+n[1]+'</span><span class="cnt">'+n[2]+'</span></button>';}).join("");
 }
 function statusNote(){
@@ -836,7 +908,7 @@ document.addEventListener("click",function(e){
   var b=e.target.closest("[data-act]");if(!b)return;
   var a=b.getAttribute("data-act"),v=b.getAttribute("data-v"),id=b.getAttribute("data-id");
   if(a==="closeDrawer"){if(b.classList.contains("overlay")&&e.target!==b)return;S.drawer=null;renderDrawer();return;}
-  if(a==="go"){S.screen=v;S.otSel=null;try{history.replaceState(null,"","#"+(v==="quotes"?"cotizaciones":v));}catch(er){}S.confirm=null;render();window.scrollTo(0,0);return;}
+  if(a==="go"){S.screen=v;S.otSel=null;S.inspSel=null;try{history.replaceState(null,"","#"+(v==="quotes"?"cotizaciones":v));}catch(er){}S.confirm=null;render();window.scrollTo(0,0);return;}
   if(a==="goPaste"){S.screen="quotes";S.pasteMsg=S.pasteMsg||" ";render();setTimeout(function(){var p=document.getElementById("pasteBox");if(p)p.focus();},20);return;}
   if(a.indexOf("new:")===0){openForm(a.slice(4));return;}
   if(a.indexOf("edit:")===0){openForm(a.slice(5),id);return;}
@@ -881,10 +953,17 @@ document.addEventListener("click",function(e){
   if(a==="delPrice"){remove("precios",id).then(function(){toast("Precio quitado de tu lista");});return;}
   if(a==="extGenAsk"){extGenDrawer();return;}
   if(a==="extGenDo"){genLabels();return;}
-  if(a==="extPrint"){var ex=byId("extintores",id);if(ex)printLabels([{folio:ex.id,ubicacion:ex.ubicacion}],"51x25");return;}
-  if(a==="extPrintList"){var pl=S.data.extintores.filter(function(x){return (!S.extCli||x.cliente===S.extCli)&&x.estado!=="baja"&&match(x);}).map(function(x){return {folio:x.id,ubicacion:x.ubicacion};});if(!pl.length){toast("No hay extintores en la lista.");return;}printLabels(pl,"51x25");return;}
+  if(a==="extPrint"){var ex=byId("extintores",id);if(ex){printLabels([{folio:ex.id,ubicacion:ex.ubicacion,numero:ex.numero}],S.lblSize||"51x25");lblDone([ex]);}return;}
+  if(a==="extPrintList"){var pl=S.data.extintores.filter(function(x){return (!S.extCli||x.cliente===S.extCli)&&x.estado!=="baja"&&match(x);}).sort(function(a,b){return (+a.numero||0)-(+b.numero||0)||String(a.id).localeCompare(String(b.id));}).map(function(x){return {folio:x.id,ubicacion:x.ubicacion,numero:x.numero};});if(!pl.length){toast("No hay extintores en la lista.");return;}printLabels(pl,S.lblSize||"51x25");lblDone(pl.map(function(x){return byId("extintores",x.folio);}));return;}
+  if(a==="extPrintPend"){var pp=S.data.extintores.filter(function(x){return x.etiquetaPendiente&&(!S.extCli||x.cliente===S.extCli);});if(!pp.length)return;printLabels(pp.map(function(x){return {folio:x.id,ubicacion:x.ubicacion,numero:x.numero};}),S.lblSize||"51x25");lblDone(pp);return;}
   if(a==="extBlank"){S.extShowBlank=true;render();return;}
   if(a==="extOfCli"){S.extCli=v;S.screen="extintores";render();window.scrollTo(0,0);return;}
+  if(a==="inspOpen"){S.inspSel=id;S.hall=null;render();window.scrollTo(0,0);return;}
+  if(a==="inspBack"){S.inspSel=null;render();return;}
+  if(a==="inspQuote"){var iq=byId("inspecciones",S.inspSel);if(iq)inspQuote(iq);return;}
+  if(a==="inspReviewed"){patch("inspecciones",S.inspSel,{estado:"revisada"}).then(function(){toast("Marcada como revisada");});return;}
+  if(a==="pcAsk"){precargaDrawer();return;}
+  if(a==="pcDo"){precargaDo();return;}
   if(a==="inspPdf"){var ins=byId("inspecciones",id);if(ins)exportInsp(ins);return;}
   if(a==="pnToggle"){var tk=byId("pendientes",id);if(!tk)return;var h=(tk.hechos||[]).slice(),ix=h.indexOf(v);if(ix>=0)h.splice(ix,1);else h.push(v);patch("pendientes",id,{hechos:h});return;}
   if(a==="otOpen"){S.otSel=id;S.dlv={};render();if(v==="entrega"){var en=document.getElementById("entrega");if(en)en.scrollIntoView();}else window.scrollTo(0,0);return;}
@@ -908,6 +987,7 @@ document.addEventListener("click",function(e){
   if(a==="backup"){backup();return;}
 });
 document.addEventListener("input",function(e){
+  if(e.target.id==="pcTxt"){precargaPreview();return;}
   if(e.target.id==="dEntrego"){S.dlv.entrego=e.target.value;return;}
   if(e.target.id==="dRecibe"){S.dlv.recibe=e.target.value;return;}
   if(e.target.id==="search"){S.search=e.target.value;render();}
@@ -917,6 +997,7 @@ document.addEventListener("change",function(e){
   var t=e.target;
   if(t.id==="finMes"){S.finMes=t.value;render();return;}
   if(t.id==="extCli"){S.extCli=t.value;render();return;}
+  if(t.hasAttribute&&t.hasAttribute("data-hall")&&S.hall){var hr=S.hall.rows[+t.getAttribute("data-hall")],hk=t.getAttribute("data-hk");if(hr){hr[hk]=hk==="on"?t.checked:t.value;render();}return;}
   if(t.hasAttribute("data-unit")){
     var ot=S.otSel&&byId("ordenes",S.otSel);if(!ot)return;
     var uk=t.getAttribute("data-uk"),key=t.getAttribute("data-unit");
@@ -1054,6 +1135,41 @@ var JASA_INSP_CSS = ".ip{width:1056px;height:816px;background:#fff;color:#111;pa
   ".ip-t td{height:28px;font-size:10px}.ip-t td.u{text-align:left;white-space:normal;font-size:9px;line-height:1.1}.ip-t td.f{font-family:monospace;font-size:8.5px}" +
   ".ip-t td.m{font-size:12px;font-weight:700;width:20px}.ip-t td.c{text-align:left;white-space:normal;font-size:8.5px;line-height:1.1}.ip-t .bad{color:#c00000}" +
   ".ip-f{display:flex;justify-content:space-between;align-items:flex-end;font-size:10px;line-height:1.5;margin-top:auto}.ip-s{text-align:center;min-width:220px}.ip-s img{height:56px;display:block;margin:0 auto}.ip-s span{display:block;border-top:1px solid #111;padding-top:3px}";
+
+/* Folios: PREFIJO-NNN por cliente (ej. EAP1-001) o JX-000001 para etiquetas en blanco. */
+function jasaFolio(txt) {
+  var s = String(txt || "").toUpperCase().trim();
+  var m = s.match(/\/E\/([A-Z0-9]{2,8})-(\d{1,6})/) || s.match(/^([A-Z0-9]{2,8})-(\d{1,6})$/) || s.match(/\b(JX)-?(\d{1,6})\b/);
+  if (!m) return "";
+  return m[1] + "-" + m[2].padStart(m[1] === "JX" ? 6 : 3, "0");
+}
+function jasaPrefijo(nombre) {
+  var stop = { DE: 1, DEL: 1, LA: 1, LAS: 1, LOS: 1, EL: 1, Y: 1, SA: 1, CV: 1, "S.A.": 1, "C.V.": 1, SAPI: 1, SC: 0 };
+  var w = String(nombre || "").toUpperCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^A-Z0-9 ]+/g, " ").split(/\s+/).filter(function (x) { return x && !stop[x]; });
+  var dig = w.filter(function (x) { return /^\d+$/.test(x); }).join("").slice(0, 2), pal = w.filter(function (x) { return !/^\d+$/.test(x); });
+  var p = pal.length >= 2 ? pal.slice(0, 3).map(function (x) { return x[0]; }).join("") : (pal[0] || "CLI").slice(0, 3);
+  return (p + dig).slice(0, 6) || "CLI";
+}
+
+/* Hallazgos de una inspección, agrupados para cotizar. */
+var JASA_CATS = ["Mantenimiento y recarga", "Reparaciones", "Señalamientos", "Accesorios"];
+function jasaHallazgos(items, hoyMes) {
+  var map = {}, out = [];
+  function add(cat, art) { var k = cat + "|" + art; if (!map[k]) { map[k] = { cat: cat, art: art, qty: 0 }; out.push(map[k]); } map[k].qty++; }
+  (items || []).forEach(function (i) {
+    var t = i.tipo === "CO2" ? "CO2" : (i.tipo || "PQS"), cap = String(i.cap || "").toUpperCase(), eq = (cap + " " + t).trim(), p = i.puntos || {}, ch = (i.chips || []).join(" ") + " " + (i.nota || "");
+    if (i.vencido || /recarga|vencido|despresurizado/i.test(ch)) add(JASA_CATS[0], "RECARGA DE EXTINTOR " + eq);
+    if (i.ph && i.ph < hoyMes) add(JASA_CATS[0], "PRUEBA HIDROSTÁTICA DE EXTINTOR " + eq);
+    if (p.recipiente === "mal" || p.pintura === "mal" || /golpeado/i.test(ch)) add(JASA_CATS[0], "MANTENIMIENTO Y PINTURA DE EXTINTOR " + eq);
+    if (p.manguera === "mal" || /manguera/i.test(ch)) add(JASA_CATS[1], "CAMBIO DE MANGUERA DE EXTINTOR " + eq);
+    if (p.corneta === "mal") add(JASA_CATS[1], "CAMBIO DE CORNETA O DIFUSOR " + eq);
+    if (p.seguro === "mal" || p.sello === "mal" || /seguro/i.test(ch)) add(JASA_CATS[1], "SEGURO Y SELLO DE EXTINTOR");
+    if (p.letrero === "no" || /señalamiento/i.test(ch)) add(JASA_CATS[2], "SEÑALAMIENTO DE EXTINTOR");
+    if (p.portamanguera === "mal") add(JASA_CATS[3], "PORTAMANGUERA DE EXTINTOR");
+    if (p.pedestal === "no") add(JASA_CATS[3], "PEDESTAL PARA EXTINTOR");
+  });
+  return out.sort(function (a, b) { return JASA_CATS.indexOf(a.cat) - JASA_CATS.indexOf(b.cat); });
+}
 /*@/reporte*/
 
 /* ---------- modo Supabase (jasaextintores.com/admin) ---------- */
@@ -1099,6 +1215,7 @@ function startSupabase(){
       if(q.error||!q.data||!q.data.length){showLogin(q.error?"No se pudo revisar tu acceso: "+q.error.message:"El correo "+ses.user.email+" entró, pero no está en la lista de personal (public.staff).");SB.auth.signOut();return;}
       document.getElementById("loginRoot").innerHTML="";
       db=makeSupaDb(SB);startDb();
+      SB.from("staff").select("*").then(function(sr){if(!sr.error)S.staff=sr.data||[];});
       ["backupBtn","importBtn","logoutBtn"].forEach(function(i){document.getElementById(i).hidden=false;});
       var w=document.getElementById("whoNote");w.textContent=ses.user.email;w.hidden=false;
     });

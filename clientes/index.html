@@ -227,6 +227,41 @@ var JASA_INSP_CSS = ".ip{width:1056px;height:816px;background:#fff;color:#111;pa
   ".ip-t td{height:28px;font-size:10px}.ip-t td.u{text-align:left;white-space:normal;font-size:9px;line-height:1.1}.ip-t td.f{font-family:monospace;font-size:8.5px}" +
   ".ip-t td.m{font-size:12px;font-weight:700;width:20px}.ip-t td.c{text-align:left;white-space:normal;font-size:8.5px;line-height:1.1}.ip-t .bad{color:#c00000}" +
   ".ip-f{display:flex;justify-content:space-between;align-items:flex-end;font-size:10px;line-height:1.5;margin-top:auto}.ip-s{text-align:center;min-width:220px}.ip-s img{height:56px;display:block;margin:0 auto}.ip-s span{display:block;border-top:1px solid #111;padding-top:3px}";
+
+/* Folios: PREFIJO-NNN por cliente (ej. EAP1-001) o JX-000001 para etiquetas en blanco. */
+function jasaFolio(txt) {
+  var s = String(txt || "").toUpperCase().trim();
+  var m = s.match(/\/E\/([A-Z0-9]{2,8})-(\d{1,6})/) || s.match(/^([A-Z0-9]{2,8})-(\d{1,6})$/) || s.match(/\b(JX)-?(\d{1,6})\b/);
+  if (!m) return "";
+  return m[1] + "-" + m[2].padStart(m[1] === "JX" ? 6 : 3, "0");
+}
+function jasaPrefijo(nombre) {
+  var stop = { DE: 1, DEL: 1, LA: 1, LAS: 1, LOS: 1, EL: 1, Y: 1, SA: 1, CV: 1, "S.A.": 1, "C.V.": 1, SAPI: 1, SC: 0 };
+  var w = String(nombre || "").toUpperCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^A-Z0-9 ]+/g, " ").split(/\s+/).filter(function (x) { return x && !stop[x]; });
+  var dig = w.filter(function (x) { return /^\d+$/.test(x); }).join("").slice(0, 2), pal = w.filter(function (x) { return !/^\d+$/.test(x); });
+  var p = pal.length >= 2 ? pal.slice(0, 3).map(function (x) { return x[0]; }).join("") : (pal[0] || "CLI").slice(0, 3);
+  return (p + dig).slice(0, 6) || "CLI";
+}
+
+/* Hallazgos de una inspección, agrupados para cotizar. */
+var JASA_CATS = ["Mantenimiento y recarga", "Reparaciones", "Señalamientos", "Accesorios"];
+function jasaHallazgos(items, hoyMes) {
+  var map = {}, out = [];
+  function add(cat, art) { var k = cat + "|" + art; if (!map[k]) { map[k] = { cat: cat, art: art, qty: 0 }; out.push(map[k]); } map[k].qty++; }
+  (items || []).forEach(function (i) {
+    var t = i.tipo === "CO2" ? "CO2" : (i.tipo || "PQS"), cap = String(i.cap || "").toUpperCase(), eq = (cap + " " + t).trim(), p = i.puntos || {}, ch = (i.chips || []).join(" ") + " " + (i.nota || "");
+    if (i.vencido || /recarga|vencido|despresurizado/i.test(ch)) add(JASA_CATS[0], "RECARGA DE EXTINTOR " + eq);
+    if (i.ph && i.ph < hoyMes) add(JASA_CATS[0], "PRUEBA HIDROSTÁTICA DE EXTINTOR " + eq);
+    if (p.recipiente === "mal" || p.pintura === "mal" || /golpeado/i.test(ch)) add(JASA_CATS[0], "MANTENIMIENTO Y PINTURA DE EXTINTOR " + eq);
+    if (p.manguera === "mal" || /manguera/i.test(ch)) add(JASA_CATS[1], "CAMBIO DE MANGUERA DE EXTINTOR " + eq);
+    if (p.corneta === "mal") add(JASA_CATS[1], "CAMBIO DE CORNETA O DIFUSOR " + eq);
+    if (p.seguro === "mal" || p.sello === "mal" || /seguro/i.test(ch)) add(JASA_CATS[1], "SEGURO Y SELLO DE EXTINTOR");
+    if (p.letrero === "no" || /señalamiento/i.test(ch)) add(JASA_CATS[2], "SEÑALAMIENTO DE EXTINTOR");
+    if (p.portamanguera === "mal") add(JASA_CATS[3], "PORTAMANGUERA DE EXTINTOR");
+    if (p.pedestal === "no") add(JASA_CATS[3], "PEDESTAL PARA EXTINTOR");
+  });
+  return out.sort(function (a, b) { return JASA_CATS.indexOf(a.cat) - JASA_CATS.indexOf(b.cat); });
+}
 /*@/reporte*/
 
 (function(){var st=document.createElement("style");st.textContent=JASA_SHEET_CSS;document.head.appendChild(st);})();

@@ -56,7 +56,7 @@ function esc(v){return String(v==null?"":v).replace(/[&<>"']/g,function(c){retur
 function fm(k){if(!k)return "—";var p=k.split("-");return MES[+p[1]-1]+" "+p[0];}
 function fd(s){return s?s.split("-").reverse().join("/"):"—";}
 function tl(t){return t==="CO2"?"CO₂":t==="AGUA"?"Agua":t==="TIPO K"?"Tipo K":t==="TIPO D"?"Tipo D":t==="AGENTE LIMPIO"?"Agente limpio":(t||"");}
-var m=(location.pathname+location.search+location.hash).match(/JX-?\d{1,6}/i),folio=m?("JX-"+m[0].replace(/\D/g,"").padStart(6,"0")):"";
+var u=decodeURIComponent(location.pathname+location.search+location.hash),folio=jasaFolio(location.hash.slice(1))||jasaFolio(u)||jasaFolio(location.pathname.split("/").pop());
 var out=document.getElementById("out");
 if(!folio){out.innerHTML='<div class="card"><h2>Escanea la etiqueta</h2><p>Esta página muestra la ficha del extintor cuyo código QR escaneaste.</p></div>';return;}
 fetch(SUPA_URL+"/rest/v1/rpc/ficha_extintor",{method:"POST",headers:{"apikey":SUPA_KEY,"Content-Type":"application/json"},body:JSON.stringify({folio:folio})})
