@@ -236,8 +236,8 @@ textarea.inp{resize:vertical;min-height:120px;font-family:var(--mono);font-size:
 <script>
 (function(){
 "use strict";
-var COLS=["quotes","clientes","proveedores","movs","ordenes","inventario","precios","pendientes","extintores","inspecciones","visitas","recetas"];
-var S={screen:"panel",data:{},ready:{},sel:null,finTab:"todos",finMes:null,search:"",paste:"",pasteMsg:"",drawer:null,otSel:null,dlv:{},confirm:null,readOnly:false,dbState:"loading"};
+var COLS=["quotes","clientes","proveedores","movs","ordenes","inventario","precios","pendientes","extintores","inspecciones","visitas","recetas","compras","conteos"];
+var S={invTab:"stock",cntCat:"",screen:"panel",data:{},ready:{},sel:null,finTab:"todos",finMes:null,search:"",paste:"",pasteMsg:"",drawer:null,otSel:null,dlv:{},confirm:null,readOnly:false,dbState:"loading"};
 COLS.forEach(function(c){S.data[c]=[];S.ready[c]=false;});
 var db=null, dl=null;
 
@@ -761,7 +761,7 @@ function dueClients(){
 function renderNav(){
   var pend=S.data.quotes.filter(function(q){return q.status==="Nueva";}).length;
   var open=S.data.ordenes.filter(function(o){return (o.etapa||0)<DONE;}).length;
-  var items=[["panel","Panel",""],["quotes","Cotizaciones",pend||""],["clientes","Clientes",""],["proveedores","Proveedores",""],["finanzas","Finanzas",""],["taller","Taller",open||""],["inventario","Inventario",lowStock().length||""],["costos","Costos y precios",recAlert()||""],["extintores","Extintores",extVencidos().length||""],["inspecciones","Inspecciones",inspPend()||""],["pendientes","Pendientes",(function(){var t0=today();var n=dayTasks(t0).filter(function(t){return !isDone(t,t0);}).length+overdue().length;return n||"";})()]];
+  var items=[["panel","Panel",""],["quotes","Cotizaciones",pend||""],["clientes","Clientes",""],["proveedores","Proveedores",""],["finanzas","Finanzas",""],["taller","Taller",open||""],["inventario","Inventario",(lowStock().length+ocAbiertas())||""],["costos","Costos y precios",recAlert()||""],["extintores","Extintores",extVencidos().length||""],["inspecciones","Inspecciones",inspPend()||""],["pendientes","Pendientes",(function(){var t0=today();var n=dayTasks(t0).filter(function(t){return !isDone(t,t0);}).length+overdue().length;return n||"";})()]];
   document.getElementById("nav").innerHTML=items.map(function(n){return '<button type="button" class="nav-b" data-act="go" data-v="'+n[0]+'"'+(S.screen===n[0]?' aria-current="page"':"")+'><span>'+n[1]+'</span><span class="cnt">'+n[2]+'</span></button>';}).join("");
 }
 function statusNote(){
@@ -928,14 +928,108 @@ function recSave(withPrice){
   p.then(function(id){if(!withPrice)return id;return write("precios",priceId(art),{art:art,price:recPrice(rc),actualizado:today(),receta:id,margen:rc.margen}).then(function(){return id;});})
    .then(function(){S.rec=null;render();toast(withPrice?"Receta guardada y precio de "+art+" en "+money(recPrice(rc)):"Receta guardada");},function(){});
 }
+/* ---------- inventario: pestañas, conteo físico y órdenes de compra ---------- */
+var CAT_INV=["Extintores","Agentes y polvo","Refacciones","Señalamientos","Otros"];
+function invSorted(){return S.data.inventario.slice().sort(function(a,b){var ca=CAT_INV.indexOf(a.categoria||"Otros"),cb=CAT_INV.indexOf(b.categoria||"Otros");return (ca<0?9:ca)-(cb<0?9:cb)||String(a.nombre).localeCompare(String(b.nombre),"es");});}
+function ocAbiertas(){return S.data.compras.filter(function(o){return o.estado==="Enviada";}).length;}
+function ocTotal(o){return Math.round((o.lines||[]).reduce(function(a,l){return a+(+l.cant||0)*(+l.costo||0);},0)*100)/100;}
+function nextOC(){var n=S.data.compras.reduce(function(a,o){var m=String(o.folio||"").match(/^OC-(\d+)$/);return m?Math.max(a,+m[1]):a;},0);return "OC-"+String(n+1).padStart(4,"0");}
 function vInv(){
+  var tabs=[["stock","Existencias"],["conteo","Levantar inventario"],["compras","Órdenes de compra"]];
+  var head='<div class="tabs" role="tablist" aria-label="Inventario">'+tabs.map(function(t){return '<button type="button" class="tab" data-act="invTab" data-v="'+t[0]+'" aria-pressed="'+(S.invTab===t[0])+'">'+t[1]+(t[0]==="compras"&&ocAbiertas()?" · "+ocAbiertas():"")+(t[0]==="conteo"&&cntActivo()?" · en curso":"")+'</button>';}).join("")+'</div>';
+  return head+(S.invTab==="conteo"?vConteo():S.invTab==="compras"?(S.oc?vOC():vCompras()):vInvStock());
+}
+/* conteo físico */
+function cntActivo(){return S.data.conteos.find(function(c){return c.estado==="en curso";});}
+function vConteo(){
+  var ro=S.readOnly||!db,c=cntActivo();
+  var hist=S.data.conteos.filter(function(x){return x.estado==="aplicado";}).sort(function(a,b){return (b.aplicado||0)-(a.aplicado||0);});
+  var histBox='<div class="box"><div class="box-h"><h2>Inventarios anteriores</h2></div>'+(hist.length?'<div class="tbl-wrap"><table><thead><tr><th>FECHA</th><th>LO HIZO</th><th class="num">CONTADOS</th><th class="num">CON DIFERENCIA</th><th class="num">VALOR DE LA DIFERENCIA</th></tr></thead><tbody>'+hist.map(function(h){var r=h.resumen||{};return '<tr><td class="mono">'+fmtDate(h.fecha)+'</td><td>'+esc(h.quien||"—")+'</td><td class="num">'+(r.n||0)+'</td><td class="num">'+((r.dif||[]).length)+'</td><td class="num" style="color:'+((r.valor||0)<0?"var(--rose)":"inherit")+'">'+money(r.valor||0)+'</td></tr>';}).join("")+'</tbody></table></div>':'<div class="empty"><span>Aquí quedan guardados los inventarios que apliques, con lo que faltó o sobró.</span></div>')+'</div>';
+  if(!c)return '<div class="hint">Levanta inventario cuando quieras confirmar que lo que dice el sistema es lo que hay en el taller. Cuentas cada artículo, el panel te muestra las diferencias y, al aplicar, las existencias quedan como las contaste.</div>'+
+    '<div class="box"><div class="empty"><b>No hay un inventario en curso</b><span>Puedes contar desde el celular o imprimir la hoja de conteo y capturar después.</span>'+(ro?"":'<div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center"><button type="button" class="btn sm" data-act="cntStart">Empezar inventario</button><button type="button" class="btn ghost sm" data-act="cntPrint">Imprimir hoja de conteo</button></div>')+'</div></div>'+histBox;
+  var items=Object.assign({},c.items||{},cntPend),cat=S.cntCat,all=invSorted(),list=all.filter(function(i){return (!cat||(i.categoria||"Otros")===cat)&&match(i);});
+  var nC=all.filter(function(i){return items[i.id]!=null&&items[i.id]!=="";}).length;
+  var difs=all.filter(function(i){var k=items[i.id];return k!=null&&k!==""&&+k!==(+i.stock||0);}),val=difs.reduce(function(a,i){return a+((+items[i.id])-(+i.stock||0))*(+i.costo||0);},0);
+  return '<div class="kpis sm">'+[["Contados",nC+" de "+all.length,"var(--blue)"],["Con diferencia",String(difs.length),difs.length?"var(--amber)":"var(--green)"],["Valor de la diferencia",money(val),val<0?"var(--red)":"var(--green)"]].map(function(k){return '<div class="kpi" style="--k:'+k[2]+'"><span class="eyebrow">'+k[0]+'</span><span class="v">'+k[1]+'</span></div>';}).join("")+'</div>'+
+  '<div class="box"><div class="box-h"><div><span class="mono" style="color:var(--muted)">Empezado el '+fmtDate(c.fecha)+' · '+esc(c.quien||"")+'</span><h2>Inventario en curso</h2></div><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><label class="eyebrow" for="cntCat">Categoría</label><select id="cntCat" class="inp" style="width:auto"><option value="">Todas</option>'+CAT_INV.map(function(k){return '<option'+(k===cat?" selected":"")+'>'+k+'</option>';}).join("")+'</select><button type="button" class="btn ghost sm" data-act="cntPrint">Imprimir hoja</button></div></div>'+
+  '<div class="tbl-wrap"><table><thead><tr><th>ARTÍCULO</th><th class="num">SISTEMA</th><th class="num">CONTADO</th><th class="num">DIFERENCIA</th></tr></thead><tbody>'+list.map(function(i){var k=items[i.id],has=k!=null&&k!=="",d=has?(+k)-(+i.stock||0):0;
+    return '<tr><td><b style="font-weight:600">'+esc(i.nombre)+'</b><div style="color:var(--muted);font-size:12px">'+esc(i.categoria||"Otros")+(i.ubicacion?" · "+esc(i.ubicacion):"")+'</div></td><td class="num mono">'+(+i.stock||0)+(i.unidad?' <span style="color:var(--muted);font-size:12px">'+esc(i.unidad)+'</span>':"")+'</td><td class="num"><input class="inp" style="width:90px;text-align:right" type="number" min="0" step="any" inputmode="decimal" id="cnt-'+esc(i.id)+'" data-cnt="'+esc(i.id)+'" value="'+(has?esc(k):"")+'" aria-label="Contado de '+esc(i.nombre)+'"'+(ro?" disabled":"")+'></td><td class="num mono" id="cntd-'+esc(i.id)+'" style="color:'+(!has?"var(--muted)":d<0?"var(--rose)":d>0?"var(--amber)":"var(--green)")+'">'+(!has?"—":d===0?"OK":(d>0?"+":"")+d)+'</td></tr>';}).join("")+'</tbody></table></div>'+
+  (ro?"":'<div class="actions"><button type="button" class="btn" data-act="cntApply"'+(nC?"":" disabled")+'>Aplicar inventario ('+nC+' contados)</button><button type="button" class="btn ghost" data-act="cntCancel">Cancelar inventario</button></div><span class="hint" style="padding:0 18px 14px;display:block">Solo se ajustan los artículos que contaste. Lo que capturas se guarda solo, puedes seguir otro día.</span>')+'</div>'+histBox;
+}
+function cntPrint(){
+  var c=cntActivo(),items=(c&&c.items)||{},rows=invSorted();
+  var win=window.open("","_blank");if(!win){toast("Permite las ventanas emergentes para imprimir.");return;}
+  win.document.write("<!doctype html><html><head><meta charset='utf-8'><title>Hoja de conteo JASA</title><style>@page{size:letter;margin:12mm}body{font-family:Arial,sans-serif;font-size:11px;color:#000}h1{font-size:18px;margin:0 0 4px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #000;padding:5px 6px;text-align:left}th{background:#eee;font-size:10px}.n{text-align:right;width:70px}.c{width:90px}</style></head><body><h1>JASA EXTINTORES · HOJA DE CONTEO DE INVENTARIO</h1><p>Fecha: ____________ &nbsp; Contó: ______________________</p><table><thead><tr><th>CATEGORÍA</th><th>ARTÍCULO</th><th>UBICACIÓN</th><th>UNIDAD</th><th class='c'>CONTADO</th></tr></thead><tbody>"+rows.map(function(i){var k=items[i.id];return "<tr><td>"+esc(i.categoria||"Otros")+"</td><td>"+esc(i.nombre)+"</td><td>"+esc(i.ubicacion||"")+"</td><td>"+esc(i.unidad||"")+"</td><td class='c'>"+(k!=null&&k!==""?esc(k):"")+"</td></tr>";}).join("")+"</tbody></table><script>setTimeout(function(){print()},300)<\/script></body></html>");win.document.close();
+}
+function cntApply(){
+  var c=cntActivo();if(!c)return;var items=Object.assign({},c.items||{},cntPend),all=invSorted(),cont=all.filter(function(i){return items[i.id]!=null&&items[i.id]!=="";});
+  var dif=cont.filter(function(i){return +items[i.id]!==(+i.stock||0);}).map(function(i){return {inv:i.id,nombre:i.nombre,antes:+i.stock||0,contado:+items[i.id],costo:+i.costo||0};});
+  if(!window.confirm("Se ajustan "+dif.length+" artículos a lo que contaste. ¿Aplicar el inventario?"))return;
+  var ch=Promise.resolve();dif.forEach(function(d){ch=ch.then(function(){return patch("inventario",d.inv,{stock:d.contado});});});
+  ch.then(function(){return patch("conteos",c.id,{estado:"aplicado",aplicado:Date.now(),resumen:{n:cont.length,dif:dif,valor:Math.round(dif.reduce(function(a,d){return a+(d.contado-d.antes)*d.costo;},0)*100)/100}});})
+   .then(function(){toast("Inventario aplicado: "+dif.length+" ajustes");render();},function(){});
+}
+var cntTimer=null,cntPend={};
+function cntQueue(id,val){var c=cntActivo();if(!c)return;c.items=c.items||{};c.items[id]=val;cntPend[id]=val;clearTimeout(cntTimer);
+  cntTimer=setTimeout(function(){var cc=cntActivo();if(!cc)return;var it=Object.assign({},cc.items||{},cntPend);cntPend={};patch("conteos",cc.id,{items:it}).catch(function(){});},700);
+  var i=byId("inventario",id),el=document.getElementById("cntd-"+id);if(i&&el){var has=val!=="",d=has?(+val)-(+i.stock||0):0;el.textContent=!has?"—":d===0?"OK":(d>0?"+":"")+d;el.style.color=!has?"var(--muted)":d<0?"var(--rose)":d>0?"var(--amber)":"var(--green)";}}
+/* órdenes de compra */
+var OC_COL={Borrador:"var(--muted)",Enviada:"var(--blue)",Recibida:"var(--green)",Cancelada:"var(--rose)"};
+function vCompras(){
+  var ro=S.readOnly||!db,list=S.data.compras.filter(function(o){return match({nombre:o.proveedor,folio:o.folio});}).sort(function(a,b){var o={Borrador:0,Enviada:1,Recibida:2,Cancelada:3};return (o[a.estado]||0)-(o[b.estado]||0)||(b.creado||0)-(a.creado||0);});
+  var porPagar=S.data.compras.filter(function(o){return o.estado==="Recibida"&&o.pago==="por pagar";}).reduce(function(a,o){return a+ocTotal(o);},0);
+  return '<div class="hint">Haz el pedido al proveedor, mándalo por WhatsApp y, cuando llegue la mercancía, márcala recibida: se suma a tus existencias, se actualiza el costo de cada artículo (y tus recetas) y queda registrado el egreso o lo que le debes al proveedor.</div>'+
+  '<div class="box"><div class="box-h"><h2>Órdenes de compra</h2><div style="display:flex;gap:10px;align-items:center">'+(porPagar?'<span class="hint">Por pagar a proveedores: <b style="color:var(--amber)">'+money(porPagar)+'</b></span>':"")+(ro?"":'<button type="button" class="btn sm" data-act="ocNew">+ Nueva orden</button>')+'</div></div>'+
+  (list.length?'<div class="tbl-wrap"><table><thead><tr><th>FOLIO</th><th>FECHA</th><th>PROVEEDOR</th><th class="num">ARTÍCULOS</th><th class="num">TOTAL</th><th>ESTADO</th></tr></thead><tbody>'+list.map(function(o){return '<tr><td class="mono"><button type="button" class="link" style="padding:0;font-family:var(--mono)" data-act="ocOpen" data-id="'+o.id+'">'+esc(o.folio)+' →</button></td><td class="mono">'+fmtDate(o.fecha)+'</td><td><b style="font-weight:600">'+esc(o.proveedor||"—")+'</b></td><td class="num">'+(o.lines||[]).length+'</td><td class="num">'+money(ocTotal(o))+'</td><td><span class="pill" style="color:'+(OC_COL[o.estado]||"var(--muted)")+'">'+esc(o.estado)+(o.estado==="Recibida"?(o.pago==="por pagar"?" · por pagar":" · pagada"):"")+'</span></td></tr>';}).join("")+'</tbody></table></div>':emptyBox("Aún no hay órdenes de compra","Crea una desde aquí o desde la Lista de compras en Existencias (con lo que está bajo el mínimo).","ocNew","Nueva orden"))+'</div>';
+}
+function ocDraft(o){return {id:o.id||null,folio:o.folio||"",proveedor:o.proveedor||"",fecha:o.fecha||today(),notas:o.notas||"",estado:o.estado||"Borrador",pago:o.pago||"",recibida:o.recibida||"",lines:(o.lines||[]).map(function(l){return Object.assign({},l);})};}
+function vOC(){
+  var o=S.oc,ro=S.readOnly||!db||o.estado==="Recibida"||o.estado==="Cancelada",dis=ro?" disabled":"",tot=ocTotal(o),prov=S.data.proveedores.find(function(p){return String(p.nombre).trim().toLowerCase()===String(o.proveedor).trim().toLowerCase();});
+  var opts=function(sel){return invSorted().map(function(i){return '<option value="'+esc(i.id)+'"'+(i.id===sel?" selected":"")+'>'+esc(i.nombre)+'</option>';}).join("");};
+  return '<div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><button type="button" class="btn ghost sm" data-act="ocBack">← Órdenes de compra</button><div style="display:flex;gap:8px;flex-wrap:wrap">'+(o.lines.length?'<button type="button" class="btn ghost sm" data-act="ocPrint">Imprimir</button>'+(prov&&prov.tel&&o.estado!=="Cancelada"?'<button type="button" class="btn wa sm" data-act="ocWa">Enviar por WhatsApp</button>':""):"")+'</div></div>'+
+  '<div class="box"><div class="box-h"><div><span class="mono" style="color:var(--muted)">'+esc(o.folio||"Nueva")+' · '+fmtDate(o.fecha)+'</span><h2>Orden de compra</h2></div><span class="pill" style="color:'+(OC_COL[o.estado]||"var(--muted)")+'">'+esc(o.estado)+(o.estado==="Recibida"?(o.pago==="por pagar"?" · por pagar":" · pagada"):"")+'</span></div>'+
+  '<div class="plan"><label class="eyebrow" for="ocProv">Proveedor</label><input class="inp" id="ocProv" list="ocProvs" autocomplete="off" value="'+esc(o.proveedor)+'" placeholder="Escribe o elige"'+dis+'><datalist id="ocProvs">'+S.data.proveedores.map(function(p){return '<option value="'+esc(p.nombre)+'">';}).join("")+'</datalist>'+(o.proveedor&&!prov&&!ro?'<span class="hint">No está en Proveedores; se agrega al guardar.</span>':prov&&!prov.tel&&!ro?'<span class="hint">Agrega su teléfono en Proveedores para mandarle la orden por WhatsApp.</span>':"")+'</div>'+
+  '<div class="tbl-wrap"><table><thead><tr><th>ARTÍCULO</th><th class="num">CANTIDAD</th><th class="num">COSTO UNIT.</th><th class="num">SUBTOTAL</th><th></th></tr></thead><tbody>'+
+  (o.lines.length?o.lines.map(function(l,ix){var iv=byId("inventario",l.inv);return '<tr><td style="min-width:220px"><select class="inp" data-ok="inv" data-ix="'+ix+'" aria-label="Artículo"'+dis+'>'+opts(l.inv)+'</select><div style="color:var(--muted);font-size:12px">Hay '+(iv?(+iv.stock||0)+(iv.unidad?" "+esc(iv.unidad):""):"—")+'</div></td><td class="num"><input class="inp" style="width:90px;text-align:right" type="number" min="0" step="any" data-ok="cant" data-ix="'+ix+'" value="'+esc(l.cant)+'" aria-label="Cantidad"'+dis+'></td><td class="num"><input class="inp" style="width:110px;text-align:right" type="number" min="0" step="any" placeholder="$" data-ok="costo" data-ix="'+ix+'" value="'+esc(l.costo)+'" aria-label="Costo unitario"'+dis+'></td><td class="num mono" id="ocSub'+ix+'">'+money((+l.cant||0)*(+l.costo||0))+'</td><td class="num">'+(ro?"":'<button type="button" class="link" style="color:var(--muted)" data-act="ocDel" data-v="'+ix+'">Quitar</button>')+'</td></tr>';}).join(""):'<tr><td colspan="5"><span class="hint">Agrega los artículos que vas a pedir.</span></td></tr>')+'</tbody></table></div>'+
+  (ro?"":'<div class="actions"><button type="button" class="btn ghost sm" data-act="ocAdd">+ Artículo</button></div>')+
+  '<div class="plan"><label class="eyebrow" for="ocNotas">Notas para el proveedor</label><textarea class="inp" id="ocNotas" rows="2" placeholder="Ej. Entregar en el taller por la mañana"'+dis+'>'+esc(o.notas)+'</textarea></div>'+
+  '<div class="totals"><span class="s" style="color:var(--muted)">Escribe el costo como te lo cobra el proveedor</span><span class="big" id="ocTot">'+money(tot)+'</span></div>'+
+  (S.readOnly||!db?"":o.estado==="Recibida"?'<div class="hint" style="padding:0 18px 16px">Recibida el '+fmtDate(o.recibida)+'. '+(o.pago==="por pagar"?'Se sumó '+money(tot)+' a lo que le debes a '+esc(o.proveedor)+'.':'Se registró el egreso en Finanzas.')+'</div>':o.estado==="Cancelada"?"":
+    '<div class="actions"><button type="button" class="btn" data-act="ocSave">Guardar</button>'+(o.id?'<button type="button" class="btn ghost" data-act="ocRecvAsk">Recibir mercancía</button><button type="button" class="btn ghost" data-act="ocCancel">Cancelar orden</button>':"")+'</div><div id="ocRecv"></div>')+'</div>';
+}
+function ocPaint(){var o=S.oc;if(!o)return;o.lines.forEach(function(l,ix){var el=document.getElementById("ocSub"+ix);if(el)el.textContent=money((+l.cant||0)*(+l.costo||0));});var t=document.getElementById("ocTot");if(t)t.textContent=money(ocTotal(o));}
+function ocBody(o){return {folio:o.folio,proveedor:String(o.proveedor||"").trim(),fecha:o.fecha,notas:o.notas,estado:o.estado,pago:o.pago||"",lines:o.lines.filter(function(l){return l.inv&&(+l.cant||0)>0;}).map(function(l){var i=byId("inventario",l.inv);return {inv:l.inv,art:i?i.nombre:(l.art||""),unidad:i?(i.unidad||""):(l.unidad||""),cant:+l.cant,costo:+l.costo||0};})};}
+function ocSave(silent){
+  var o=S.oc;if(!String(o.proveedor).trim()){toast("Escribe el proveedor.");return Promise.reject();}
+  var body=ocBody(o);if(!body.lines.length){toast("Agrega al menos un artículo con cantidad.");return Promise.reject();}
+  if(!o.id){body.folio=nextOC();body.creado=Date.now();}
+  var prov=S.data.proveedores.find(function(p){return String(p.nombre).trim().toLowerCase()===body.proveedor.toLowerCase();});
+  var p0=prov?Promise.resolve():write("proveedores",null,{nombre:body.proveedor,contacto:"",tel:"",ciudad:"",surte:"",saldo:0});
+  return p0.then(function(){return o.id?write("compras",o.id,Object.assign({},byId("compras",o.id),body)).then(function(){return o.id;}):write("compras",null,body);})
+    .then(function(id){o.id=id;o.folio=body.folio;if(!silent)toast("Orden "+body.folio+" guardada");return id;});
+}
+function ocText(o){var b=ocBody(o);return "Hola, le escribimos de JASA Extintores. Orden de compra "+b.folio+":\n"+b.lines.map(function(l){return "• "+l.art+": "+l.cant+(l.unidad?" "+l.unidad:"");}).join("\n")+(b.notas?"\n\n"+b.notas:"")+"\n\nGracias.";}
+function ocPrint(){
+  var o=ocBody(S.oc);var win=window.open("","_blank");if(!win){toast("Permite las ventanas emergentes para imprimir.");return;}
+  win.document.write("<!doctype html><html><head><meta charset='utf-8'><title>Orden de compra "+esc(o.folio)+"</title><style>@page{size:letter;margin:14mm}body{font-family:Arial,sans-serif;font-size:12px;color:#000}.b{border-top:6px solid #E10F0F;padding-top:10px;display:flex;justify-content:space-between}h1{font-size:20px;margin:0}table{width:100%;border-collapse:collapse;margin-top:14px}th,td{border-bottom:1px solid #999;padding:6px;text-align:left}th{font-size:10px;letter-spacing:.06em}.n{text-align:right}.t{font-size:16px;font-weight:bold;text-align:right;margin-top:10px}</style></head><body><div class='b'><div><h1>JASA EXTINTORES SA DE CV</h1><div>Piedras Negras, Coahuila · 878 783 3216</div></div><div style='text-align:right'><b>ORDEN DE COMPRA</b><div style='font-family:monospace;font-size:14px'>"+esc(o.folio)+"</div><div>"+fmtDate(o.fecha)+"</div></div></div><p><b>Proveedor:</b> "+esc(o.proveedor)+"</p><table><thead><tr><th>ARTÍCULO</th><th class='n'>CANTIDAD</th><th class='n'>COSTO UNIT.</th><th class='n'>IMPORTE</th></tr></thead><tbody>"+o.lines.map(function(l){return "<tr><td>"+esc(l.art)+"</td><td class='n'>"+l.cant+(l.unidad?" "+esc(l.unidad):"")+"</td><td class='n'>"+(l.costo?money(l.costo):"")+"</td><td class='n'>"+(l.costo?money(l.cant*l.costo):"")+"</td></tr>";}).join("")+"</tbody></table>"+(ocTotal(o)?"<div class='t'>Total "+money(ocTotal(o))+"</div>":"")+(o.notas?"<p><b>Notas:</b> "+esc(o.notas)+"</p>":"")+"<script>setTimeout(function(){print()},300)<\/script></body></html>");win.document.close();
+}
+function ocReceive(pagada){
+  var o=S.oc;ocSave(true).then(function(id){
+    var c=byId("compras",id)||ocBody(o),tot=ocTotal(c),ch=Promise.resolve(),hoy=today();
+    (c.lines||[]).forEach(function(l){ch=ch.then(function(){var i=byId("inventario",l.inv);if(!i)return;var up={stock:(+i.stock||0)+(+l.cant||0)};if(+l.costo>0){up.costo=+l.costo;up.costoFecha=hoy;}return patch("inventario",i.id,up);});});
+    ch=ch.then(function(){if(pagada)return write("movs",null,{tipo:"egreso",fecha:hoy,concepto:"Orden de compra "+c.folio,quien:c.proveedor,categoria:"Insumos",monto:tot,compra:id});
+      var pv=S.data.proveedores.find(function(p){return String(p.nombre).trim().toLowerCase()===String(c.proveedor).trim().toLowerCase();});if(pv)return patch("proveedores",pv.id,{saldo:Math.round(((+pv.saldo||0)+tot)*100)/100});});
+    return ch.then(function(){return patch("compras",id,{estado:"Recibida",pago:pagada?"pagada":"por pagar",recibida:hoy});});
+  }).then(function(){S.oc=ocDraft(byId("compras",o.id)||o);render();toast("Mercancía recibida y sumada a existencias");},function(){});
+}
+function vInvStock(){
   var CORD=["Extintores","Agentes y polvo","Refacciones","Señalamientos","Otros"];var list=S.data.inventario.filter(match).sort(function(a,b){var ca=CORD.indexOf(a.categoria||"Otros"),cb=CORD.indexOf(b.categoria||"Otros");return (ca<0?9:ca)-(cb<0?9:cb)||String(a.nombre).localeCompare(String(b.nombre),"es");});
   var shop=S.data.inventario.filter(function(i){return (+i.stock||0)<(+i.min||0);}).map(function(i){return {n:i.nombre,u:i.unidad,q:Math.max(0,(+i.optimo||0)-(+i.stock||0))};});
   var shopTxt="Pedido JASA Extintores:\n"+shop.map(function(x){return "• "+x.n+": "+x.q+(x.u?" "+x.u:"");}).join("\n");
   return '<div class="grid2"><div class="box"><div class="box-h"><h2>Existencias</h2>'+(S.readOnly||!db?"":'<button type="button" class="btn sm" data-act="new:inventario">+ Nuevo artículo</button>')+'</div>'+
   (list.length?'<div class="tbl-wrap"><table><thead><tr><th>ARTÍCULO</th><th class="num">EXISTENCIA</th><th>NIVEL</th><th></th></tr></thead><tbody>'+list.map(function(i){var s=+i.stock||0,mn=+i.min||0,op=+i.optimo||0,pct=op?Math.min(100,Math.round(s/op*100)):0,col=s<mn?"var(--red-2)":s<mn*1.3?"var(--amber)":"var(--green)";
     return '<tr><td><b style="font-weight:600">'+esc(i.nombre)+'</b>'+(i.porCapturar?' <span class="pill" style="color:var(--blue)">por capturar</span>':"")+'<div style="color:var(--muted);font-size:12px">'+(i.categoria?esc(i.categoria)+' · ':"")+(i.ubicacion?esc(i.ubicacion)+' · ':"")+'mín '+mn+' · ópt '+op+(i.unidad?" "+esc(i.unidad):"")+(i.consumo?' · <span style="color:var(--blue)">se descuenta al entregar</span>':"")+'</div></td><td class="num">'+(S.readOnly||!db?'<span class="mono">'+s+'</span>':'<span class="stepper"><button type="button" data-act="stock" data-id="'+i.id+'" data-v="-1" aria-label="Restar uno">−</button><span class="mono" style="min-width:36px;text-align:center">'+s+'</span><button type="button" data-act="stock" data-id="'+i.id+'" data-v="1" aria-label="Sumar uno">+</button></span>')+'</td><td style="min-width:110px"><div class="bar"><i style="width:'+pct+'%;background:'+col+'"></i></div></td><td class="num">'+(S.readOnly||!db?"":'<button type="button" class="link" data-act="edit:inventario" data-id="'+i.id+'">Editar</button>')+'</td></tr>';}).join("")+'</tbody></table></div>':emptyBox("Inventario vacío","Agrega polvo PQS, CO₂, manómetros, válvulas, etiquetas y extintores nuevos con su mínimo y óptimo.","new:inventario","Nuevo artículo"))+
-  '</div><div class="box"><div class="box-h"><h2>Lista de compras</h2></div>'+(shop.length?shop.map(function(x){return '<div class="row"><span class="t">'+esc(x.n)+'</span><span class="mono" style="color:var(--amber)">+'+x.q+(x.u?" "+esc(x.u):"")+'</span></div>';}).join("")+'<div class="actions"><a class="btn wa" target="_blank" rel="noopener" href="'+esc("https://wa.me/?text="+encodeURIComponent(shopTxt))+'">Enviar pedido por WhatsApp</a></div>':'<div class="empty"><span>Todo está arriba del mínimo. Lo que baje del mínimo aparece aquí con la cantidad para llegar al óptimo.</span></div>')+'</div></div>';
+  '</div><div class="box"><div class="box-h"><h2>Lista de compras</h2>'+(shop.length&&!(S.readOnly||!db)?'<button type="button" class="btn sm" data-act="ocFromLow">Crear orden de compra</button>':"")+'</div>'+(shop.length?shop.map(function(x){return '<div class="row"><span class="t">'+esc(x.n)+'</span><span class="mono" style="color:var(--amber)">+'+x.q+(x.u?" "+esc(x.u):"")+'</span></div>';}).join("")+'<div class="actions"><a class="btn wa" target="_blank" rel="noopener" href="'+esc("https://wa.me/?text="+encodeURIComponent(shopTxt))+'">Enviar pedido por WhatsApp</a></div>':'<div class="empty"><span>Todo está arriba del mínimo. Lo que baje del mínimo aparece aquí con la cantidad para llegar al óptimo.</span></div>')+'</div></div>';
 }
 
 function render(){
@@ -966,7 +1060,7 @@ document.addEventListener("click",function(e){
   var b=e.target.closest("[data-act]");if(!b)return;
   var a=b.getAttribute("data-act"),v=b.getAttribute("data-v"),id=b.getAttribute("data-id");
   if(a==="closeDrawer"){if(b.classList.contains("overlay")&&e.target!==b)return;S.drawer=null;renderDrawer();return;}
-  if(a==="go"){S.screen=v;S.otSel=null;S.inspSel=null;S.rec=null;try{history.replaceState(null,"","#"+(v==="quotes"?"cotizaciones":v));}catch(er){}S.confirm=null;render();window.scrollTo(0,0);return;}
+  if(a==="go"){S.screen=v;S.otSel=null;S.inspSel=null;S.rec=null;S.oc=null;try{history.replaceState(null,"","#"+(v==="quotes"?"cotizaciones":v));}catch(er){}S.confirm=null;render();window.scrollTo(0,0);return;}
   if(a==="goPaste"){S.screen="quotes";S.pasteMsg=S.pasteMsg||" ";render();setTimeout(function(){var p=document.getElementById("pasteBox");if(p)p.focus();},20);return;}
   if(a.indexOf("new:")===0){openForm(a.slice(4));return;}
   if(a.indexOf("edit:")===0){openForm(a.slice(5),id);return;}
@@ -1020,6 +1114,23 @@ document.addEventListener("click",function(e){
   if(a==="inspBack"){S.inspSel=null;render();return;}
   if(a==="inspQuote"){var iq=byId("inspecciones",S.inspSel);if(iq)inspQuote(iq);return;}
   if(a==="inspReviewed"){patch("inspecciones",S.inspSel,{estado:"revisada"}).then(function(){toast("Marcada como revisada");});return;}
+  if(a==="invTab"){S.invTab=v;S.oc=null;render();return;}
+  if(a==="cntStart"){write("conteos",null,{fecha:today(),estado:"en curso",quien:(function(){var e=(S.user&&S.user.email)||"",m=(S.staff||[]).find(function(x){return x.email===e;});return m&&m.nombre?m.nombre:e;})(),items:{},creado:Date.now()}).then(function(){render();});return;}
+  if(a==="cntPrint"){cntPrint();return;}
+  if(a==="cntApply"){cntApply();return;}
+  if(a==="cntCancel"){var cc=cntActivo();if(cc&&window.confirm("¿Cancelar este inventario? Se borra lo que llevas contado y las existencias no cambian."))remove("conteos",cc.id).then(function(){render();});return;}
+  if(a==="ocNew"){S.invTab="compras";S.oc=ocDraft({});render();window.scrollTo(0,0);return;}
+  if(a==="ocFromLow"){S.invTab="compras";S.oc=ocDraft({lines:lowStock().map(function(i){return {inv:i.id,cant:Math.max(1,(+i.optimo||0)-(+i.stock||0)),costo:+i.costo||""};})});render();window.scrollTo(0,0);return;}
+  if(a==="ocOpen"){var oo2=byId("compras",id);if(oo2){S.oc=ocDraft(oo2);render();window.scrollTo(0,0);}return;}
+  if(a==="ocBack"){S.oc=null;render();return;}
+  if(a==="ocAdd"){var f0=invSorted()[0];if(!f0){toast("Primero da de alta artículos en Existencias.");return;}S.oc.lines.push({inv:f0.id,cant:1,costo:+f0.costo||""});render();return;}
+  if(a==="ocDel"){S.oc.lines.splice(+v,1);render();return;}
+  if(a==="ocSave"){ocSave().then(function(){render();},function(){});return;}
+  if(a==="ocPrint"){ocPrint();return;}
+  if(a==="ocWa"){var pv0=S.data.proveedores.find(function(p){return String(p.nombre).trim().toLowerCase()===String(S.oc.proveedor).trim().toLowerCase();});var wwin=window.open("","_blank");ocSave(true).then(function(id){var url=waLink(pv0.tel,ocText(S.oc));if(wwin)wwin.location=url;else location.href=url;if(S.oc.estado==="Borrador"){S.oc.estado="Enviada";return patch("compras",id,{estado:"Enviada"});}}).then(function(){render();},function(){if(wwin)wwin.close();});return;}
+  if(a==="ocRecvAsk"){var rb=document.getElementById("ocRecv");if(rb)rb.innerHTML='<div class="plan" style="border-top:1px solid var(--line)"><b>¿Ya le pagaste al proveedor?</b><span class="hint">Las cantidades de la orden se suman a tus existencias y el costo de cada artículo se actualiza. Si llegó distinto, corrige las cantidades antes.</span><div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn sm" data-act="ocRecv" data-v="1">Recibida y pagada</button><button type="button" class="btn ghost sm" data-act="ocRecv" data-v="0">Recibida, queda por pagar</button></div></div>';return;}
+  if(a==="ocRecv"){ocReceive(v==="1");return;}
+  if(a==="ocCancel"){if(!window.confirm("¿Cancelar esta orden de compra?"))return;patch("compras",S.oc.id,{estado:"Cancelada"}).then(function(){S.oc.estado="Cancelada";render();});return;}
   if(a==="recNew"){S.rec={id:null,art:"",insumos:[],margen:40};render();window.scrollTo(0,0);return;}
   if(a==="recOpen"){var ro0=byId("recetas",id);if(ro0){S.rec={id:ro0.id,art:ro0.art,margen:ro0.margen,insumos:(ro0.insumos||[]).map(function(x){return Object.assign({},x);})};render();window.scrollTo(0,0);}return;}
   if(a==="recBack"){S.rec=null;render();return;}
@@ -1054,6 +1165,10 @@ document.addEventListener("click",function(e){
 });
 document.addEventListener("input",function(e){
   if(e.target.id==="pcTxt"){precargaPreview();return;}
+  if(e.target.hasAttribute("data-cnt")){cntQueue(e.target.getAttribute("data-cnt"),e.target.value.trim());return;}
+  if(S.oc&&e.target.id==="ocProv"){S.oc.proveedor=e.target.value;return;}
+  if(S.oc&&e.target.id==="ocNotas"){S.oc.notas=e.target.value;return;}
+  if(S.oc&&e.target.hasAttribute("data-ok")&&e.target.tagName!=="SELECT"){var ol=S.oc.lines[+e.target.getAttribute("data-ix")];if(ol){ol[e.target.getAttribute("data-ok")]=e.target.value;ocPaint();}return;}
   if(S.rec&&e.target.id==="recArt"){S.rec.art=e.target.value;return;}
   if(S.rec&&e.target.id==="recMargen"){S.rec.margen=e.target.value;recPaint();return;}
   if(S.rec&&e.target.hasAttribute("data-rk")&&e.target.tagName!=="SELECT"){var ri=S.rec.insumos[+e.target.getAttribute("data-ix")];if(ri){ri[e.target.getAttribute("data-rk")]=e.target.value;recPaint();}return;}
@@ -1066,6 +1181,8 @@ document.addEventListener("change",function(e){
   var t=e.target;
   if(t.id==="finMes"){S.finMes=t.value;render();return;}
   if(t.id==="extCli"){S.extCli=t.value;render();return;}
+  if(t.id==="cntCat"){S.cntCat=t.value;render();return;}
+  if(S.oc&&t.getAttribute&&t.getAttribute("data-ok")==="inv"){var ol2=S.oc.lines[+t.getAttribute("data-ix")];if(ol2){ol2.inv=t.value;var iv2=byId("inventario",t.value);if(iv2&&+iv2.costo>0)ol2.costo=+iv2.costo;render();}return;}
   if(S.rec&&t.getAttribute&&t.getAttribute("data-rk")==="inv"){var rs=S.rec.insumos[+t.getAttribute("data-ix")];if(rs){rs.inv=t.value;if(!rs.inv){rs.nombre=rs.nombre||"";rs.costo=rs.costo||"";}render();}return;}
   if(t.hasAttribute&&t.hasAttribute("data-hall")&&S.hall){var hr=S.hall.rows[+t.getAttribute("data-hall")],hk=t.getAttribute("data-hk");if(hr){hr[hk]=hk==="on"?t.checked:t.value;render();}return;}
   if(t.hasAttribute("data-unit")){
@@ -1283,7 +1400,7 @@ function startSupabase(){
     var ses=r&&r.data&&r.data.session;if(!ses){showLogin();return;}
     return SB.from("staff").select("email").limit(1).then(function(q){
       if(q.error||!q.data||!q.data.length){showLogin(q.error?"No se pudo revisar tu acceso: "+q.error.message:"El correo "+ses.user.email+" entró, pero no está en la lista de personal (public.staff).");SB.auth.signOut();return;}
-      document.getElementById("loginRoot").innerHTML="";
+      document.getElementById("loginRoot").innerHTML="";S.user=ses.user;
       db=makeSupaDb(SB);startDb();
       SB.from("staff").select("*").then(function(sr){if(!sr.error)S.staff=sr.data||[];});
       ["backupBtn","importBtn","logoutBtn"].forEach(function(i){document.getElementById(i).hidden=false;});
@@ -1325,7 +1442,7 @@ function doImport(){
 }
 
 /* ---------- enlaces directos ---------- */
-var HASH={costos:"costos",recetas:"costos",extintores:"extintores",inspecciones:"inspecciones",panel:"panel",cotizaciones:"quotes",quotes:"quotes",clientes:"clientes",proveedores:"proveedores",finanzas:"finanzas",taller:"taller",inventario:"inventario",pendientes:"pendientes",agenda:"pendientes"};
+var HASH={compras:"inventario",conteo:"inventario",costos:"costos",recetas:"costos",extintores:"extintores",inspecciones:"inspecciones",panel:"panel",cotizaciones:"quotes",quotes:"quotes",clientes:"clientes",proveedores:"proveedores",finanzas:"finanzas",taller:"taller",inventario:"inventario",pendientes:"pendientes",agenda:"pendientes"};
 function fromHash(){var h=(location.hash||"").replace("#","").toLowerCase();if(HASH[h]&&S.screen!==HASH[h]){S.screen=HASH[h];S.otSel=null;render();}}
 window.addEventListener("hashchange",fromHash);fromHash();
 

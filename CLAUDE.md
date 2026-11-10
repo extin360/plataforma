@@ -23,7 +23,10 @@ generados.
 
 - Una tabla `public.docs (col, id, data jsonb)`; `col` = colección: `quotes`, `clientes`, `proveedores`,
   `movs`, `ordenes`, `inventario`, `precios`, `pendientes`, `extintores` (id = folio `PREFIJO-001` del cliente, o
-  `JX-000001` para etiquetas en blanco; `jasaFolio()` los normaliza), `inspecciones`, `visitas`, `recetas`.
+  `JX-000001` para etiquetas en blanco; `jasaFolio()` los normaliza), `inspecciones`, `visitas`, `recetas`, `compras`, `conteos`.
+- Inventario tiene pestañas: Existencias, Levantar inventario (`conteos {estado: en curso|aplicado, items{invId:contado}}`;
+  al aplicar, `stock` = contado) y Órdenes de compra (`compras {folio OC-0001, proveedor, lines[{inv,cant,costo}], estado
+  Borrador|Enviada|Recibida|Cancelada, pago}`; al recibir suma `stock`, actualiza `costo` y crea egreso o suma `saldo` al proveedor).
 - Costos: `inventario.costo` (por unidad) se actualiza al registrar un egreso ligado a un artículo (`movs.articulo`,
   `movs.cant`). `recetas {art, insumos[{inv,cant}|{nombre,cant,costo}], margen}`; el precio = costo × (1 + margen/100) y se
   guarda en `precios` (id = `priceId(art)`) con `receta` y `margen`.
