@@ -237,7 +237,7 @@ textarea.inp{resize:vertical;min-height:120px;font-family:var(--mono);font-size:
 <script>
 (function(){
 "use strict";
-var COLS=["quotes","clientes","proveedores","movs","ordenes","inventario","precios","pendientes","extintores","inspecciones","visitas"];
+var COLS=["quotes","clientes","proveedores","movs","ordenes","inventario","precios","pendientes","extintores","inspecciones","visitas","recetas"];
 var S={screen:"panel",data:{},ready:{},sel:null,finTab:"todos",finMes:null,search:"",paste:"",pasteMsg:"",drawer:null,otSel:null,dlv:{},confirm:null,readOnly:false,dbState:"loading"};
 COLS.forEach(function(c){S.data[c]=[];S.ready[c]=false;});
 var db=null, dl=null;
@@ -326,9 +326,9 @@ var DONE=4,READY=3;
 var FORMS={
   clientes:{t:"cliente",f:[["nombre","Nombre o razón social","text",1],["contacto","Contacto","text"],["tel","Teléfono (10 dígitos)","tel"],["ciudad","Ciudad","text"],["equiposDet","Extintores del cliente","equipos"],["proximaRecarga","Próxima recarga","month"],["saldo","Por cobrar ($)","number"],["prefijo","Prefijo de folios de sus extintores","text",0,null,"Ej. EAP1: sus extintores serán EAP1-001, EAP1-002… Déjalo vacío y se sugiere solo."],["codigoPortal","Código del portal de clientes","text",0,null,"Se genera con el botón Portal. Bórralo para quitarle el acceso."],["notas","Notas","textarea"]]},
   proveedores:{t:"proveedor",f:[["nombre","Proveedor","text",1],["contacto","Contacto","text"],["tel","Teléfono","tel"],["ciudad","Ciudad","text"],["surte","Qué surte","text"],["saldo","Por pagar ($)","number"]]},
-  movs:{t:"movimiento",f:[["tipo","Tipo","select",1,[["ingreso","Ingreso"],["egreso","Egreso"]]],["fecha","Fecha","date",1],["concepto","Concepto","text",1],["quien","Cliente o proveedor","text"],["categoria","Categoría","select",0,CAT_ING.concat(CAT_EGR).map(function(c){return [c,c];})],["monto","Monto ($)","number",1]]},
+  movs:{t:"movimiento",f:[["tipo","Tipo","select",1,[["ingreso","Ingreso"],["egreso","Egreso"]]],["fecha","Fecha","date",1],["concepto","Concepto","text",1],["quien","Cliente o proveedor","text"],["categoria","Categoría","select",0,CAT_ING.concat(CAT_EGR).map(function(c){return [c,c];})],["monto","Monto ($)","number",1],["articulo","Si es compra de insumo: artículo del inventario","select",0,function(){return [["","No es compra de inventario"]].concat(S.data.inventario.slice().sort(function(a,b){return String(a.nombre).localeCompare(String(b.nombre),"es");}).map(function(i){return [i.id,i.nombre+(i.unidad?" ("+i.unidad+")":"")];}));}],["cant","Cantidad comprada","number",0,null,"Ej. 25 si compraste un bulto de 25 kg. Con esto se calcula el costo por unidad y se suma a la existencia."]]},
   ordenes:{t:"orden de taller",f:[["cliente","Cliente","text",1],["contacto","Contacto","text"],["tel","Teléfono / WhatsApp","tel"],["recibido","Fecha de ingreso","date",1],["entrega","Entrega programada","date"],["equiposDet","Equipos recibidos","equipos"],["recibio","Recibió en JASA","text",0,null,"Nombre de quien recibe los equipos"],["notas","Notas","textarea",0,null,"Estado del equipo, piezas a cambiar, planta…"],["etapa","Etapa","select",1,STAGES.map(function(s,i){return [String(i),s[0]];})]]},
-  inventario:{t:"artículo",f:[["nombre","Artículo","text",1],["categoria","Categoría","select",0,[["Extintores","Extintores"],["Señalamientos","Señalamientos"],["Refacciones","Refacciones"],["Agentes y polvo","Agentes y polvo"],["Otros","Otros"]]],["unidad","Unidad","text",0,null,"kg, pza, rollos…"],["ubicacion","Ubicación","text",0,null,"Ej. Anaquel 2"],["stock","Existencia","number",1],["min","Mínimo","number",1],["optimo","Óptimo (para pedir)","number",1],["consumo","Se descuenta al entregar una orden","select",0,[["","No"],["PQS","Sí: polvo PQS (kg recargados)"],["CO2","Sí: CO₂ (kg recargados)"],["ETIQUETA","Sí: 1 etiqueta por extintor"]]]]},
+  inventario:{t:"artículo",f:[["nombre","Artículo","text",1],["categoria","Categoría","select",0,[["Extintores","Extintores"],["Señalamientos","Señalamientos"],["Refacciones","Refacciones"],["Agentes y polvo","Agentes y polvo"],["Otros","Otros"]]],["unidad","Unidad","text",0,null,"kg, pza, rollos…"],["costo","Costo por unidad ($)","number",0,null,"Lo que te cuesta 1 unidad. Se actualiza solo cuando registras su compra en Finanzas."],["ubicacion","Ubicación","text",0,null,"Ej. Anaquel 2"],["stock","Existencia","number",1],["min","Mínimo","number",1],["optimo","Óptimo (para pedir)","number",1],["consumo","Se descuenta al entregar una orden","select",0,[["","No"],["PQS","Sí: polvo PQS (kg recargados)"],["CO2","Sí: CO₂ (kg recargados)"],["ETIQUETA","Sí: 1 etiqueta por extintor"]]]]},
   visitas:{t:"visita",f:[["cliente","Cliente","text",1],["fecha","Fecha","date",1],["tecnico","Técnico","select",1,function(){var o=(S.staff||[]).map(function(x){return [x.email,(x.nombre||x.email)+(x.rol==="tecnico"?" · técnico":"")];});return o.length?o:[["","Sin personal cargado"]];}],["tipo","Tipo de visita","select",1,[["Inspección","Inspección"],["Recolección","Recolección"],["Entrega","Entrega"],["Visita comercial","Visita comercial"]]],["notas","Notas para el técnico","textarea",0,null,"Ej. Preguntar por Leonardo en recepción"]]},
   extintores:{t:"extintor",f:[["folio","Folio (se asigna solo)","text",0,null,"Déjalo vacío para asignar el siguiente"],["cliente","Cliente","text",1],["ubicacion","Ubicación","text",1,null,"Ej. Recepción, pasillo 3, almacén"],["tipo","Tipo","select",1,[["PQS","PQS"],["CO2","CO₂"],["TIPO K","Tipo K"],["AGUA","Agua"],["AFFF","Espuma AFFF"],["TIPO D","Tipo D"],["AGENTE LIMPIO","Agente limpio"]]],["cap","Capacidad","text",1,null,"Ej. 4.5 KG, 9 KG, 6 L"],["marca","Marca","text"],["serie","No. de serie","text"],["fab","Fabricación","month"],["recarga","Última recarga","month"],["vence","Vence la recarga","month"],["ph","Próxima prueba hidrostática","month"],["estado","Estado","select",1,[["servicio","En servicio"],["reserva","Reserva del cliente"],["prestamo","Préstamo de JASA"],["taller","En taller"],["baja","Dado de baja"],["sin asignar","Etiqueta sin asignar"]]],["notas","Notas","textarea"]]},
   pendientes:{t:"pendiente",f:[["titulo","Actividad","text",1],["cat","Tipo","select",1,PN_CATS.map(function(c){return [c,c];})],["fecha","Fecha","date",1],["hora","Hora (opcional)","time"],["repite","Repetir","select",1,PN_REP],["hasta","Repetir hasta (opcional)","date",0,null,"Vacío = se repite siempre"],["notas","Notas","textarea",0,null,"Dirección, contacto, montos…"]]},
@@ -379,6 +379,8 @@ function submitDrawer(form){
     if(f[2]==="equipos"){var det=[];document.querySelectorAll("#eqList .eq-row").forEach(function(r){var q=parseInt(r.querySelector(".eq-qty").value,10)||0;var sv=r.querySelector(".eq-svc");if(q>0){var o={tipo:r.querySelector(".eq-tipo").value,cap:r.querySelector(".eq-cap").value,qty:q};if(sv)o.servicio=sv.value;det.push(o);}});body.equiposDet=det;body.equipos=det.reduce(function(a,e){return a+e.qty;},0);return;}
     var el=form.elements[f[0]];var x=el.value.trim();if(f[2]==="number")x=x===""?0:(parseFloat(x)||0);body[f[0]]=x;});
   if(d.kind==="inventario")body.porCapturar=false;
+  if(d.kind==="movs"&&(body.tipo!=="egreso"||!body.articulo)){body.articulo="";body.cant=0;}
+  if(d.kind==="movs"&&body.articulo&&!(body.cant>0)){toast("Escribe la cantidad comprada para calcular el costo.");return;}
   if(d.kind==="clientes"){body.prefijo=String(body.prefijo||"").toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,6);if(!body.prefijo)body.prefijo=uniquePrefix(body.nombre,d.id);
     var clash=S.data.clientes.find(function(c){return c.id!==d.id&&String(c.prefijo||"").toUpperCase()===body.prefijo;});if(clash){toast("El prefijo "+body.prefijo+" ya es de "+clash.nombre+".");return;}}
   if(d.kind==="extintores"){body.folio=String(body.folio||"").trim().toUpperCase();if(d.id)delete body.folio;}
@@ -400,6 +402,8 @@ function submitDrawer(form){
     if(d.kind==="extintores"){body.folio=(body.folio?jasaFolio(body.folio)||body.folio:(body.cliente?nextFolioFor(body.cliente):nextFolio())).toUpperCase();if(byId("extintores",body.folio)){toast("Ese folio ya existe.");return;}}
     p=write(d.kind,d.kind==="extintores"?body.folio:null,body).then(function(id){if(d.kind==="quotes"){S.sel=id;S.screen="quotes";}});
   }
+  if(d.kind==="movs"&&body.articulo&&body.cant>0){var inv=byId("inventario",body.articulo),prevM=d.id?byId("movs",d.id):null;
+    if(inv)p=p.then(function(){var ch={costo:Math.round(body.monto/body.cant*100)/100,costoFecha:body.fecha};if(!prevM)ch.stock=(+inv.stock||0)+body.cant;return patch("inventario",inv.id,ch);});}
   p.then(function(){S.drawer=null;renderDrawer();toast(d.id?"Cambios guardados":"Agregado");render();},function(){});
 }
 function migrateStages(){
@@ -749,7 +753,7 @@ function exportInsp(i){
 }
 
 /* ---------- vistas ---------- */
-var TITLES={panel:["Resumen","Panel"],quotes:["Bandeja","Cotizaciones"],clientes:["Cartera","Clientes"],proveedores:["Compras","Proveedores"],finanzas:["Contabilidad","Ingresos y egresos"],taller:["Taller JASA","Órdenes de taller"],inventario:["Taller JASA","Inventario"],pendientes:["Agenda","Pendientes"],extintores:["Expedientes","Extintores"],inspecciones:["Campo","Inspecciones"]};
+var TITLES={panel:["Resumen","Panel"],quotes:["Bandeja","Cotizaciones"],clientes:["Cartera","Clientes"],proveedores:["Compras","Proveedores"],finanzas:["Contabilidad","Ingresos y egresos"],taller:["Taller JASA","Órdenes de taller"],inventario:["Taller JASA","Inventario"],pendientes:["Agenda","Pendientes"],extintores:["Expedientes","Extintores"],inspecciones:["Campo","Inspecciones"],costos:["Taller JASA","Costos y precios"]};
 function lowStock(){return S.data.inventario.filter(function(i){return (+i.stock||0)<(+i.min||0);});}
 function dueClients(){
   var lim=addMonths(today().slice(0,7),2);
@@ -758,7 +762,7 @@ function dueClients(){
 function renderNav(){
   var pend=S.data.quotes.filter(function(q){return q.status==="Nueva";}).length;
   var open=S.data.ordenes.filter(function(o){return (o.etapa||0)<DONE;}).length;
-  var items=[["panel","Panel",""],["quotes","Cotizaciones",pend||""],["clientes","Clientes",""],["proveedores","Proveedores",""],["finanzas","Finanzas",""],["taller","Taller",open||""],["inventario","Inventario",lowStock().length||""],["extintores","Extintores",extVencidos().length||""],["inspecciones","Inspecciones",inspPend()||""],["pendientes","Pendientes",(function(){var t0=today();var n=dayTasks(t0).filter(function(t){return !isDone(t,t0);}).length+overdue().length;return n||"";})()]];
+  var items=[["panel","Panel",""],["quotes","Cotizaciones",pend||""],["clientes","Clientes",""],["proveedores","Proveedores",""],["finanzas","Finanzas",""],["taller","Taller",open||""],["inventario","Inventario",lowStock().length||""],["costos","Costos y precios",recAlert()||""],["extintores","Extintores",extVencidos().length||""],["inspecciones","Inspecciones",inspPend()||""],["pendientes","Pendientes",(function(){var t0=today();var n=dayTasks(t0).filter(function(t){return !isDone(t,t0);}).length+overdue().length;return n||"";})()]];
   document.getElementById("nav").innerHTML=items.map(function(n){return '<button type="button" class="nav-b" data-act="go" data-v="'+n[0]+'"'+(S.screen===n[0]?' aria-current="page"':"")+'><span>'+n[1]+'</span><span class="cnt">'+n[2]+'</span></button>';}).join("");
 }
 function statusNote(){
@@ -821,7 +825,7 @@ function vQuotes(){
   }
   var pl=S.data.precios.filter(match).sort(function(a,b){return String(a.art).localeCompare(String(b.art),"es");});
   var plist='<div class="box"><div class="box-h"><h2>Mi lista de precios</h2><span class="mono" style="color:var(--muted)">'+S.data.precios.length+'</span></div>'+
-    (pl.length?'<div class="tbl-wrap"><table><thead><tr><th>ARTÍCULO</th><th class="num">PRECIO UNIT.</th><th>ACTUALIZADO</th><th></th></tr></thead><tbody>'+pl.map(function(x){return '<tr><td>'+esc(x.art)+'</td><td class="num">'+money(x.price)+'</td><td class="mono" style="color:var(--muted)">'+fmtDate(x.actualizado)+'</td><td class="num">'+(S.readOnly||!db?"":'<button type="button" class="link" style="color:var(--muted)" data-act="delPrice" data-id="'+x.id+'">Quitar</button>')+'</td></tr>';}).join("")+'</tbody></table></div>':'<div class="empty"><span>Cuando pongas precios en una cotización, toca “Guardar estos precios en mi lista”. Las próximas solicitudes con los mismos artículos se llenan solas.</span></div>')+'</div>';
+    (pl.length?'<div class="tbl-wrap"><table><thead><tr><th>ARTÍCULO</th><th class="num">PRECIO UNIT.</th><th>ACTUALIZADO</th><th></th></tr></thead><tbody>'+pl.map(function(x){var rc=S.data.recetas.find(function(r){return priceId(r.art)===x.id;}),c=rc?recCost(rc):0;return '<tr><td>'+esc(x.art)+(rc?'<div style="color:var(--muted);font-size:12px">Costo '+money(c)+(c>0?' · ganancia '+pctTxt(((+x.price||0)-c)/c*100):"")+'</div>':"")+'</td><td class="num">'+money(x.price)+'</td><td class="mono" style="color:var(--muted)">'+fmtDate(x.actualizado)+'</td><td class="num">'+(S.readOnly||!db?"":'<button type="button" class="link" style="color:var(--muted)" data-act="delPrice" data-id="'+x.id+'">Quitar</button>')+'</td></tr>';}).join("")+'</tbody></table></div>':'<div class="empty"><span>Cuando pongas precios en una cotización, toca “Guardar estos precios en mi lista”. Las próximas solicitudes con los mismos artículos se llenan solas.</span></div>')+'</div>';
   return paste+'<div class="q-layout">'+left+'<div style="min-width:0">'+right+'</div></div>'+plist;
 }
 
@@ -871,6 +875,60 @@ function vTaller(){
   }).join("")+'</div>';
 }
 
+/* ---------- costos: recetas ---------- */
+function invCost(id){var i=byId("inventario",id);return i?(+i.costo||0):0;}
+function recRowCost(r){return (+r.cant||0)*(r.inv?invCost(r.inv):(+r.costo||0));}
+function recCost(rc){return Math.round((rc.insumos||[]).reduce(function(a,r){return a+recRowCost(r);},0)*100)/100;}
+function recPrice(rc){return Math.round(recCost(rc)*(1+(+rc.margen||0)/100)*100)/100;}
+function recOfPrice(x){return x.receta?byId("recetas",x.receta):null;}
+function recAlert(){return S.data.recetas.filter(function(rc){var pr=byId("precios",priceId(rc.art));return pr&&recCost(rc)>0&&Math.abs((+pr.price||0)-recPrice(rc))>=0.5;}).length;}
+function pctTxt(n){return (Math.round(n*10)/10).toString()+"%";}
+function vCostos(){
+  if(S.rec)return vReceta();
+  var ro=S.readOnly||!db,list=S.data.recetas.filter(function(x){return match({nombre:x.art});}).sort(function(a,b){return String(a.art).localeCompare(String(b.art),"es");});
+  var inv=S.data.inventario.slice().sort(function(a,b){return String(a.nombre).localeCompare(String(b.nombre),"es");}),sinCosto=inv.filter(function(i){return !(+i.costo>0);}).length;
+  return '<div class="hint">Arma la <b>receta</b> de cada servicio: qué insumos lleva y cuánto de cada uno, más mano de obra y otros gastos. El costo de cada insumo sale de tu inventario y se actualiza solo cuando registras su compra en Finanzas (egreso ligado al artículo). Con el % de ganancia se calcula el precio de tu lista.</div>'+
+  '<div class="box"><div class="box-h"><h2>Recetas</h2>'+(ro?"":'<button type="button" class="btn sm" data-act="recNew">+ Nueva receta</button>')+'</div>'+
+  (list.length?'<div class="tbl-wrap"><table><thead><tr><th>LO QUE VENDES</th><th class="num">COSTO</th><th class="num">GANANCIA</th><th class="num">PRECIO SUGERIDO</th><th class="num">EN TU LISTA</th><th class="num">UTILIDAD</th><th></th></tr></thead><tbody>'+list.map(function(rc){var c=recCost(rc),sp=recPrice(rc),pr=byId("precios",priceId(rc.art)),lp=pr?+pr.price||0:null,real=lp!=null?lp:sp,diff=lp!=null&&Math.abs(lp-sp)>=0.5;
+    return '<tr><td><button type="button" class="link" style="padding:0;color:var(--ink);font-weight:600;text-align:left" data-act="recOpen" data-id="'+rc.id+'">'+esc(rc.art)+'</button><div style="color:var(--muted);font-size:12px">'+(rc.insumos||[]).length+' conceptos</div></td><td class="num">'+money(c)+'</td><td class="num">'+pctTxt(+rc.margen||0)+'</td><td class="num">'+money(sp)+'</td><td class="num" style="color:'+(diff?"var(--amber)":"inherit")+'">'+(lp==null?'<span style="color:var(--muted)">—</span>':money(lp))+'</td><td class="num" style="color:'+(real-c>0?"var(--green)":"var(--rose)")+'">'+money(real-c)+(c>0?'<div style="font-size:12px;color:var(--muted)">'+pctTxt((real-c)/c*100)+' sobre costo</div>':"")+'</td><td class="num" style="white-space:nowrap">'+(diff&&!ro?'<button type="button" class="btn sm" data-act="recApply" data-id="'+rc.id+'">Actualizar precio</button>':"")+'</td></tr>';}).join("")+'</tbody></table></div>'+(recAlert()?'<div class="hint" style="padding:10px 18px;color:var(--amber)">En amarillo: tus costos cambiaron y el precio de tu lista ya no da la ganancia que pusiste.</div>':"")
+  :emptyBox("Aún no hay recetas","Empieza con tu servicio más común, por ejemplo Recarga de extintor 2 kg PQS.","recNew","Nueva receta"))+'</div>'+
+  '<div class="box"><div class="box-h"><h2>Costo de insumos</h2><span class="hint">'+(sinCosto?sinCosto+" sin costo":"Todos con costo")+'</span></div>'+
+  (inv.length?'<div class="tbl-wrap"><table><thead><tr><th>ARTÍCULO</th><th class="num">COSTO POR UNIDAD</th><th>ÚLTIMA COMPRA</th><th></th></tr></thead><tbody>'+inv.map(function(i){var c=+i.costo||0;return '<tr><td>'+esc(i.nombre)+'</td><td class="num" style="color:'+(c?"inherit":"var(--amber)")+'">'+(c?money(c)+(i.unidad?' <span style="color:var(--muted);font-size:12px">/ '+esc(i.unidad)+'</span>':""):"Sin costo")+'</td><td class="mono" style="color:var(--muted)">'+(i.costoFecha?fmtDate(i.costoFecha):"—")+'</td><td class="num">'+(ro?"":'<button type="button" class="link" data-act="edit:inventario" data-id="'+i.id+'">Editar</button>')+'</td></tr>';}).join("")+'</tbody></table></div>':emptyBox("Sin artículos en inventario","Da de alta tus insumos (polvo PQS, CO₂, etiquetas, sellos…) en Inventario con su costo.","new:inventario","Nuevo artículo"))+'</div>';
+}
+function vReceta(){
+  var r=S.rec,ro=S.readOnly||!db,c=recCost(r),sp=recPrice(r),pr=r.art?byId("precios",priceId(r.art)):null;
+  var invOpts=function(sel){return '<option value="">— Otro costo (mano de obra, gas, luz…) —</option>'+S.data.inventario.slice().sort(function(a,b){return String(a.nombre).localeCompare(String(b.nombre),"es");}).map(function(i){return '<option value="'+esc(i.id)+'"'+(i.id===sel?" selected":"")+'>'+esc(i.nombre)+'</option>';}).join("");};
+  var dis=ro?" disabled":"";
+  return '<div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><button type="button" class="btn ghost sm" data-act="recBack">← Costos y precios</button></div>'+
+  '<div class="box"><div class="box-h"><h2>'+(r.id?"Receta":"Nueva receta")+'</h2></div><div class="plan">'+
+  '<label class="eyebrow" for="recArt">Lo que vendes (como aparece en tu lista de precios)</label><input class="inp" id="recArt" list="recArts" autocomplete="off" value="'+esc(r.art||"")+'" placeholder="RECARGA DE EXTINTOR 2 KG PQS"'+dis+'><datalist id="recArts">'+S.data.precios.map(function(x){return '<option value="'+esc(x.art)+'">';}).join("")+'</datalist>'+
+  (pr?'<span class="hint">En tu lista hoy: <b>'+money(pr.price)+'</b></span>':"")+'</div>'+
+  '<div class="tbl-wrap"><table><thead><tr><th>INSUMO O GASTO</th><th class="num">CANTIDAD</th><th class="num">COSTO UNIT.</th><th class="num">SUBTOTAL</th><th></th></tr></thead><tbody>'+
+  (r.insumos.length?r.insumos.map(function(it,ix){var iv=it.inv?byId("inventario",it.inv):null;return '<tr><td style="min-width:240px"><select class="inp" data-rk="inv" data-ix="'+ix+'" aria-label="Insumo"'+dis+'>'+invOpts(it.inv)+'</select>'+(it.inv?"":'<input class="inp" style="margin-top:6px" autocomplete="off" data-rk="nombre" data-ix="'+ix+'" value="'+esc(it.nombre||"")+'" placeholder="Ej. Mano de obra (30 min)" aria-label="Concepto"'+dis+'>')+'</td>'+
+    '<td class="num"><input class="inp" style="width:90px;text-align:right" type="number" min="0" step="any" data-rk="cant" data-ix="'+ix+'" value="'+esc(it.cant)+'" aria-label="Cantidad"'+dis+'>'+(iv&&iv.unidad?'<div style="color:var(--muted);font-size:12px">'+esc(iv.unidad)+'</div>':"")+'</td>'+
+    '<td class="num">'+(it.inv?(iv&&+iv.costo>0?money(iv.costo):'<span style="color:var(--amber)">Sin costo</span>'):'<input class="inp" style="width:110px;text-align:right" type="number" min="0" step="any" placeholder="$" data-rk="costo" data-ix="'+ix+'" value="'+esc(it.costo)+'" aria-label="Costo unitario"'+dis+'>')+'</td>'+
+    '<td class="num mono" id="recSub'+ix+'">'+money(recRowCost(it))+'</td><td class="num">'+(ro?"":'<button type="button" class="link" style="color:var(--muted)" data-act="recDel" data-v="'+ix+'">Quitar</button>')+'</td></tr>';}).join(""):'<tr><td colspan="5"><span class="hint">Agrega lo que se usa en una pieza: polvo, etiqueta, sello, o-ring, nitrógeno, mano de obra…</span></td></tr>')+'</tbody></table></div>'+
+  (ro?"":'<div class="actions"><button type="button" class="btn ghost sm" data-act="recAdd" data-v="inv">+ Insumo del inventario</button><button type="button" class="btn ghost sm" data-act="recAdd" data-v="otro">+ Otro costo</button></div>')+
+  '<div class="plan" style="border-top:1px solid var(--line)"><div style="display:flex;gap:18px;flex-wrap:wrap;align-items:flex-end">'+
+    '<div><span class="eyebrow">Costo por pieza</span><div class="big" style="font-family:var(--display);font-size:28px" id="recCosto">'+money(c)+'</div></div>'+
+    '<div><label class="eyebrow" style="display:block;margin-bottom:4px" for="recMargen">Ganancia (% sobre el costo)</label><input class="inp" id="recMargen" style="width:110px;text-align:right" type="number" min="0" step="any" value="'+esc(r.margen)+'"'+dis+'></div>'+
+    '<div><span class="eyebrow">Precio sugerido sin IVA</span><div style="font-family:var(--display);font-size:28px;color:var(--green)" id="recPrecio">'+money(sp)+'</div></div>'+
+    '<div><span class="eyebrow">Utilidad por pieza</span><div style="font-family:var(--display);font-size:28px" id="recUtil">'+money(sp-c)+'</div></div></div>'+
+  '<span class="hint">Ejemplo: si te cuesta $100 y pones 60%, el precio queda en $160 y ganas $60 por pieza.</span></div>'+
+  (ro?"":'<div class="actions"><button type="button" class="btn" data-act="recSave" data-v="precio">Guardar y poner precio en mi lista</button><button type="button" class="btn ghost" data-act="recSave">Guardar solo la receta</button>'+(r.id?'<button type="button" class="btn ghost" data-act="recRemove">Eliminar receta</button>':"")+'</div>')+'</div>';
+}
+function recPaint(){var r=S.rec;if(!r)return;r.insumos.forEach(function(it,ix){var el=document.getElementById("recSub"+ix);if(el)el.textContent=money(recRowCost(it));});
+  var c=recCost(r),sp=recPrice(r),set=function(id,t){var el=document.getElementById(id);if(el)el.textContent=t;};set("recCosto",money(c));set("recPrecio",money(sp));set("recUtil",money(sp-c));}
+function recSave(withPrice){
+  var r=S.rec,art=String(r.art||"").trim().toUpperCase();if(!art){toast("Escribe qué vendes con esta receta.");return;}
+  var ins=r.insumos.filter(function(it){return (it.inv||it.nombre)&&(+it.cant||0)>0;}).map(function(it){return it.inv?{inv:it.inv,cant:+it.cant}:{nombre:String(it.nombre).trim(),cant:+it.cant,costo:+it.costo||0};});
+  if(!ins.length){toast("Agrega al menos un insumo con cantidad.");return;}
+  var dup=S.data.recetas.find(function(x){return x.id!==r.id&&String(x.art).toUpperCase()===art;});if(dup){toast("Ya hay una receta para "+art+".");return;}
+  var body={art:art,insumos:ins,margen:+r.margen||0,actualizado:today()},rc=Object.assign({},body);
+  var p=r.id?write("recetas",r.id,body).then(function(){return r.id;}):write("recetas",null,body);
+  p.then(function(id){if(!withPrice)return id;return write("precios",priceId(art),{art:art,price:recPrice(rc),actualizado:today(),receta:id,margen:rc.margen}).then(function(){return id;});})
+   .then(function(){S.rec=null;render();toast(withPrice?"Receta guardada y precio de "+art+" en "+money(recPrice(rc)):"Receta guardada");},function(){});
+}
 function vInv(){
   var CORD=["Extintores","Agentes y polvo","Refacciones","Señalamientos","Otros"];var list=S.data.inventario.filter(match).sort(function(a,b){var ca=CORD.indexOf(a.categoria||"Otros"),cb=CORD.indexOf(b.categoria||"Otros");return (ca<0?9:ca)-(cb<0?9:cb)||String(a.nombre).localeCompare(String(b.nombre),"es");});
   var shop=S.data.inventario.filter(function(i){return (+i.stock||0)<(+i.min||0);}).map(function(i){return {n:i.nombre,u:i.unidad,q:Math.max(0,(+i.optimo||0)-(+i.stock||0))};});
@@ -893,6 +951,7 @@ function render(){
   else if(S.screen==="pendientes")html+=vPend();
   else if(S.screen==="extintores")html+=vExt();
   else if(S.screen==="inspecciones")html+=vInsp();
+  else if(S.screen==="costos")html+=vCostos();
   else html+=vInv();
   var view=document.getElementById("view"),ae=document.activeElement,keep=ae&&view.contains(ae)&&ae.id?ae.id:null;
   view.innerHTML=html;
@@ -908,7 +967,7 @@ document.addEventListener("click",function(e){
   var b=e.target.closest("[data-act]");if(!b)return;
   var a=b.getAttribute("data-act"),v=b.getAttribute("data-v"),id=b.getAttribute("data-id");
   if(a==="closeDrawer"){if(b.classList.contains("overlay")&&e.target!==b)return;S.drawer=null;renderDrawer();return;}
-  if(a==="go"){S.screen=v;S.otSel=null;S.inspSel=null;try{history.replaceState(null,"","#"+(v==="quotes"?"cotizaciones":v));}catch(er){}S.confirm=null;render();window.scrollTo(0,0);return;}
+  if(a==="go"){S.screen=v;S.otSel=null;S.inspSel=null;S.rec=null;try{history.replaceState(null,"","#"+(v==="quotes"?"cotizaciones":v));}catch(er){}S.confirm=null;render();window.scrollTo(0,0);return;}
   if(a==="goPaste"){S.screen="quotes";S.pasteMsg=S.pasteMsg||" ";render();setTimeout(function(){var p=document.getElementById("pasteBox");if(p)p.focus();},20);return;}
   if(a.indexOf("new:")===0){openForm(a.slice(4));return;}
   if(a.indexOf("edit:")===0){openForm(a.slice(5),id);return;}
@@ -962,6 +1021,14 @@ document.addEventListener("click",function(e){
   if(a==="inspBack"){S.inspSel=null;render();return;}
   if(a==="inspQuote"){var iq=byId("inspecciones",S.inspSel);if(iq)inspQuote(iq);return;}
   if(a==="inspReviewed"){patch("inspecciones",S.inspSel,{estado:"revisada"}).then(function(){toast("Marcada como revisada");});return;}
+  if(a==="recNew"){S.rec={id:null,art:"",insumos:[],margen:40};render();window.scrollTo(0,0);return;}
+  if(a==="recOpen"){var ro0=byId("recetas",id);if(ro0){S.rec={id:ro0.id,art:ro0.art,margen:ro0.margen,insumos:(ro0.insumos||[]).map(function(x){return Object.assign({},x);})};render();window.scrollTo(0,0);}return;}
+  if(a==="recBack"){S.rec=null;render();return;}
+  if(a==="recAdd"){var fi=S.data.inventario.slice().sort(function(x,y){return String(x.nombre).localeCompare(String(y.nombre),"es");})[0];S.rec.insumos.push(v==="inv"&&fi?{inv:fi.id,cant:1}:{inv:"",nombre:"",cant:1,costo:""});render();return;}
+  if(a==="recDel"){S.rec.insumos.splice(+v,1);render();return;}
+  if(a==="recSave"){recSave(v==="precio");return;}
+  if(a==="recRemove"){if(!window.confirm("¿Eliminar esta receta? Tu precio en la lista se queda igual."))return;remove("recetas",S.rec.id).then(function(){S.rec=null;render();toast("Receta eliminada");});return;}
+  if(a==="recApply"){var ra=byId("recetas",id);if(ra)write("precios",priceId(ra.art),{art:ra.art,price:recPrice(ra),actualizado:today(),receta:ra.id,margen:+ra.margen||0}).then(function(){toast("Precio actualizado a "+money(recPrice(ra)));});return;}
   if(a==="pcAsk"){precargaDrawer();return;}
   if(a==="pcDo"){precargaDo();return;}
   if(a==="inspPdf"){var ins=byId("inspecciones",id);if(ins)exportInsp(ins);return;}
@@ -988,6 +1055,9 @@ document.addEventListener("click",function(e){
 });
 document.addEventListener("input",function(e){
   if(e.target.id==="pcTxt"){precargaPreview();return;}
+  if(S.rec&&e.target.id==="recArt"){S.rec.art=e.target.value;return;}
+  if(S.rec&&e.target.id==="recMargen"){S.rec.margen=e.target.value;recPaint();return;}
+  if(S.rec&&e.target.hasAttribute("data-rk")&&e.target.tagName!=="SELECT"){var ri=S.rec.insumos[+e.target.getAttribute("data-ix")];if(ri){ri[e.target.getAttribute("data-rk")]=e.target.value;recPaint();}return;}
   if(e.target.id==="dEntrego"){S.dlv.entrego=e.target.value;return;}
   if(e.target.id==="dRecibe"){S.dlv.recibe=e.target.value;return;}
   if(e.target.id==="search"){S.search=e.target.value;render();}
@@ -997,6 +1067,7 @@ document.addEventListener("change",function(e){
   var t=e.target;
   if(t.id==="finMes"){S.finMes=t.value;render();return;}
   if(t.id==="extCli"){S.extCli=t.value;render();return;}
+  if(S.rec&&t.getAttribute&&t.getAttribute("data-rk")==="inv"){var rs=S.rec.insumos[+t.getAttribute("data-ix")];if(rs){rs.inv=t.value;if(!rs.inv){rs.nombre=rs.nombre||"";rs.costo=rs.costo||"";}render();}return;}
   if(t.hasAttribute&&t.hasAttribute("data-hall")&&S.hall){var hr=S.hall.rows[+t.getAttribute("data-hall")],hk=t.getAttribute("data-hk");if(hr){hr[hk]=hk==="on"?t.checked:t.value;render();}return;}
   if(t.hasAttribute("data-unit")){
     var ot=S.otSel&&byId("ordenes",S.otSel);if(!ot)return;
@@ -1255,7 +1326,7 @@ function doImport(){
 }
 
 /* ---------- enlaces directos ---------- */
-var HASH={extintores:"extintores",inspecciones:"inspecciones",panel:"panel",cotizaciones:"quotes",quotes:"quotes",clientes:"clientes",proveedores:"proveedores",finanzas:"finanzas",taller:"taller",inventario:"inventario",pendientes:"pendientes",agenda:"pendientes"};
+var HASH={costos:"costos",recetas:"costos",extintores:"extintores",inspecciones:"inspecciones",panel:"panel",cotizaciones:"quotes",quotes:"quotes",clientes:"clientes",proveedores:"proveedores",finanzas:"finanzas",taller:"taller",inventario:"inventario",pendientes:"pendientes",agenda:"pendientes"};
 function fromHash(){var h=(location.hash||"").replace("#","").toLowerCase();if(HASH[h]&&S.screen!==HASH[h]){S.screen=HASH[h];S.otSel=null;render();}}
 window.addEventListener("hashchange",fromHash);fromHash();
 

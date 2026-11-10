@@ -23,7 +23,10 @@ generados.
 
 - Una tabla `public.docs (col, id, data jsonb)`; `col` = colección: `quotes`, `clientes`, `proveedores`,
   `movs`, `ordenes`, `inventario`, `precios`, `pendientes`, `extintores` (id = folio `PREFIJO-001` del cliente, o
-  `JX-000001` para etiquetas en blanco; `jasaFolio()` los normaliza), `inspecciones`, `visitas`.
+  `JX-000001` para etiquetas en blanco; `jasaFolio()` los normaliza), `inspecciones`, `visitas`, `recetas`.
+- Costos: `inventario.costo` (por unidad) se actualiza al registrar un egreso ligado a un artículo (`movs.articulo`,
+  `movs.cant`). `recetas {art, insumos[{inv,cant}|{nombre,cant,costo}], margen}`; el precio = costo × (1 + margen/100) y se
+  guarda en `precios` (id = `priceId(art)`) con `receta` y `margen`.
 - `public.staff` tiene `rol` (`admin` | `tecnico`) y `nombre` (`supabase/04_puestos.sql`). El técnico solo ve en la app
   sus `visitas` programadas; es filtro de la app, no de RLS (pendiente: permisos por puesto en la base).
 - Acceso: RLS; solo correos en `public.staff` leen y escriben (`public.is_staff()`). `anon` no lee nada.
