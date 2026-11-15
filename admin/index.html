@@ -209,7 +209,7 @@ textarea.inp{resize:vertical;min-height:120px;font-family:var(--mono);font-size:
     <nav id="nav" aria-label="Secciones"></nav>
     <div class="side-foot">
       <span id="syncNote">Conectando…</span>
-      <span id="verNote" style="font-family:var(--mono);font-size:10px;color:var(--faint)">Versión 15/11/2026 03:49</span>
+      <span id="verNote" style="font-family:var(--mono);font-size:10px;color:var(--faint)">Versión 15/11/2026 09:40</span>
       <button type="button" class="link" data-act="backup" id="backupBtn" hidden style="text-align:left;padding:0">Descargar respaldo</button>
       <button type="button" class="link" data-act="importAsk" id="importBtn" hidden style="text-align:left;padding:0">Importar respaldo</button>
       <input type="file" id="importFile" accept=".json,application/json" hidden>
@@ -1542,16 +1542,27 @@ function showLogin(msg){
     '<div class="field"><label for="lgMail">Correo</label><input class="inp" id="lgMail" type="email" autocomplete="username" required></div>'+
     '<div class="field"><label for="lgPass">Contraseña</label><div style="display:flex;gap:6px"><input class="inp" id="lgPass" type="password" autocomplete="current-password" required><button type="button" class="btn ghost sm" id="lgShow" aria-pressed="false" onclick="var i=document.getElementById(\'lgPass\'),v=i.type===\'password\';i.type=v?\'text\':\'password\';this.textContent=v?\'Ocultar\':\'Mostrar\';this.setAttribute(\'aria-pressed\',v);">Mostrar</button></div><small class="hint">Revisa mayúsculas y que no haya un espacio al final.</small></div>'+
     '<button class="btn" type="submit">Entrar</button><div class="err" id="lgErr" role="alert">'+esc(msg||"")+'</div>'+
-    '<span class="hint">¿Olvidaste tu contraseña? En Supabase, Authentication › Users, borra tu usuario y vuelve a crearlo con “Create new user”; tu acceso al panel se conserva.</span></form></div>';
+    '<button type="button" class="link" style="padding:0;align-self:flex-start" onclick="window.jasaForgot()">¿Olvidaste tu contraseña?</button></form></div>';
   var m=document.getElementById("lgMail");if(m)m.focus();
 }
+function passForm(rootHTML){return '<form id="npForm" autocomplete="on"><h2 style="margin:0">Crea tu nueva contraseña</h2><span class="hint">Mínimo 8 caracteres. Usa una que no uses en otro lado.</span><div class="field"><label for="np1">Nueva contraseña</label><input class="inp" id="np1" type="password" autocomplete="new-password" required minlength="8"></div><div class="field"><label for="np2">Repítela</label><input class="inp" id="np2" type="password" autocomplete="new-password" required minlength="8"></div><button class="btn" type="submit">Guardar contraseña</button><div class="err" id="npErr" role="alert" style="color:var(--rose);font-size:14px"></div></form>';}
+function savePass(client,done){var a=document.getElementById("np1").value,b=document.getElementById("np2").value,er=document.getElementById("npErr");
+  if(a.length<8){er.textContent="Debe tener al menos 8 caracteres.";return;}if(a!==b){er.textContent="Las dos contraseñas no coinciden.";return;}
+  er.textContent="Guardando…";client.auth.updateUser({password:a}).then(function(r){if(r.error){er.textContent="No se pudo guardar: "+r.error.message;return;}try{history.replaceState(null,"",location.pathname);}catch(e){}done();});}
+function forgotPass(client,path){var m=document.getElementById("lgMail"),er=document.getElementById("lgErr"),em=(m&&m.value||"").trim();
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)){er.textContent="Escribe arriba tu correo y vuelve a tocar “¿Olvidaste tu contraseña?”.";if(m)m.focus();return;}
+  er.textContent="Enviando…";client.auth.resetPasswordForEmail(em,{redirectTo:location.origin+path}).then(function(r){
+    er.textContent=r.error?(/rate|seconds|limit/i.test(r.error.message)?"Ya se mandaron varios correos; espera unos minutos y vuelve a intentar.":"No se pudo enviar: "+r.error.message):"Listo: te mandamos un correo a "+em+" con un enlace para crear tu nueva contraseña. Si no llega en unos minutos, revisa Correo no deseado.";});}
+var RECOVERY=/type=recovery/.test(location.hash||"");
+window.jasaForgot=function(){forgotPass(SB,"/admin/");};
 function startSupabase(){
   S.dbState="loading";render();
   loadScript("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js").then(function(){
     SB=window.supabase.createClient(SUPA_URL,SUPA_KEY);
     return SB.auth.getSession();
   }).then(function(r){
-    var ses=r&&r.data&&r.data.session;if(!ses){showLogin();return;}
+    var ses=r&&r.data&&r.data.session;if(!ses){showLogin(RECOVERY?"El enlace para cambiar tu contraseña ya no es válido. Pide otro con “¿Olvidaste tu contraseña?”.":"");return;}
+    if(RECOVERY){RECOVERY=false;document.getElementById("loginRoot").innerHTML='<div class="login">'+passForm()+'</div>';document.getElementById("npForm").addEventListener("submit",function(e){e.preventDefault();e.stopImmediatePropagation();savePass(SB,function(){location.reload();});});return;}
     return SB.from("staff").select("*").then(function(q){
       var me=String(ses.user.email||"").toLowerCase(),yo=(q.data||[]).find(function(x){return String(x.email).toLowerCase()===me;});
       if(q.error||!yo){showLogin(q.error?"No se pudo revisar tu acceso: "+q.error.message:"El correo "+ses.user.email+" entró, pero no está en la lista de personal (public.staff).");SB.auth.signOut();return;}
