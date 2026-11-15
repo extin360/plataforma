@@ -19,9 +19,9 @@ language sql immutable set search_path = public as $$
       when 'inventario'   then array['inventario','compras','conteos','proveedores']
       when 'costos'       then array['recetas','precios','inventario']
       when 'extintores'   then array['extintores','clientes']
-      when 'inspecciones' then array['inspecciones','visitas','clientes','extintores','quotes','precios']
+      when 'inspecciones' then array['inspecciones','visitas','clientes','extintores','quotes','precios','firmas']
       when 'pendientes'   then array['pendientes','ordenes','clientes']
-      when 'campo'        then array['visitas','clientes','extintores','inspecciones']
+      when 'campo'        then array['visitas','clientes','extintores','inspecciones','firmas']
       else array[]::text[] end) as c
     from unnest(coalesce(p, '{}') || case when rol = 'tecnico' then array['campo'] else array[]::text[] end) as s
   ) x;
@@ -44,15 +44,22 @@ language sql stable security definer set search_path = public as $$
   );
 $$;
 
+-- Para escribir: además, la firma de cada persona solo la cambia ella misma o un administrador
+create or replace function public.puede_escribir(c text, doc_id text) returns boolean
+language sql stable security definer set search_path = public as $$
+  select public.puede(c) and (c <> 'firmas' or public.is_admin()
+    or lower(doc_id) = lower(coalesce(auth.jwt() ->> 'email', '')));
+$$;
+
 -- Datos: cada quien solo lee y escribe lo que su permiso abre
 drop policy if exists "staff lee" on public.docs;
 drop policy if exists "staff crea" on public.docs;
 drop policy if exists "staff edita" on public.docs;
 drop policy if exists "staff borra" on public.docs;
 create policy "staff lee"   on public.docs for select to authenticated using (public.puede(col));
-create policy "staff crea"  on public.docs for insert to authenticated with check (public.puede(col));
-create policy "staff edita" on public.docs for update to authenticated using (public.puede(col)) with check (public.puede(col));
-create policy "staff borra" on public.docs for delete to authenticated using (public.puede(col));
+create policy "staff crea"  on public.docs for insert to authenticated with check (public.puede_escribir(col, id));
+create policy "staff edita" on public.docs for update to authenticated using (public.puede_escribir(col, id)) with check (public.puede_escribir(col, id));
+create policy "staff borra" on public.docs for delete to authenticated using (public.puede_escribir(col, id));
 
 -- Personal: todos ven la lista (para nombres y técnicos); solo administradores la cambian
 drop policy if exists "staff ve staff" on public.staff;

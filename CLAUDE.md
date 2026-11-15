@@ -24,7 +24,12 @@ generados.
 
 - Una tabla `public.docs (col, id, data jsonb)`; `col` = colección: `quotes`, `clientes`, `proveedores`,
   `movs`, `ordenes`, `inventario`, `precios`, `pendientes`, `extintores` (id = folio `PREFIJO-001` del cliente, o
-  `JX-000001` para etiquetas en blanco; `jasaFolio()` los normaliza), `inspecciones`, `visitas`, `recetas`, `compras`, `conteos`.
+  `JX-000001` para etiquetas en blanco; `jasaFolio()` los normaliza), `inspecciones`, `visitas`, `recetas`, `compras`, `conteos`, `firmas` (id = correo; firma PNG de cada persona, va en
+  `inspecciones.firmaTecnico`).
+- Inspección mensual: clientes con `inspMensual: 'si'`, `diaVisita`, `tecMensual`; el panel (admin) crea solas las
+  visitas `men-<cliente>-<YYYY-MM>` del mes actual y el siguiente.
+- `supabase/00_revisar.sql` dice qué scripts ya están instalados. Nunca volver a correr `schema.sql` después de
+  `05_permisos.sql` (regresaría las políticas viejas).
 - Clientes: cada registro es la planta/ubicación del servicio (`direccion`, `ciudad`, `estado`, `cp`, `mapa`, `contacto`,
   `tel`, `email` para reportes). Datos fiscales CFDI 4.0 (`razonSocial`, `rfc`, `regimen`, `cpFiscal`, `domFiscal`, `usoCfdi`,
   `metodoPago`, `formaPago`, `diasCredito`, `requiereOC`, `emailFact`) o `fiscalDe` = id de otro cliente que factura
@@ -45,7 +50,8 @@ generados.
 - Sitio público: función `public.solicitar_cotizacion(datos)` crea una cotización `Nueva` con `origen: web`.
 - Ficha del QR: función `public.ficha_extintor(folio)` (sin cliente ni serie).
 - Etiquetas: impresora Zebra ZD420, se imprimen desde el panel (Extintores › Generar etiquetas) con QR a `/e/<folio>`.
-- Inspección: los puntos están en `JASA_PUNTOS` (mismo orden que el formato en papel de JASA). Al terminar, la app
+- Inspección: los puntos están en `JASA_PUNTOS` (formato en papel de JASA + manómetro, válvula y soporte; `na` = no aplica,
+  p. ej. manómetro en CO₂). Reporte PDF horizontal con datos de `JASA_EMPRESA`, cliente y firmas de técnico y responsable. Al terminar, la app
   manda la inspección `por revisar`; en el panel se revisa, `jasaHallazgos()` agrupa lo encontrado por categoría y un
   botón crea la cotización `origen: inspeccion` (la inspección queda `revisada`). La app guarda sin señal en localStorage.
 - Llave publicable en el código (es pública por diseño). Nunca poner la Secret key ni contraseñas en el repo.
