@@ -66,7 +66,8 @@ Al entregar: próxima recarga del cliente = mes de entrega + 12 y se descuenta i
 
 ## Pendientes
 
-El checklist vivo está en el doc de claude.ai "Plan de pendientes JASA Extintores"
-(https://claude.ai/artifact/BaxhQ51FJp3pDTqNRKmYYp). Siguientes: calendario de entregas/recolecciones/visitas
-para trabajadores, cuentas por cobrar, usuarios para trabajadores, verificación de Google Search Console,
-correos @jasaextintores.com y verificación en dos pasos en todas las cuentas.
+Tablero vivo: artifact "Pendientes JASA" (https://claude.ai/artifact/RfWANAWfCLJyoCzcpzqkUc), con base de datos
+(`tareas/{id}`: titulo, detalle, quien `tu|claude|ambos`, area, orden, estado `pendiente|hecho`, hechoEn;
+`publicaciones/{AAAA-MM-DD-x}`: fecha, orden, titulo, cambios[]). **Cada vez que se publica en `main`:** marcar como
+hechas las tareas terminadas, agregar las nuevas que salgan y registrar la publicación (ArtifactData `batch`).
+El doc anterior "Plan de pendientes" (https://claude.ai/artifact/BaxhQ51FJp3pDTqNRKmYYp) quedó como historial.
