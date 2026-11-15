@@ -75,6 +75,9 @@ generados.
   gráficas de una sola serie (Carbón = entradas, Rojo JASA = salidas) en SVG con tooltip y tabla.
 - Monitor de taller (`#monitor`, permiso taller): pantalla completa tipo comandero para una TV.
 - Importar clientes desde Excel (SheetJS 0.18.5 de cdnjs): plantilla descargable; los existentes solo se completan.
+- Importar extintores e inspecciones desde Excel (`extImpOpen`, `extMapRows`, `eiDo`): desde Clientes, el formato del cliente
+  o Extintores. Columna `Cliente` para varios a la vez; casa por folio o por cliente + No.; folios nuevos `PREFIJO-001`;
+  puntos de `JASA_PUNTOS` (Bien/Mal…); crea `inspecciones` `revisada` con `origen: importado` por cliente + fecha.
 - En celular el panel usa barra inferior (Panel, Cotizar, Taller, Clientes, Más) y el menú como hoja.
 
 ## Taller
