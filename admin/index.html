@@ -209,7 +209,7 @@ textarea.inp{resize:vertical;min-height:120px;font-family:var(--mono);font-size:
     <nav id="nav" aria-label="Secciones"></nav>
     <div class="side-foot">
       <span id="syncNote">Conectando…</span>
-      <span id="verNote" style="font-family:var(--mono);font-size:10px;color:var(--faint)">Versión 15/11/2026 09:40</span>
+      <span id="verNote" style="font-family:var(--mono);font-size:10px;color:var(--faint)">Versión 15/11/2026 09:53</span>
       <button type="button" class="link" data-act="backup" id="backupBtn" hidden style="text-align:left;padding:0">Descargar respaldo</button>
       <button type="button" class="link" data-act="importAsk" id="importBtn" hidden style="text-align:left;padding:0">Importar respaldo</button>
       <input type="file" id="importFile" accept=".json,application/json" hidden>
@@ -1553,7 +1553,7 @@ function forgotPass(client,path){var m=document.getElementById("lgMail"),er=docu
   if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)){er.textContent="Escribe arriba tu correo y vuelve a tocar “¿Olvidaste tu contraseña?”.";if(m)m.focus();return;}
   er.textContent="Enviando…";client.auth.resetPasswordForEmail(em,{redirectTo:location.origin+path}).then(function(r){
     er.textContent=r.error?(/rate|seconds|limit/i.test(r.error.message)?"Ya se mandaron varios correos; espera unos minutos y vuelve a intentar.":"No se pudo enviar: "+r.error.message):"Listo: te mandamos un correo a "+em+" con un enlace para crear tu nueva contraseña. Si no llega en unos minutos, revisa Correo no deseado.";});}
-var RECOVERY=/type=recovery/.test(location.hash||"");
+var RECOVERY=/type=(recovery|invite)/.test(location.hash||"");
 window.jasaForgot=function(){forgotPass(SB,"/admin/");};
 function startSupabase(){
   S.dbState="loading";render();

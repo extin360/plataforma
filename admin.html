@@ -1552,7 +1552,7 @@ function forgotPass(client,path){var m=document.getElementById("lgMail"),er=docu
   if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)){er.textContent="Escribe arriba tu correo y vuelve a tocar “¿Olvidaste tu contraseña?”.";if(m)m.focus();return;}
   er.textContent="Enviando…";client.auth.resetPasswordForEmail(em,{redirectTo:location.origin+path}).then(function(r){
     er.textContent=r.error?(/rate|seconds|limit/i.test(r.error.message)?"Ya se mandaron varios correos; espera unos minutos y vuelve a intentar.":"No se pudo enviar: "+r.error.message):"Listo: te mandamos un correo a "+em+" con un enlace para crear tu nueva contraseña. Si no llega en unos minutos, revisa Correo no deseado.";});}
-var RECOVERY=/type=recovery/.test(location.hash||"");
+var RECOVERY=/type=(recovery|invite)/.test(location.hash||"");
 window.jasaForgot=function(){forgotPass(SB,"/admin/");};
 function startSupabase(){
   S.dbState="loading";render();

@@ -116,7 +116,7 @@ canvas.sig{width:100%;height:180px;background:#fff;border:1px solid var(--line-2
 var SUPA_URL="https://psggoagcdokwrkykgufr.supabase.co",SUPA_KEY="sb_publishable_jwx2IRxOqdCW-SjmKcYW2A_lrJTFJa3";
 /*@reporte*/
 /*@/reporte*/
-var RECOVERY=/type=recovery/.test(location.hash||"");
+var RECOVERY=/type=(recovery|invite)/.test(location.hash||"");
 var sb=window.supabase.createClient(SUPA_URL,SUPA_KEY);
 function passForm(rootHTML){return '<form id="npForm" autocomplete="on"><h2 style="margin:0">Crea tu nueva contraseña</h2><span class="hint">Mínimo 8 caracteres. Usa una que no uses en otro lado.</span><div class="field"><label for="np1">Nueva contraseña</label><input class="inp" id="np1" type="password" autocomplete="new-password" required minlength="8"></div><div class="field"><label for="np2">Repítela</label><input class="inp" id="np2" type="password" autocomplete="new-password" required minlength="8"></div><button class="btn" type="submit">Guardar contraseña</button><div class="err" id="npErr" role="alert" style="color:var(--rose);font-size:14px"></div></form>';}
 function savePass(client,done){var a=document.getElementById("np1").value,b=document.getElementById("np2").value,er=document.getElementById("npErr");

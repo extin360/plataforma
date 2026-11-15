@@ -283,7 +283,7 @@ function jasaHallazgos(items, hoyMes) {
   return out.sort(function (a, b) { return JASA_CATS.indexOf(a.cat) - JASA_CATS.indexOf(b.cat); });
 }
 /*@/reporte*/
-var RECOVERY=/type=recovery/.test(location.hash||"");
+var RECOVERY=/type=(recovery|invite)/.test(location.hash||"");
 var sb=window.supabase.createClient(SUPA_URL,SUPA_KEY);
 function passForm(rootHTML){return '<form id="npForm" autocomplete="on"><h2 style="margin:0">Crea tu nueva contraseña</h2><span class="hint">Mínimo 8 caracteres. Usa una que no uses en otro lado.</span><div class="field"><label for="np1">Nueva contraseña</label><input class="inp" id="np1" type="password" autocomplete="new-password" required minlength="8"></div><div class="field"><label for="np2">Repítela</label><input class="inp" id="np2" type="password" autocomplete="new-password" required minlength="8"></div><button class="btn" type="submit">Guardar contraseña</button><div class="err" id="npErr" role="alert" style="color:var(--rose);font-size:14px"></div></form>';}
 function savePass(client,done){var a=document.getElementById("np1").value,b=document.getElementById("np2").value,er=document.getElementById("npErr");
@@ -382,7 +382,7 @@ function render(){stopCam();var v=S.view,h="";
   $("app").innerHTML=h;window.scrollTo(0,0);
   if(v==="scan"&&!S.manual)startCam();if(v==="finish"||v==="firma")initSig();updSync();
 }
-function vLogin(){dock("");return '<h1>Entrar</h1><form class="card" id="loginForm"><div class="field"><label for="lgMail">Correo</label><input class="inp" id="lgMail" type="email" autocomplete="username" required></div><div class="field"><label for="lgPass">Contraseña</label><input class="inp" id="lgPass" type="password" autocomplete="current-password" required></div><div class="err" id="lgErr" role="alert"></div><button class="btn" type="submit">Entrar</button><button type="button" class="link" style="align-self:flex-start" onclick="forgotPass(sb,\'/tecnico/\')">¿Olvidaste tu contraseña?</button><span class="hint">Usa el mismo correo y contraseña del panel de JASA. · Versión 15/11/2026 09:40</span></form>';}
+function vLogin(){dock("");return '<h1>Entrar</h1><form class="card" id="loginForm"><div class="field"><label for="lgMail">Correo</label><input class="inp" id="lgMail" type="email" autocomplete="username" required></div><div class="field"><label for="lgPass">Contraseña</label><input class="inp" id="lgPass" type="password" autocomplete="current-password" required></div><div class="err" id="lgErr" role="alert"></div><button class="btn" type="submit">Entrar</button><button type="button" class="link" style="align-self:flex-start" onclick="forgotPass(sb,\'/tecnico/\')">¿Olvidaste tu contraseña?</button><span class="hint">Usa el mismo correo y contraseña del panel de JASA. · Versión 15/11/2026 09:53</span></form>';}
 function vHome(){
   var v=visit(),rev=load(KR,"")||S.nombre||String(S.user.email).split("@")[0],mv=misVisitas(),t0=today(),tec=S.rol!=="admin";
   dock("");
