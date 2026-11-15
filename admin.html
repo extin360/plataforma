@@ -186,11 +186,11 @@ textarea.inp{resize:vertical;min-height:120px;font-family:var(--mono);font-size:
 @media (max-width:760px){
   .app{grid-template-columns:minmax(0,1fr)}
   aside{position:static;height:auto;flex-direction:column;gap:10px;padding-block:12px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));border-right:0;border-bottom:1px solid var(--line)}
-  .brand{flex-direction:row;align-items:baseline;gap:10px;padding:0}
+  .brand{flex-direction:row;align-items:center;gap:12px;padding:0}.brand svg{width:118px;margin:0}
   nav{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:4px}
-  .nav-b{font-size:15px;padding:8px 10px;border:1px solid var(--line)}
+  .nav-b{font-size:15px;padding:8px 10px;border:1px solid var(--line);white-space:normal;line-height:1.05;min-height:42px;min-width:0}
   .nav-b[aria-current="page"]{border-color:var(--red)}
-  .side-foot{display:none}
+  .side-foot{flex-direction:row;flex-wrap:wrap;align-items:center;gap:6px 14px;padding:8px 0 0;margin-top:0}
   header.top,.content{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
   header.top{position:static}
   h1{font-size:28px}

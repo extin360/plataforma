@@ -35,6 +35,7 @@ admin_src.write_text(admin, encoding="utf-8")
 head = (
     '<!doctype html><html lang="es"><head><meta charset="utf-8">'
     '<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">'
+    '<link rel="icon" href="/favicon.ico" sizes="any"><link rel="icon" type="image/svg+xml" href="/img/icon.svg"><link rel="apple-touch-icon" href="/img/apple-touch-icon.png"><link rel="manifest" href="/img/admin.webmanifest"><meta name="theme-color" content="#0d0d0d">'
     "<style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);"
     "padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;padding:0;font:14px -apple-system,"
     "BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}"

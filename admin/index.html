@@ -1,4 +1,4 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><link rel="icon" href="/favicon.ico" sizes="any"><link rel="icon" type="image/svg+xml" href="/img/icon.svg"><link rel="apple-touch-icon" href="/img/apple-touch-icon.png"><link rel="manifest" href="/img/admin.webmanifest"><meta name="theme-color" content="#0d0d0d"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>JASA Admin</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="robots" content="noindex, nofollow">
@@ -187,11 +187,11 @@ textarea.inp{resize:vertical;min-height:120px;font-family:var(--mono);font-size:
 @media (max-width:760px){
   .app{grid-template-columns:minmax(0,1fr)}
   aside{position:static;height:auto;flex-direction:column;gap:10px;padding-block:12px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));border-right:0;border-bottom:1px solid var(--line)}
-  .brand{flex-direction:row;align-items:baseline;gap:10px;padding:0}
+  .brand{flex-direction:row;align-items:center;gap:12px;padding:0}.brand svg{width:118px;margin:0}
   nav{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:4px}
-  .nav-b{font-size:15px;padding:8px 10px;border:1px solid var(--line)}
+  .nav-b{font-size:15px;padding:8px 10px;border:1px solid var(--line);white-space:normal;line-height:1.05;min-height:42px;min-width:0}
   .nav-b[aria-current="page"]{border-color:var(--red)}
-  .side-foot{display:none}
+  .side-foot{flex-direction:row;flex-wrap:wrap;align-items:center;gap:6px 14px;padding:8px 0 0;margin-top:0}
   header.top,.content{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
   header.top{position:static}
   h1{font-size:28px}
@@ -209,7 +209,7 @@ textarea.inp{resize:vertical;min-height:120px;font-family:var(--mono);font-size:
     <nav id="nav" aria-label="Secciones"></nav>
     <div class="side-foot">
       <span id="syncNote">Conectando…</span>
-      <span id="verNote" style="font-family:var(--mono);font-size:10px;color:var(--faint)">Versión 14/11/2026 23:50</span>
+      <span id="verNote" style="font-family:var(--mono);font-size:10px;color:var(--faint)">Versión 15/11/2026 03:29</span>
       <button type="button" class="link" data-act="backup" id="backupBtn" hidden style="text-align:left;padding:0">Descargar respaldo</button>
       <button type="button" class="link" data-act="importAsk" id="importBtn" hidden style="text-align:left;padding:0">Importar respaldo</button>
       <input type="file" id="importFile" accept=".json,application/json" hidden>

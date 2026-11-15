@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><link rel="icon" href="/favicon.ico" sizes="any"><link rel="icon" type="image/svg+xml" href="/img/icon.svg"><link rel="apple-touch-icon" href="/img/apple-touch-icon.png"><link rel="manifest" href="/img/tecnico.webmanifest">
 <title>JASA Técnico</title>
 <meta name="robots" content="noindex">
 <meta name="theme-color" content="#0d0d0d">
@@ -73,6 +73,24 @@ input[type=month]{min-width:0;max-width:100%}
 .ficha{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:15px}
 .ficha dt{font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:var(--muted);text-transform:uppercase;padding-top:3px}
 .ficha dd{margin:0}
+.dock .btn{white-space:nowrap}
+.q-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--red);border-radius:6px;padding:12px 14px}
+.q-head>div{display:flex;flex-direction:column;gap:1px}.q-head b{font-family:var(--display);font-weight:800;text-transform:uppercase;font-size:22px;line-height:1.05}
+.link{background:none;border:0;color:var(--red-2);font:600 14px var(--body);padding:4px 0;cursor:pointer;white-space:nowrap}
+.q-prog{display:flex;justify-content:space-between;gap:10px;font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.q-card{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:22px 16px;display:flex;flex-direction:column;gap:10px;min-height:46vh;justify-content:center}
+.q-title{font-family:var(--display);font-weight:900;text-transform:uppercase;font-size:clamp(28px,7.5vw,40px);line-height:1;text-wrap:balance;margin:0}
+.q-btns{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+.q-btn{min-height:116px;border-radius:6px;border:2px solid var(--line-2);background:var(--panel);font-family:var(--display);font-weight:900;text-transform:uppercase;font-size:28px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:var(--ink);touch-action:manipulation}
+.q-btn span{font-size:34px;line-height:1}
+.q-btn.good span{color:var(--green)}.q-btn.bad span{color:var(--red)}
+.q-btn.good[aria-pressed="true"],.q-btn.good:active{background:#e5f3e8;border-color:var(--green);color:var(--green)}
+.q-btn.bad[aria-pressed="true"],.q-btn.bad:active{background:#fde8e6;border-color:var(--red);color:var(--rose)}
+.q-dots{display:flex;gap:5px;justify-content:center;flex-wrap:wrap}.q-dots i{width:10px;height:10px;border-radius:50%;background:var(--line-2)}.q-dots i.ok{background:var(--green)}.q-dots i.bad{background:var(--red)}.q-dots i.cur{outline:2px solid var(--ink);outline-offset:2px}
+.q-sum{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px}
+.q-sum-i{display:flex;justify-content:space-between;align-items:center;gap:8px;border:1px solid var(--line-2);background:var(--panel);border-radius:3px;padding:10px;font:500 14px var(--body);color:var(--ink);cursor:pointer;text-align:left}
+.q-sum-i b{font-weight:700;white-space:nowrap}.q-sum-i.ok b{color:var(--green)}.q-sum-i.bad{border-color:var(--red);background:#fde8e6}.q-sum-i.bad b{color:var(--rose)}
+@media (min-width:700px){.q-card{min-height:0;padding:32px}.q-btn{min-height:130px}}
 .res{font-family:var(--display);font-weight:900;text-transform:uppercase;font-size:22px}
 video{width:100%;border-radius:6px;background:#000;aspect-ratio:3/4;object-fit:cover}
 .scanbox{position:relative}
@@ -352,7 +370,7 @@ function render(){stopCam();var v=S.view,h="";
   $("app").innerHTML=h;window.scrollTo(0,0);
   if(v==="scan"&&!S.manual)startCam();if(v==="finish"||v==="firma")initSig();updSync();
 }
-function vLogin(){dock("");return '<h1>Entrar</h1><form class="card" id="loginForm"><div class="field"><label for="lgMail">Correo</label><input class="inp" id="lgMail" type="email" autocomplete="username" required></div><div class="field"><label for="lgPass">Contraseña</label><input class="inp" id="lgPass" type="password" autocomplete="current-password" required></div><div class="err" id="lgErr" role="alert"></div><button class="btn" type="submit">Entrar</button><span class="hint">Usa el mismo correo y contraseña del panel de JASA. · Versión 14/11/2026 23:50</span></form>';}
+function vLogin(){dock("");return '<h1>Entrar</h1><form class="card" id="loginForm"><div class="field"><label for="lgMail">Correo</label><input class="inp" id="lgMail" type="email" autocomplete="username" required></div><div class="field"><label for="lgPass">Contraseña</label><input class="inp" id="lgPass" type="password" autocomplete="current-password" required></div><div class="err" id="lgErr" role="alert"></div><button class="btn" type="submit">Entrar</button><span class="hint">Usa el mismo correo y contraseña del panel de JASA. · Versión 15/11/2026 03:29</span></form>';}
 function vHome(){
   var v=visit(),rev=load(KR,"")||S.nombre||String(S.user.email).split("@")[0],mv=misVisitas(),t0=today(),tec=S.rol!=="admin";
   dock("");
@@ -380,19 +398,43 @@ function vScan(){dock('<button type="button" class="btn ghost" data-act="back">C
   return (S.manual?'<h1>Escribir folio</h1><span class="hint">Úsalo cuando la etiqueta está dañada o el extintor todavía no tiene QR.</span><button type="button" class="btn ghost sm" data-act="scan">Mejor escanear</button>':'<h1>Escanear</h1><div class="scanbox"><video id="vid" playsinline muted></video></div><canvas id="cv" hidden></canvas><span class="hint" id="scanMsg">Apunta al código QR de la etiqueta.</span>')+
     '<form class="card" id="folioForm"><div class="field"><label for="ffFolio">'+(S.manual?'Folio de la etiqueta':'¿No lee? Escribe el folio')+'</label><input class="inp" id="ffFolio" placeholder="EAP1-007" autocapitalize="characters" autocomplete="off"></div><button class="btn ghost" type="submit">Buscar folio</button></form>';
 }
+var PREG={manometro:["¿El manómetro marca en la zona verde?","Revisa la aguja: verde es presión correcta."],recipiente:["¿El cilindro está sin golpes ni corrosión?","Revisa todo el cuerpo y la base."],pintura:["¿La pintura está en buen estado?","Sin despintado ni óxido visible."],seguro:["¿Tiene puesto el seguro?","El pasador que traba la palanca."],sello:["¿El sello de garantía está completo?","El cincho o marchamo sin romper."],manguera:["¿La manguera está sin grietas ni tapones?","Dóblala un poco y revisa la punta."],portamanguera:["¿El portamanguera sujeta bien la manguera?",""],corneta:["¿La corneta o difusor está en buen estado?","Sin fisuras y bien sujeta."],valvula:["¿La válvula y la palanca están bien?","Sin fugas, golpes ni piezas flojas."],acceso:["¿El acceso al extintor está libre?","Nada enfrente que estorbe tomarlo."],letrero:["¿Tiene su señalamiento?","El letrero de ubicación del extintor."],pedestal:["¿Tiene pedestal?","Si va en piso."],soporte:["¿El soporte o gancho está firme?","Si va colgado en pared."]};
+var OPT_TXT={bien:"Sí",mal:"No",libre:"Libre",obstruido:"Obstruido",si:"Sí",no:"No"};
+function qList(d){return JASA_PUNTOS.filter(function(p){return !jasaNA(p,d.tipo);});}
+function fixNA(d){JASA_PUNTOS.forEach(function(p){if(jasaNA(p,d.tipo))d.puntos[p.k]="na";else if(d.puntos[p.k]==="na")delete d.puntos[p.k];});}
+function faltan(d){return qList(d).filter(function(p){return !d.puntos[p.k];});}
 function vForm(){
-  var d=S.draft,x=S.ext[d.folio]||{},nuevo=!x.estado||x.estado==="sin asignar",cm=today().slice(0,7);
-  dock('<button type="button" class="btn" data-act="saveItem">Guardar y seguir</button><button type="button" class="btn ghost" style="width:auto" data-act="back">Cancelar</button>');
-  var tipoSel='<select class="inp" id="fTipo">'+TIPOS.map(function(t){return '<option value="'+t[0]+'"'+(d.tipo===t[0]?" selected":"")+'>'+t[1]+'</option>';}).join("")+'</select>';
-  var ventas='<div class="two"><div class="field"><label for="fRec">Última recarga</label><input class="inp" id="fRec" type="month" value="'+esc(d.recarga||"")+'"></div><div class="field"><label for="fVen">Vence</label><input class="inp" id="fVen" type="month" value="'+esc(d.vence||"")+'"></div></div><div class="field"><label for="fPh">Próxima prueba hidrostática</label><input class="inp" id="fPh" type="month" value="'+esc(d.ph||"")+'"></div>';
-  var datos=nuevo?'<div class="card"><span class="eyebrow">Alta de extintor · '+esc(d.folio)+'</span><div class="field"><label for="fUbi">Ubicación</label><input class="inp" id="fUbi" value="'+esc(d.ubicacion||"")+'" placeholder="Ej. Recepción, pasillo 3" autocomplete="off"></div><div class="two"><div class="field"><label for="fTipo">Tipo</label>'+tipoSel+'</div><div class="field"><label for="fCap">Capacidad</label><input class="inp" id="fCap" value="'+esc(d.cap||"")+'" placeholder="4.5 KG o 10 LB" autocomplete="off"></div></div><div class="field"><label for="fSerie">No. de serie (opcional)</label><input class="inp" id="fSerie" value="'+esc(d.serie||"")+'" autocomplete="off"></div>'+ventas+'</div>'
-    :'<div class="card"><span class="eyebrow">'+esc(d.folio)+'</span><h2>'+esc(x.ubicacion||"")+'</h2><dl class="ficha"><dt>Equipo</dt><dd>'+esc(tl(x.tipo)+" "+String(x.cap||"").toLowerCase())+'</dd><dt>Recarga</dt><dd>'+fm(x.recarga)+' · vence <span style="color:'+(x.vence&&x.vence<cm?"var(--rose)":"inherit")+'">'+fm(x.vence)+'</span></dd><dt>P.H.</dt><dd>'+fm(x.ph)+'</dd>'+(x.ultima&&x.ultima.fecha?'<dt>Última</dt><dd>'+esc(x.ultima.resultado||"")+' · '+esc(x.ultima.fecha.split("-").reverse().join("/"))+'</dd>':"")+'</dl><details><summary class="hint" style="cursor:pointer">Corregir fechas o ubicación</summary><div style="display:flex;flex-direction:column;gap:10px;margin-top:10px"><div class="field"><label for="fUbi">Ubicación</label><input class="inp" id="fUbi" value="'+esc(d.ubicacion||"")+'" autocomplete="off"></div>'+ventas+'</div></details></div>';
-  var pts='<div class="card"><h2>Revisión</h2>'+JASA_PUNTOS.map(function(p){if(jasaNA(p,d.tipo)){d.puntos[p.k]="na";return '<div class="pt"><span>'+p.l+'</span><span class="hint" style="grid-column:span 2;text-align:center">No aplica en '+esc(tl(d.tipo))+'</span></div>';}if(d.puntos[p.k]==="na")d.puntos[p.k]=p.o[0];var v=d.puntos[p.k];return '<div class="pt"><span>'+p.l+'</span><button type="button" class="opt good" data-act="pt" data-k="'+p.k+'" data-v="'+p.o[0]+'" aria-pressed="'+(v===p.o[0])+'">'+JASA_OPT_LABEL[p.o[0]]+'</button><button type="button" class="opt bad" data-act="pt" data-k="'+p.k+'" data-v="'+p.o[1]+'" aria-pressed="'+(v===p.o[1])+'">'+JASA_OPT_LABEL[p.o[1]]+'</button></div>';}).join("")+'</div>';
-  var com='<div class="card"><h2>Comentarios</h2><div class="chips">'+COMENT.map(function(c){return '<button type="button" class="chip" data-act="chip" data-v="'+c+'" aria-pressed="'+(d.chips.indexOf(c)>=0)+'">'+c+'</button>';}).join("")+'</div><textarea class="inp" id="fCom" rows="2" placeholder="Otro comentario">'+esc(d.nota||"")+'</textarea></div>';
-  var res=resultado(d);
-  var rs='<div class="card"><span class="eyebrow">Resultado</span><span class="res" id="resTxt" style="color:'+(res==="Conforme"?"var(--green)":res==="Retirar de servicio"?"var(--rose)":"var(--amber)")+'">'+res+'</span><label class="hint" style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="fRet"'+(d.forzar==="Retirar de servicio"?" checked":"")+' style="width:20px;height:20px;accent-color:var(--red)"> Retirar de servicio</label></div>';
-  return datos+pts+com+rs;
+  var d=S.draft,x=S.ext[d.folio]||{},nuevo=!x.estado||x.estado==="sin asignar",cm=today().slice(0,7);fixNA(d);
+  var qs=qList(d),n=qs.length;if(d.step==null)d.step=nuevo&&!d.datosOk?-1:0;if(d.step>n)d.step=n;
+  var head='<div class="q-head"><div style="min-width:0"><span class="eyebrow">'+esc(d.folio)+(x.numero?" · No. "+esc(x.numero):"")+'</span><b>'+esc(d.ubicacion||x.ubicacion||"Extintor nuevo")+'</b><span class="hint">'+esc(tl(d.tipo)+" "+String(d.cap||"").toLowerCase())+(d.vence?' · vence <span style="color:'+(d.vence<cm?"var(--rose)":"inherit")+'">'+fm(d.vence)+'</span>':"")+'</span></div>'+(d.step>=0?'<button type="button" class="link" data-act="qDatos">Corregir datos</button>':"")+'</div>';
+  if(d.step===-1){
+    dock('<button type="button" class="btn" data-act="qDatosOk">Empezar revisión</button><button type="button" class="btn ghost" style="width:auto" data-act="back">Cancelar</button>');
+    var tipoSel='<select class="inp" id="fTipo">'+TIPOS.map(function(t){return '<option value="'+t[0]+'"'+(d.tipo===t[0]?" selected":"")+'>'+t[1]+'</option>';}).join("")+'</select>';
+    return '<h1>'+(nuevo?"Alta de extintor":"Datos del extintor")+'</h1><div class="card"><span class="eyebrow">'+esc(d.folio)+'</span>'+
+      '<div class="field"><label for="fUbi">Ubicación</label><input class="inp" id="fUbi" value="'+esc(d.ubicacion||"")+'" placeholder="Ej. Recepción, pasillo 3" autocomplete="off"></div>'+
+      '<div class="two"><div class="field"><label for="fTipo">Tipo</label>'+tipoSel+'</div><div class="field"><label for="fCap">Capacidad</label><input class="inp" id="fCap" value="'+esc(d.cap||"")+'" placeholder="4.5 KG o 10 LB" autocomplete="off"></div></div>'+
+      (nuevo?'<div class="field"><label for="fSerie">No. de serie (opcional)</label><input class="inp" id="fSerie" value="'+esc(d.serie||"")+'" autocomplete="off"></div>':"")+
+      '<div class="two"><div class="field"><label for="fRec">Última recarga</label><input class="inp" id="fRec" type="month" value="'+esc(d.recarga||"")+'"></div><div class="field"><label for="fVen">Vence</label><input class="inp" id="fVen" type="month" value="'+esc(d.vence||"")+'"></div></div>'+
+      '<div class="field"><label for="fPh">Próxima prueba hidrostática</label><input class="inp" id="fPh" type="month" value="'+esc(d.ph||"")+'"></div><span class="hint">Copia las fechas de la etiqueta de servicio pegada en el extintor.</span></div>';
+  }
+  if(d.step<n){
+    var p=qs[d.step],v=d.puntos[p.k],q=PREG[p.k]||[p.l+"?",""],pct=Math.round(d.step/n*100);
+    dock('<button type="button" class="btn ghost" style="width:auto" data-act="qPrev"'+(d.step===0&&!nuevo?" disabled":"")+'>← Anterior</button><button type="button" class="btn ghost" data-act="allOk">Todo lo demás está bien</button>');
+    return head+'<div class="q-prog"><span>Pregunta '+(d.step+1)+' de '+n+'</span><span>'+esc(p.l)+'</span></div><div class="bar"><i style="width:'+pct+'%"></i></div>'+
+      '<div class="q-card"><h2 class="q-title">'+esc(q[0])+'</h2>'+(q[1]?'<p class="hint">'+esc(q[1])+'</p>':"")+
+      '<div class="q-btns"><button type="button" class="q-btn good" data-act="ans" data-k="'+p.k+'" data-v="'+p.o[0]+'" aria-pressed="'+(v===p.o[0])+'"><span aria-hidden="true">✓</span>'+OPT_TXT[p.o[0]]+'</button><button type="button" class="q-btn bad" data-act="ans" data-k="'+p.k+'" data-v="'+p.o[1]+'" aria-pressed="'+(v===p.o[1])+'"><span aria-hidden="true">✗</span>'+OPT_TXT[p.o[1]]+'</button></div></div>'+
+      '<div class="q-dots" aria-hidden="true">'+qs.map(function(z,i){var vv=d.puntos[z.k];return '<i class="'+(i===d.step?"cur ":"")+(vv?(jasaPuntoMalo(z.k,vv)||vv==="no"?"bad":"ok"):"")+'"></i>';}).join("")+'</div>';
+  }
+  readyFin=true;
+  var falt=faltan(d),malos=qs.filter(function(z){return d.puntos[z.k]&&(jasaPuntoMalo(z.k,d.puntos[z.k])||d.puntos[z.k]==="no");}),res=resultado(d);
+  dock('<button type="button" class="btn" data-act="saveItem">Guardar y seguir</button><button type="button" class="btn ghost" style="width:auto" data-act="qPrev">← Atrás</button>');
+  return head+'<h1>Resumen</h1>'+
+    (falt.length?'<div class="card" style="border-left:4px solid var(--amber-f)"><b>Faltan '+falt.length+(falt.length===1?" pregunta":" preguntas")+'</b><button type="button" class="btn ghost" data-act="goStep" data-v="'+qs.indexOf(falt[0])+'">Contestar</button></div>':"")+
+    '<div class="card"><span class="eyebrow">Revisión</span><div class="q-sum">'+qs.map(function(z,i){var vv=d.puntos[z.k],bad=vv&&(jasaPuntoMalo(z.k,vv)||vv==="no");return '<button type="button" class="q-sum-i'+(bad?" bad":vv?" ok":"")+'" data-act="goStep" data-v="'+i+'"><span>'+esc(z.l)+'</span><b>'+(vv?(bad?"✗ ":"✓ ")+OPT_TXT[vv]:"—")+'</b></button>';}).join("")+'</div>'+(malos.length?'':'<span class="hint">Toca un punto para cambiar su respuesta.</span>')+'</div>'+
+    '<div class="card"><h2>Comentarios</h2><div class="chips">'+COMENT.map(function(c){return '<button type="button" class="chip" data-act="chip" data-v="'+c+'" aria-pressed="'+(d.chips.indexOf(c)>=0)+'">'+c+'</button>';}).join("")+'</div><textarea class="inp" id="fCom" rows="2" placeholder="Otro comentario (opcional)">'+esc(d.nota||"")+'</textarea></div>'+
+    '<div class="card"><span class="eyebrow">Resultado</span><span class="res" id="resTxt" style="color:'+(res==="Conforme"?"var(--green)":res==="Retirar de servicio"?"var(--rose)":"var(--amber)")+'">'+res+'</span><label class="hint" style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="fRet"'+(d.forzar==="Retirar de servicio"?" checked":"")+' style="width:22px;height:22px;accent-color:var(--red)"> Retirar de servicio</label></div>';
 }
+var readyFin=false;
 function vFinish(){var v=visit(),items=Object.keys(v.items).map(function(k){return v.items[k];}),bad=items.filter(function(i){return i.resultado!=="Conforme";}).length;
   dock('<button type="button" class="btn" data-act="finishDo">Terminar y enviar</button><button type="button" class="btn ghost" style="width:auto" data-act="backVisit">Volver</button>');
   return '<h1>Terminar</h1><div class="card"><span class="hint">'+items.length+' extintores revisados · '+(items.length-bad)+' conformes · '+bad+' requieren atención.'+(bad?' La oficina revisará lo encontrado y armará la cotización.':'')+'</span>'+
@@ -414,7 +456,7 @@ function openItem(folio){
   if(x&&x.estado&&x.estado!=="sin asignar"&&x.cliente&&String(x.cliente).trim().toLowerCase()!==String(v.cliente).trim().toLowerCase()){if(!confirmBox("Este extintor está registrado con "+x.cliente+". ¿Revisarlo de todos modos?"))return false;}
   var base=prev||{};var src=x||{};
   S.draft={folio:folio,ubicacion:base.ubicacion||src.ubicacion||"",tipo:base.tipo||src.tipo||"PQS",cap:base.cap||src.cap||"",serie:src.serie||"",recarga:base.recarga||src.recarga||"",vence:base.vence||src.vence||"",ph:base.ph||src.ph||"",
-    puntos:Object.assign(JASA_PUNTOS.reduce(function(a,p){a[p.k]=p.o[0];return a;},{}),base.puntos||{}),chips:(base.chips||[]).slice(),nota:base.nota||"",forzar:base.forzar||""};
+    puntos:Object.assign({},base.puntos||{}),chips:(base.chips||[]).slice(),nota:base.nota||"",forzar:base.forzar||"",step:prev?99:null};
   if(!prev&&src.vence&&src.vence<today().slice(0,7))S.draft.chips.push("Vencido");
   S.view="form";render();return true;
 }
@@ -422,8 +464,9 @@ function confirmBox(msg){return window.confirm(msg);}
 function readForm(){var d=S.draft;["fUbi:ubicacion","fCap:cap","fSerie:serie","fRec:recarga","fVen:vence","fPh:ph","fCom:nota"].forEach(function(p){var a=p.split(":"),el=$(a[0]);if(el)d[a[1]]=el.value.trim();});var t=$("fTipo");if(t)d.tipo=t.value;var r=$("fRet");d.forzar=r&&r.checked?"Retirar de servicio":"";d.cap=d.cap?jasaCap(d.cap):"";}
 function saveItem(){
   readForm();var d=S.draft,v=visit(),x=S.ext[d.folio]||{};
-  if(!d.ubicacion){toast("Escribe la ubicación del extintor.");return;}
-  if(!d.cap){toast("Escribe la capacidad.");return;}
+  if(!d.ubicacion){toast("Escribe la ubicación del extintor.");d.step=-1;render();return;}
+  fixNA(d);var fl=faltan(d);if(fl.length){toast("Te falta contestar: "+fl[0].l);d.step=qList(d).indexOf(fl[0]);render();return;}
+  if(!d.cap){toast("Escribe la capacidad.");d.step=-1;render();return;}
   var cm=today().slice(0,7);
   var it={folio:d.folio,numero:x.numero||"",n:(v.items[d.folio]||{}).n||(Object.keys(v.items).length+1),ubicacion:d.ubicacion,tipo:d.tipo,cap:d.cap,recarga:d.recarga,vence:d.vence,ph:d.ph,puntos:d.puntos,chips:d.chips,nota:d.nota,forzar:d.forzar,
     comentario:d.chips.concat(d.nota?[d.nota]:[]).join(", "),vencido:jasaVencido(d.vence,cm),hora:new Date().toISOString()};
@@ -484,6 +527,12 @@ document.addEventListener("click",function(e){var b=e.target.closest("[data-act]
   if(a==="manual"){S.manual=true;S.view="scan";render();setTimeout(function(){var f=$("ffFolio");if(f)f.focus();},50);return;}
   if(a==="back"){S.view=visit()?"visit":"home";render();return;}
   if(a==="open"){openItem(b.getAttribute("data-f"));return;}
+  if(a==="ans"){var dd=S.draft;dd.puntos[b.getAttribute("data-k")]=b.getAttribute("data-v");if(navigator.vibrate)navigator.vibrate(15);var nq=qList(dd).length,nx=dd.step+1;while(nx<nq&&dd.puntos[qList(dd)[nx].k]&&dd.stepFwd)nx++;dd.step=nx;render();window.scrollTo(0,0);return;}
+  if(a==="qPrev"){readForm();var dp=S.draft;dp.step=Math.max(dp.step>=qList(dp).length?qList(dp).length-1:dp.step-1,-1);if(dp.step===-1&&S.ext[dp.folio]&&S.ext[dp.folio].estado&&S.ext[dp.folio].estado!=="sin asignar"&&!dp.datosEdit)dp.step=0;render();window.scrollTo(0,0);return;}
+  if(a==="qDatos"){readForm();S.draft.datosEdit=true;S.draft.backStep=S.draft.step;S.draft.step=-1;render();window.scrollTo(0,0);return;}
+  if(a==="qDatosOk"){readForm();var dk=S.draft;if(!dk.ubicacion){toast("Escribe la ubicación del extintor.");return;}if(!dk.cap){toast("Escribe la capacidad.");return;}dk.datosOk=true;dk.step=dk.datosEdit&&dk.backStep!=null?dk.backStep:0;dk.datosEdit=false;render();window.scrollTo(0,0);return;}
+  if(a==="allOk"){var da=S.draft;qList(da).forEach(function(z){if(!da.puntos[z.k])da.puntos[z.k]=z.o[0];});da.step=qList(da).length;render();window.scrollTo(0,0);return;}
+  if(a==="goStep"){readForm();S.draft.step=+b.getAttribute("data-v");render();window.scrollTo(0,0);return;}
   if(a==="pt"){readForm();S.draft.puntos[b.getAttribute("data-k")]=b.getAttribute("data-v");var y=window.scrollY;render();window.scrollTo(0,y);return;}
   if(a==="chip"){readForm();var c=b.getAttribute("data-v"),i=S.draft.chips.indexOf(c);if(i>=0)S.draft.chips.splice(i,1);else S.draft.chips.push(c);var y2=window.scrollY;render();window.scrollTo(0,y2);return;}
   if(a==="saveItem"){saveItem();return;}
