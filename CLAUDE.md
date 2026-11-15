@@ -24,6 +24,10 @@ generados.
 - Una tabla `public.docs (col, id, data jsonb)`; `col` = colección: `quotes`, `clientes`, `proveedores`,
   `movs`, `ordenes`, `inventario`, `precios`, `pendientes`, `extintores` (id = folio `PREFIJO-001` del cliente, o
   `JX-000001` para etiquetas en blanco; `jasaFolio()` los normaliza), `inspecciones`, `visitas`, `recetas`, `compras`, `conteos`.
+- Clientes: cada registro es la planta/ubicación del servicio (`direccion`, `ciudad`, `estado`, `cp`, `mapa`, `contacto`,
+  `tel`, `email` para reportes). Datos fiscales CFDI 4.0 (`razonSocial`, `rfc`, `regimen`, `cpFiscal`, `domFiscal`, `usoCfdi`,
+  `metodoPago`, `formaPago`, `diasCredito`, `requiereOC`, `emailFact`) o `fiscalDe` = id de otro cliente que factura
+  (corporativo); usar siempre `fiscalOf(cliente)`.
 - Inventario tiene pestañas: Existencias, Levantar inventario (`conteos {estado: en curso|aplicado, items{invId:contado}}`;
   al aplicar, `stock` = contado) y Órdenes de compra (`compras {folio OC-0001, proveedor, lines[{inv,cant,costo}], estado
   Borrador|Enviada|Recibida|Cancelada, pago}`; al recibir suma `stock`, actualiza `costo` y crea egreso o suma `saldo` al proveedor).
