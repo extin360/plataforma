@@ -47,7 +47,9 @@ generados.
   quien no es admin solo ve sus `visitas`.
 - Acceso: RLS; solo correos en `public.staff` leen y escriben según sus permisos. `anon` no lee nada.
 - Clientes del portal: función `public.portal(codigo)` con el `codigoPortal` del cliente (XXXX-XXXX-XX).
-- Sitio público: función `public.solicitar_cotizacion(datos)` crea una cotización `Nueva` con `origen: web`.
+- Sitio público: función `public.solicitar_cotizacion(datos)` crea una cotización `Nueva` con `origen: web` (con `email`
+  desde `06_cotizacion_correo.sql`) y manda copia a Netlify Forms (`solicitud-cotizacion`) para el aviso por correo.
+  Al aceptarla en el panel se crea el cliente con los datos de la solicitud (o se llenan los que le falten).
 - Ficha del QR: función `public.ficha_extintor(folio)` (sin cliente ni serie).
 - Etiquetas: impresora Zebra ZD420, se imprimen desde el panel (Extintores › Generar etiquetas) con QR a `/e/<folio>`.
 - Inspección: los puntos están en `JASA_PUNTOS` (formato en papel de JASA + manómetro, válvula y soporte; `na` = no aplica,

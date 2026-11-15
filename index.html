@@ -35,7 +35,7 @@
 .g-open:focus-visible{outline:3px solid var(--amber);outline-offset:-3px}
 .g-item img{display:block;width:100%;height:100%;object-fit:cover;max-width:none}
 .g-item figcaption{position:absolute;left:0;right:0;bottom:0;padding:28px 12px 10px;background:linear-gradient(transparent,rgba(0,0,0,.82));color:#fff;font-size:14px;font-weight:500;line-height:1.3;pointer-events:none}
-.lb{position:fixed;inset:0;z-index:80;background:rgba(5,5,5,.94);display:flex;align-items:center;justify-content:center;gap:8px;padding:calc(56px + env(safe-area-inset-top,0px)) max(12px,env(safe-area-inset-right,0px)) calc(20px + env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px))}
+.lb{--bg:#0d0d0d;--panel:#171514;--panel-2:#211d1c;--ink:#f3eeea;--muted:#bdb5b0;--line:#2f2a28;--red-hi:#ff3b30;--amber-ink:#f2b01e;color:var(--ink);position:fixed;inset:0;z-index:80;background:rgba(5,5,5,.94);display:flex;align-items:center;justify-content:center;gap:8px;padding:calc(56px + env(safe-area-inset-top,0px)) max(12px,env(safe-area-inset-right,0px)) calc(20px + env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px))}
 .lb figure{margin:0;display:flex;flex-direction:column;gap:10px;align-items:center;min-width:0;max-width:100%;max-height:100%}
 .lb img{max-width:100%;max-height:calc(100vh - 150px);object-fit:contain;border-radius:3px}
 .lb figcaption{color:var(--ink);font-size:15px;text-align:center}
@@ -56,18 +56,18 @@
 .xt-del{height:46px;background:none;border:1px solid var(--line);color:var(--muted);border-radius:3px;font:600 16px var(--body);cursor:pointer}
 .xt-del:hover{border-color:var(--red);color:var(--red-hi)}
 .xt-add{justify-self:start;font-family:var(--display);font-weight:800;text-transform:uppercase;font-size:16px;letter-spacing:.03em;background:none;color:var(--ink);border:2px dashed var(--red);border-radius:3px;padding:9px 14px;cursor:pointer}
-.xt-add:hover{background:rgba(225,15,15,.15)}
+.xt-add:hover{background:rgba(225,15,15,.08)}
 @media (max-width:640px){.xt-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.xt-row .field:first-child{grid-column:1/-1}.xt-del{height:46px}}
 
 /* Oferta del mes (dentro de la portada) */
 .nav a.nav-offer{color:var(--amber)}
 .hero-offer{grid-area:offer;display:flex;flex-direction:column;gap:0;min-width:0;max-width:420px;justify-self:end;width:100%}
-.offer-pic{margin:0;border-radius:6px 6px 0 0;overflow:hidden;box-shadow:0 30px 70px rgba(0,0,0,.6);aspect-ratio:3/4;background:var(--panel)}
+.offer-pic{margin:0;border-radius:6px 6px 0 0;overflow:hidden;box-shadow:0 24px 50px rgba(26,23,22,.18);aspect-ratio:3/4;background:var(--panel)}
 .offer-pic img{display:block;width:100%;height:100%;object-fit:cover}
-.offer-bar{background:var(--panel-2);border:1px solid var(--line);border-top:3px solid var(--amber);border-radius:0 0 6px 6px;padding:16px 18px 18px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 14px;align-items:end}
-.offer-tag{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--amber)}
+.offer-bar{background:var(--panel);border:1px solid var(--line);border-top:3px solid var(--amber);border-radius:0 0 6px 6px;padding:16px 18px 18px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 14px;align-items:end}
+.offer-tag{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--amber-ink)}
 .offer-bar strong{display:block;font-family:var(--display);font-weight:800;text-transform:uppercase;font-size:21px;line-height:1.05;margin-top:4px;text-wrap:balance}
-.offer-price{font-family:var(--display);font-weight:900;font-size:52px;line-height:.85;color:var(--amber);letter-spacing:-.01em;white-space:nowrap}
+.offer-price{font-family:var(--display);font-weight:900;font-size:52px;line-height:.85;color:var(--red);letter-spacing:-.01em;white-space:nowrap}
 .offer-price span{font-size:.42em;vertical-align:top}
 .offer-note{grid-column:1/-1;color:var(--muted);font-size:13px;margin-top:6px}
 .offer-bar .actions{grid-column:1/-1;margin-top:10px;gap:8px}
@@ -82,7 +82,7 @@
 .cq-n{font-family:var(--display);font-weight:900;font-size:18px;width:30px;height:30px;border-radius:50%;background:var(--red);color:#fff;display:grid;place-items:center;flex:none}
 .cq-count{margin-left:auto;font-family:var(--mono);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
 .cq-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.cq-form input[type=text],.cq-form input[type=number],.cq-form select,.cq-form textarea{font:500 16px var(--body);color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:3px;padding:10px 11px;width:100%;min-width:0}
+.cq-form input[type=text],.cq-form input[type=email],.cq-form input[type=number],.cq-form select,.cq-form textarea{font:500 16px var(--body);color:var(--ink);background:#ffffff;border:1px solid #cfc8c2;border-radius:3px;padding:10px 11px;width:100%;min-width:0}
 .cq-form textarea{min-height:76px;resize:vertical}
 .cq-form input:focus,.cq-form select:focus,.cq-form textarea:focus{border-color:var(--red);outline:none}
 .cq-rows{list-style:none;margin:0;padding:0;display:grid;gap:10px;counter-reset:part}
@@ -99,16 +99,16 @@
 .cq-del:hover{border-color:var(--red);color:var(--red-hi)}
 .cq-del:disabled{opacity:.35;cursor:not-allowed}
 .cq-add{align-self:flex-start;font-family:var(--display);font-weight:800;text-transform:uppercase;font-size:17px;letter-spacing:.03em;background:none;color:var(--ink);border:2px dashed var(--red);border-radius:3px;padding:10px 16px;cursor:pointer}
-.cq-add:hover{background:rgba(225,15,15,.15)}
+.cq-add:hover{background:rgba(225,15,15,.08)}
 .cq-out{display:flex;flex-direction:column;gap:12px;min-width:0;position:sticky;top:calc(100px + env(safe-area-inset-top,0px))}
 .cq-out-head{display:flex;justify-content:space-between;align-items:center;gap:10px}
 .cq-pill{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#0d0d0d;background:var(--amber);padding:4px 9px;border-radius:30px}
-.cq-paper-wrap{position:relative;overflow:hidden;border-radius:4px;box-shadow:0 20px 50px rgba(0,0,0,.5);max-width:100%}
+.cq-paper-wrap{position:relative;overflow:hidden;border-radius:4px;border:1px solid var(--line);box-shadow:0 14px 34px rgba(26,23,22,.14);max-width:100%}
 .cq-paper-scale{transform-origin:0 0;width:816px}
 .cq-actions{display:flex;flex-wrap:wrap;gap:10px}
 .btn.cq-wa{background:#25d366;border-color:#25d366;color:#0b2e17}
 .btn.cq-wa:hover{background:#3ee07a;border-color:#3ee07a}
-.cq-status{font-size:14px;color:var(--amber);min-height:1em}
+.cq-status{font-size:14px;color:var(--amber-ink);min-height:1em;font-weight:600}
 .cq-hint{color:var(--muted);font-size:13px}
 
 /* La hoja: copia del formato de cotización de JASA */
@@ -151,14 +151,14 @@
 </style>
 <meta name="claude:viewport-fit-sides" content="cover">
 <style>
-/* Layout: sala de exhibición industrial — fondo casi negro, franjas rojas de seguridad, secciones indexadas como un catálogo */
+/* Layout según el manual de identidad 2026: fondo claro, encabezado y pie en Negro JASA con la franja roja, secciones indexadas como un catálogo */
 :root{
-  --bg:#0d0d0d; --panel:#171514; --panel-2:#211d1c; --ink:#f3eeea; --muted:#a8a09b; --line:#2f2a28;
-  --red:#e10f0f; --red-hi:#ff3b30; --red-dark:#7d0505; --amber:#f2b01e; --paper:#ffffff; --paper-ink:#1a1716;
+  --bg:#f3f1ee; --panel:#ffffff; --panel-2:#f3f1ee; --ink:#1a1716; --muted:#6b6460; --line:#e0dbd6;
+  --red:#e10f0f; --red-hi:#c40d0d; --red-dark:#7d0505; --amber:#f2b01e; --amber-ink:#8f6100; --paper:#ffffff; --paper-ink:#1a1716;
   --display:"Saira Condensed","Arial Narrow",Impact,sans-serif;
   --body:"Barlow","Helvetica Neue",Arial,sans-serif;
   --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
-  color-scheme:dark;
+  color-scheme:light;
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth;scroll-padding-top:calc(var(--hdr,96px) + 16px + env(safe-area-inset-top,0px))}
@@ -166,25 +166,25 @@ html,body{overflow-x:clip}
 img{height:auto}
 button,a,summary,select,input{-webkit-tap-highlight-color:transparent}
 body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.55}
-body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:60;background:var(--bg)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:60;background:#0d0d0d}
 .wrap{max-width:1160px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 h1,h2,h3{font-family:var(--display);text-transform:uppercase;line-height:.95;margin:0;text-wrap:balance}
 p{margin:0}
 a{color:inherit}
 img{max-width:100%}
 .label{font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
-:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+:focus-visible{outline:3px solid var(--red);outline-offset:2px}
 
 /* Botones */
 .btn{font-family:var(--display);font-weight:800;text-transform:uppercase;font-size:19px;letter-spacing:.03em;text-decoration:none;padding:13px 22px;border-radius:3px;border:2px solid var(--red);display:inline-flex;align-items:center;gap:8px;cursor:pointer;background:none;color:var(--ink)}
 .btn.primary{background:var(--red);color:#fff}
-.btn.primary:hover{background:var(--red-hi);border-color:var(--red-hi)}
-.btn.ghost:hover{background:rgba(225,15,15,.15)}
+.btn.primary:hover{background:#c40d0d;border-color:#c40d0d}
+.btn.ghost:hover{background:rgba(225,15,15,.08)}
 .btn.light{background:#fff;border-color:#fff;color:var(--red-dark)}
 .actions{display:flex;flex-wrap:wrap;gap:12px}
 
 /* Encabezado */
-.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:50;background:rgba(13,13,13,.94);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.top{--bg:#0d0d0d;--panel:#171514;--panel-2:#211d1c;--ink:#f3eeea;--muted:#bdb5b0;--line:#2f2a28;--red-hi:#ff3b30;--amber-ink:#f2b01e;color:var(--ink);position:sticky;top:env(safe-area-inset-top,0px);z-index:50;background:rgba(13,13,13,.97);backdrop-filter:blur(8px);border-bottom:4px solid var(--red)}
 .top .wrap{display:flex;align-items:center;gap:20px;padding-block:10px}
 .logo{display:block;flex:none;line-height:0}
 .logo svg{display:block;height:74px;width:auto}
@@ -198,7 +198,7 @@ footer .logo svg{height:96px}
 
 /* Portada */
 .hero{position:relative;overflow:hidden;border-bottom:1px solid var(--line)}
-.hero::after{content:"";position:absolute;right:-10%;top:-30%;width:70%;height:160%;background:radial-gradient(closest-side,rgba(225,15,15,.28),transparent);pointer-events:none}
+.hero{background:var(--panel)}.hero::after{content:"";position:absolute;right:-10%;top:-30%;width:70%;height:160%;background:radial-gradient(closest-side,rgba(225,15,15,.07),transparent);pointer-events:none}
 .hero .wrap{position:relative;z-index:1;display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,.8fr);grid-template-areas:"main offer" "explorer offer";gap:32px 56px;align-items:start;padding-block:56px 64px}
 .hero-main{grid-area:main;min-width:0;padding-top:12px}
 .hero .explorer{grid-area:explorer;align-self:end}
@@ -313,7 +313,7 @@ section{padding-block:clamp(56px,8vw,88px);border-bottom:1px solid var(--line)}
 .calc p{color:#f1d6d3;margin-top:12px}
 .calc form{display:flex;flex-direction:column;gap:14px}
 .calc label{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#f1d6d3}
-.calc input{font:500 18px var(--body);padding:12px;border-radius:3px;border:1px solid var(--line);background:var(--bg);color:var(--ink);width:100%}
+.calc{color:#fff}.calc input{font:500 18px var(--body);padding:12px;border-radius:3px;border:1px solid #cfc8c2;background:#ffffff;color:#1a1716;width:100%}
 .result{border:2px solid var(--amber);border-radius:4px;padding:16px;min-height:96px}
 .result strong{font-family:var(--display);font-size:30px;text-transform:uppercase;display:block;line-height:1}
 .result.ok strong{color:#8fd694}
@@ -323,7 +323,7 @@ section{padding-block:clamp(56px,8vw,88px);border-bottom:1px solid var(--line)}
 
 /* 05 Promoción */
 .flyer{display:grid;grid-template-columns:minmax(0,420px) 1fr;gap:40px;align-items:center}
-.flyer figure{margin:0;border:1px solid var(--line);border-radius:6px;overflow:hidden;box-shadow:0 24px 60px rgba(225,15,15,.18)}
+.flyer figure{margin:0;border:1px solid var(--line);border-radius:6px;overflow:hidden;box-shadow:0 18px 40px rgba(26,23,22,.14)}
 .flyer figure img{display:block;width:100%;height:auto}
 .flyer-txt{display:flex;flex-direction:column;gap:16px;align-items:flex-start;min-width:0}
 .flyer-txt h3{font-size:clamp(34px,5vw,54px);font-weight:900}
@@ -358,7 +358,7 @@ section{padding-block:clamp(56px,8vw,88px);border-bottom:1px solid var(--line)}
 .ccard .val{display:block;font-family:var(--display);font-weight:800;font-size:24px;color:#fff;letter-spacing:.02em;user-select:all;overflow-wrap:anywhere;text-decoration:none}
 .fbbtn{font:600 14px var(--body);background:#fff;color:var(--red-dark);border-radius:3px;padding:8px 12px;text-decoration:none;white-space:nowrap}
 .ccard button{font:600 14px var(--body);background:#fff;color:var(--red-dark);border:0;border-radius:3px;padding:8px 12px;cursor:pointer}
-footer{background:#080808;color:var(--muted);font-size:15px}
+footer{--bg:#0d0d0d;--panel:#171514;--panel-2:#211d1c;--ink:#f3eeea;--muted:#bdb5b0;--line:#2f2a28;--red-hi:#ff3b30;--amber-ink:#f2b01e;color:var(--ink);background:#0d0d0d;color:var(--muted);font-size:15px;border-top:4px solid var(--red)}
 footer .cols{display:grid;grid-template-columns:1.3fr 1fr 1fr 1.3fr 1fr;gap:28px;padding-block:44px}
 footer h4{font-family:var(--display);text-transform:uppercase;font-size:18px;color:var(--ink);margin:0 0 12px;letter-spacing:.04em}
 footer ul{list-style:none;margin:0;padding:0;display:grid;gap:6px}
@@ -452,8 +452,8 @@ footer .legal{border-top:1px solid var(--line);padding-block:18px;display:flex;f
 .hours span:nth-child(odd){color:var(--muted);font-weight:600}
 .status{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;padding:5px 10px;border-radius:30px;border:1px solid var(--line);margin-top:8px}
 .status::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--muted)}
-.status.open{color:#8fd694;border-color:#2f5a33}.status.open::before{background:#5fcf6a}
-.status.closed{color:#ff8a7d;border-color:#5a2a26}.status.closed::before{background:#ff5a4f}
+.status.open{color:#1e7b34;border-color:#9fd1aa}.status.open::before{background:#2e9b47}
+.status.closed{color:#c0262d;border-color:#f0b3b0}.status.closed::before{background:#e10f0f}
 
 /* Cotizador */
 .quote{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:20px;align-items:start}
@@ -788,13 +788,14 @@ footer .legal{border-top:1px solid var(--line);padding-block:18px;display:flex;f
       <p>Agrega cada partida que necesitas y se arma tu hoja de cotización en el formato de JASA. Envíala por WhatsApp y te respondemos con precios y tiempo de entrega.</p>
     </div>
     <div class="cq">
-      <form name="solicitud-cotizacion" data-netlify="true" netlify-honeypot="bot-field" hidden aria-hidden="true"><input name="bot-field"><input name="subject"><input name="folio"><input name="cliente"><input name="telefono"><input name="ciudad"><textarea name="detalle"></textarea><input name="panel"></form>
+      <form name="solicitud-cotizacion" data-netlify="true" netlify-honeypot="bot-field" hidden aria-hidden="true"><input name="bot-field"><input name="subject"><input name="folio"><input name="cliente"><input name="telefono"><input name="correo"><input name="ciudad"><textarea name="detalle"></textarea><input name="panel"></form>
       <form class="cq-form" id="cqForm" novalidate>
         <div class="cq-step"><span class="cq-n">1</span><h3>Tus datos</h3></div>
         <div class="cq-grid">
           <div class="field full"><label for="cqCliente">Cliente (empresa o nombre)</label><input type="text" id="cqCliente" autocomplete="organization" placeholder="Ej. Restaurante El Norteño" value=""></div>
           <div class="field"><label for="cqDirigido">Dirigido a</label><input type="text" id="cqDirigido" autocomplete="name" placeholder="Ej. Lic. Laura Treviño"></div>
           <div class="field"><label for="cqTel">Teléfono / WhatsApp</label><input type="text" id="cqTel" autocomplete="tel" inputmode="tel" placeholder="Ej. 878 123 4567"></div>
+          <div class="field full"><label for="cqCorreo">Correo electrónico</label><input type="email" id="cqCorreo" autocomplete="email" inputmode="email" placeholder="Para mandarte la cotización y tus reportes"></div>
           <div class="field full"><label for="cqDir">Dirección (calle, número y colonia)</label><input type="text" id="cqDir" autocomplete="street-address" placeholder="Ej. Av. Carranza 1500, Col. Centro"></div>
           <div class="field"><label for="cqCiudad">Ciudad</label><input type="text" id="cqCiudad" autocomplete="address-level2" value="Piedras Negras, Coahuila"></div>
           <div class="field"><label for="cqRfc">RFC (opcional)</label><input type="text" id="cqRfc" autocapitalize="characters" maxlength="13" placeholder="Para facturar"></div>
@@ -1051,7 +1052,7 @@ footer .legal{border-top:1px solid var(--line);padding-block:18px;display:flex;f
       for(var i=0;i<n;i++){var it=items[i]; body+="<tr><td>"+(it?i+1:"")+"</td><td></td><td>"+(it?it[1]:"")+"</td><td>"+(it?"—":"")+"</td><td>"+(it?"—":"")+"</td></tr>";}
       var tb=document.getElementById("shBody"); tb.innerHTML=body;
       items.forEach(function(it,i){tb.rows[i].cells[1].textContent=it[0];});
-      var cli=val("cqCliente"), dir=val("cqDirigido"), domi=val("cqDir"), ciu=val("cqCiudad"), rfc=val("cqRfc").toUpperCase(), tel=val("cqTel"), dom=document.getElementById("cqDomicilio").checked, notas=val("cqNotas");
+      var cli=val("cqCliente"), dir=val("cqDirigido"), domi=val("cqDir"), ciu=val("cqCiudad"), rfc=val("cqRfc").toUpperCase(), tel=val("cqTel"), correo=val("cqCorreo").toLowerCase(), dom=document.getElementById("cqDomicilio").checked, notas=val("cqNotas");
       document.getElementById("shCliente").textContent=cli;
       document.getElementById("shDirigido").textContent=dir;
       document.getElementById("shDir").textContent=domi;
@@ -1062,7 +1063,7 @@ footer .legal{border-top:1px solid var(--line);padding-block:18px;display:flex;f
       document.getElementById("shCond").textContent=cond.join("\n");
       document.getElementById("cqCount").textContent=items.length+(items.length===1?" partida · ":" partidas · ")+piezas+(piezas===1?" pieza":" piezas");
       var L=["*SOLICITUD DE COTIZACIÓN · JASA EXTINTORES*","Número: "+folio,"Fecha: "+fecha];
-      if(cli) L.push("Cliente: "+cli); if(dir) L.push("Dirigido a: "+dir); if(domi) L.push("Dirección: "+domi); if(ciu) L.push("Ciudad: "+ciu); if(rfc) L.push("RFC: "+rfc); if(tel) L.push("Tel.: "+tel);
+      if(cli) L.push("Cliente: "+cli); if(dir) L.push("Dirigido a: "+dir); if(domi) L.push("Dirección: "+domi); if(ciu) L.push("Ciudad: "+ciu); if(rfc) L.push("RFC: "+rfc); if(tel) L.push("Tel.: "+tel); if(correo) L.push("Correo: "+correo);
       L.push("","*PARTIDAS*");
       if(items.length) items.forEach(function(it,i){L.push((i+1)+". "+it[0]+" — "+it[1]+(it[1]===1?" unidad":" unidades"));}); else L.push("(sin partidas)");
       if(items.length>1) L.push("Total: "+piezas+" unidades");
@@ -1070,14 +1071,14 @@ footer .legal{border-top:1px solid var(--line);padding-block:18px;display:flex;f
       L.push("","Quedo atento a los precios. ¡Gracias!");
       document.getElementById("cqSend").href="https://wa.me/528781174728?text="+encodeURIComponent(L.join("\n"));
       window.__cqTxt=L.join("\n").replace(/\*/g,"");
-      window.__cq={folio:folio,cliente:cli,dirigido:dir,direccion:domi,ciudad:ciu,rfc:rfc,tel:tel,cond:cond.join(" · ").replace(/SERVICIO A DOMICILIO/,"Servicio a domicilio"),lines:items.map(function(it){return {art:it[0],qty:it[1]};})};
+      window.__cq={folio:folio,cliente:cli,dirigido:dir,direccion:domi,ciudad:ciu,rfc:rfc,tel:tel,email:correo,cond:cond.join(" · ").replace(/SERVICIO A DOMICILIO/,"Servicio a domicilio"),lines:items.map(function(it){return {art:it[0],qty:it[1]};})};
     }
     var sent=false;
     // Aviso por correo a JASA (Netlify Forms manda el correo; si falla, la solicitud ya quedó en el panel)
     function avisoCorreo(f,d){
       try{
         var txt=String(window.__cqTxt||"").replace(/^SOLICITUD DE COTIZACIÓN · JASA EXTINTORES\n/,"").replace(/^Número: .*\n/,"").replace(/\nQuedo atento a los precios\. ¡Gracias!$/,"");
-        var body=new URLSearchParams({"form-name":"solicitud-cotizacion",subject:"Nueva cotización del sitio "+f+": "+(d.cliente||""),folio:f,cliente:d.cliente||"",telefono:d.tel||"",ciudad:d.ciudad||"",detalle:txt,panel:"https://jasaextintores.com/admin/#cotizaciones"});
+        var body=new URLSearchParams({"form-name":"solicitud-cotizacion",subject:"Nueva cotización del sitio "+f+": "+(d.cliente||""),folio:f,cliente:d.cliente||"",telefono:d.tel||"",correo:d.email||"",ciudad:d.ciudad||"",detalle:txt,panel:"https://jasaextintores.com/admin/#cotizaciones"});
         fetch("/",{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:body.toString()}).catch(function(){});
       }catch(e){}
     }
@@ -1086,6 +1087,7 @@ footer .legal{border-top:1px solid var(--line);padding-block:18px;display:flex;f
       if(sent){st.textContent="Tu solicitud "+sent+" ya fue enviada. Te contactamos pronto.";return;}
       if(!d.cliente){st.textContent="Escribe el nombre del cliente o empresa.";document.getElementById("cqCliente").focus();return;}
       if(String(d.tel||"").replace(/\D/g,"").length<10){st.textContent="Escribe un teléfono de 10 dígitos para enviarte los precios.";document.getElementById("cqTel").focus();return;}
+      if(d.email&&!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(d.email)){st.textContent="Revisa tu correo: parece que le falta algo.";document.getElementById("cqCorreo").focus();return;}
       if(!d.lines||!d.lines.length){st.textContent="Agrega al menos una partida.";return;}
       b.disabled=true; st.textContent="Enviando…";
       fetch("https://psggoagcdokwrkykgufr.supabase.co/rest/v1/rpc/solicitar_cotizacion",{method:"POST",headers:{"apikey":"sb_publishable_jwx2IRxOqdCW-SjmKcYW2A_lrJTFJa3","Content-Type":"application/json"},body:JSON.stringify({datos:d})})
