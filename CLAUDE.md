@@ -68,6 +68,14 @@ generados.
 - Llave publicable en el código (es pública por diseño). Nunca poner la Secret key ni contraseñas en el repo.
 - Registro de usuarios cerrado: el personal se da de alta en Authentication › Users y en `public.staff`.
 
+## Panel: reportes, monitor e importación
+
+- Reportes (`#reportes`, permiso finanzas): periodo Hoy/Semana/Mes/Bimestre/Trimestre/Semestre/Año/Personalizado;
+  gráficas de una sola serie (Carbón = entradas, Rojo JASA = salidas) en SVG con tooltip y tabla.
+- Monitor de taller (`#monitor`, permiso taller): pantalla completa tipo comandero para una TV.
+- Importar clientes desde Excel (SheetJS 0.18.5 de cdnjs): plantilla descargable; los existentes solo se completan.
+- En celular el panel usa barra inferior (Panel, Cotizar, Taller, Clientes, Más) y el menú como hoja.
+
 ## Taller
 
 Etapas (`etapa`, con `etapaV: 2`): 0 Por recoger, 1 Recibido, 2 En reparación, 3 En entrega, 4 Entregado.
