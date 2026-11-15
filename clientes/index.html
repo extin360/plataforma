@@ -354,7 +354,7 @@ $("code").addEventListener("input",function(e){var v=norm(e.target.value);if(v!=
 $("form").addEventListener("submit",function(e){e.preventDefault();var c=norm($("code").value);if(c.replace(/-/g,"").length<10){$("err").textContent="El código tiene 10 letras y números, por ejemplo ABCD-EFGH-JK.";return;}enter(c,false);});
 $("logout").addEventListener("click",function(){store(KEY,"");DATA=null;$("view").hidden=true;$("view").innerHTML="";$("login").hidden=false;$("logout").hidden=true;$("code").value="";$("code").focus();});
 document.addEventListener("click",function(e){var b=e.target.closest("[data-i]");if(b&&DATA)pdf(DATA.ordenes[+b.getAttribute("data-i")],b);});
-var saved=read(KEY);if(saved){$("code").value=saved;enter(saved,true);}
+var hc=norm(decodeURIComponent(location.hash.slice(1)));if(hc.replace(/-/g,"").length===10){try{history.replaceState(null,"",location.pathname);}catch(e){}$("code").value=hc;enter(hc,false);}else{var saved=read(KEY);if(saved){$("code").value=saved;enter(saved,true);}}
 })();
 </script>
 </body>

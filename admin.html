@@ -103,7 +103,7 @@ textarea.inp{resize:vertical;min-height:120px;font-family:var(--mono);font-size:
 .drawer{background:var(--panel);border-left:4px solid var(--red);width:min(460px,100%);height:100%;overflow-y:auto;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);padding-right:env(safe-area-inset-right,0px)}
 .drawer form{display:flex;flex-direction:column;gap:14px;padding:18px}
 .field{display:flex;flex-direction:column;gap:4px}.field[hidden]{display:none}.fsec{border-top:1px solid var(--line);padding-top:14px;margin-top:6px;display:flex;flex-direction:column;gap:2px}.fsec h3{margin:0;font-family:var(--display);font-weight:900;text-transform:uppercase;font-size:18px;color:var(--red-2)}.fsec small{color:var(--muted);font-size:12px}
-.sigpad{width:100%;height:150px;background:#fff;border:1px solid var(--line-2);border-radius:6px;touch-action:none}.field label{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.sigpad{width:100%;height:150px;background:#fff;border:1px solid var(--line-2);border-radius:6px;touch-action:none}.code-box{border:2px dashed var(--line-2);border-radius:6px;padding:14px;display:flex;flex-direction:column;align-items:center;gap:8px;background:var(--panel-2)}.code-big{font-family:var(--mono);font-size:30px;letter-spacing:.12em;font-weight:600;user-select:all;-webkit-user-select:all}.field label{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
 .field small{color:var(--faint);font-size:12px}
 .f2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--carbon);color:#ffffff;padding:10px 16px;border-radius:4px;font-weight:600;z-index:30;max-width:calc(100% - 32px)}
@@ -1439,10 +1439,8 @@ document.addEventListener("click",function(e){
   if(a==="otDeliver"&&oc){deliver(oc);return;}
   if(a==="otReport"&&oc){exportDoc("pdf",jasaReportHTML(oc,findClient(oc.cliente),LOGO),"Reporte-JASA-"+String(oc.folio).replace(/[^A-Za-z0-9-]/g,"")+".pdf","otStatus","Envíaselo al cliente; también lo puede descargar en su portal.");return;}
   if(a==="portalShare"){var pc=byId("clientes",id);if(!pc)return;var code=pc.codigoPortal||newPortalCode();if(!pc.codigoPortal)patch("clientes",id,{codigoPortal:code});
-    var msg="Hola, le escribimos de JASA Extintores. Este es su acceso al portal de clientes, donde puede consultar sus extintores y descargar sus reportes de inspección:\nhttps://jasaextintores.com/clientes\nCódigo de acceso: "+code;
-    if(pc.tel){var la=document.createElement("a");la.href=waLink(pc.tel,msg);la.target="_blank";la.rel="noopener";document.body.appendChild(la);la.click();la.remove();toast("Código "+code);}
-    else{try{navigator.clipboard.writeText(msg).then(function(){toast("Código "+code+" copiado con el mensaje");},function(){toast("Código: "+code);});}catch(er){toast("Código: "+code);}}
-    return;}
+    portalDrawer(Object.assign({},pc,{codigoPortal:code}));return;}
+  if(a==="copiar"){var tx=b.getAttribute("data-txt")||"";copiarTxt(tx,b.getAttribute("data-msg")||"Copiado");return;}
   if(a==="logout"&&SB){SB.auth.signOut().then(function(){location.reload();});return;}
   if(a==="importAsk"){document.getElementById("importFile").click();return;}
   if(a==="importDo"&&S.importData){doImport();return;}
@@ -1512,6 +1510,20 @@ function backup(){
   var out={exportado:new Date().toISOString()};COLS.forEach(function(c){out[c]=S.data[c];});
   saveBlob("jasa-respaldo-"+today()+".json",new Blob([JSON.stringify(out,null,2)],{type:"application/json"})).then(function(){toast("Respaldo guardado");},function(e){if(e&&e.code!=="declined")toast("No se pudo descargar el respaldo.");});
 }
+function portalLink(code){return SITE+"/clientes/#"+code;}
+function portalMsg(c){return "Hola"+(c.contacto?" "+c.contacto:"")+", le escribimos de JASA Extintores.\n\nEste es su acceso al portal de clientes, donde puede consultar sus extintores, sus próximas recargas y descargar sus reportes de inspección.\n\nEntre directo con este enlace:\n"+portalLink(c.codigoPortal)+"\n\nO entre a jasaextintores.com/clientes y escriba su código de acceso:\n\n"+c.codigoPortal+"\n\nEl código es solo para su empresa. Cualquier duda: 878 783 3216 · WhatsApp 878 117 4728.";}
+function copiarTxt(tx,ok){function hecho(){toast(ok);}function viejo(){var ta=document.createElement("textarea");ta.value=tx;ta.setAttribute("readonly","");ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.select();try{document.execCommand("copy");hecho();}catch(e){toast("No se pudo copiar; selecciónalo y cópialo a mano.");}ta.remove();}
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(tx).then(hecho,viejo);else viejo();}
+function portalDrawer(c){var msg=portalMsg(c),em=c.email||fiscalOf(c).emailFact||"";
+  document.getElementById("drawerRoot").innerHTML='<div class="overlay" data-act="closeDrawer"><div class="drawer" role="dialog" aria-modal="true" aria-label="Acceso al portal"><div class="box-h"><h2>Acceso al portal</h2><button type="button" class="btn ghost sm" data-act="closeDrawer">Cerrar</button></div><div class="plan">'+
+    '<span class="eyebrow">'+esc(c.nombre)+'</span>'+
+    '<div class="code-box"><span class="eyebrow">Código de acceso</span><b class="code-big" id="codeBig">'+esc(c.codigoPortal)+'</b><button type="button" class="btn sm" data-act="copiar" data-txt="'+esc(c.codigoPortal)+'" data-msg="Código copiado">Copiar código</button></div>'+
+    '<div class="field"><label>Enlace directo (entra sin escribir el código)</label><div style="display:flex;gap:6px"><input class="inp mono" readonly value="'+esc(portalLink(c.codigoPortal))+'" onclick="this.select()"><button type="button" class="btn ghost sm" data-act="copiar" data-txt="'+esc(portalLink(c.codigoPortal))+'" data-msg="Enlace copiado">Copiar</button></div></div>'+
+    '<div class="field"><label>Mensaje</label><textarea class="inp" readonly rows="9" style="font-family:var(--body);font-size:14px">'+esc(msg)+'</textarea></div>'+
+    '<div style="display:flex;gap:8px;flex-wrap:wrap">'+(c.tel?'<a class="btn wa" target="_blank" rel="noopener" href="'+esc(waLink(c.tel,msg))+'">Enviar por WhatsApp</a>':'<span class="hint">Sin teléfono para WhatsApp.</span>')+
+    (em?'<a class="btn ghost" href="'+esc(mailLink(em,"Su acceso al portal de clientes · JASA Extintores",msg,JASA_MAIL))+'">Enviar por correo</a>':'<span class="hint">Sin correo: agrégalo en la ficha del cliente para enviarlo por correo.</span>')+
+    '<button type="button" class="btn ghost" data-act="copiar" data-txt="'+esc(msg)+'" data-msg="Mensaje copiado">Copiar mensaje</button></div>'+
+    '<span class="hint">Para quitarle el acceso a este cliente, borra el código en su ficha (Editar).</span></div></div></div>';}
 function newPortalCode(){var A="ABCDEFGHJKLMNPQRSTUVWXYZ23456789",b=new Uint8Array(10),o="";crypto.getRandomValues(b);for(var i=0;i<10;i++){o+=A[b[i]%A.length];if(i===3||i===7)o+="-";}return o;}
 
 /*@reporte*/
