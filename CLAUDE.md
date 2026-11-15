@@ -1,7 +1,8 @@
 # JASA Extintores — contexto del proyecto
 
 Sitio y sistema interno de JASA Extintores SA de CV (Piedras Negras, Coahuila). Dueño: Jimmy SVGZ; su hijo
-ayuda con la configuración. Todo el texto para el usuario va en español de México.
+ayuda con la configuración. Todo el texto para el usuario va en español de México. Diseño: manual de identidad 2026 (fondo claro, Negro JASA en
+barras y encabezados de tabla, franja roja, Saira Condensed / Barlow / IBM Plex Mono; ámbar solo de fondo o en avisos).
 
 ## Qué hay y dónde vive
 
@@ -34,9 +35,12 @@ generados.
 - Costos: `inventario.costo` (por unidad) se actualiza al registrar un egreso ligado a un artículo (`movs.articulo`,
   `movs.cant`). `recetas {art, insumos[{inv,cant}|{nombre,cant,costo}], margen}`; el precio = costo × (1 + margen/100) y se
   guarda en `precios` (id = `priceId(art)`) con `receta` y `margen`.
-- `public.staff` tiene `rol` (`admin` | `tecnico`) y `nombre` (`supabase/04_puestos.sql`). El técnico solo ve en la app
-  sus `visitas` programadas; es filtro de la app, no de RLS (pendiente: permisos por puesto en la base).
-- Acceso: RLS; solo correos en `public.staff` leen y escriben (`public.is_staff()`). `anon` no lee nada.
+- `public.staff` tiene `rol` (`admin` | `oficina` | `taller` | `tecnico` | `otro`), `nombre` y `permisos text[]`
+  (`supabase/04_puestos.sql`, `05_permisos.sql`). RLS de `docs` usa `public.puede(col)`: admin todo; los demás, las
+  colecciones que abre cada permiso en `colecciones_de()` (mantener igual que `PERMS`/`SCREEN_PERM` en `admin.html`).
+  Solo admin cambia `staff` (pantalla Personal y permisos); un trigger impide quedarse sin administrador. En la app,
+  quien no es admin solo ve sus `visitas`.
+- Acceso: RLS; solo correos en `public.staff` leen y escriben según sus permisos. `anon` no lee nada.
 - Clientes del portal: función `public.portal(codigo)` con el `codigoPortal` del cliente (XXXX-XXXX-XX).
 - Sitio público: función `public.solicitar_cotizacion(datos)` crea una cotización `Nueva` con `origen: web`.
 - Ficha del QR: función `public.ficha_extintor(folio)` (sin cliente ni serie).

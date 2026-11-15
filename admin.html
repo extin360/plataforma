@@ -245,6 +245,14 @@ var db=null, dl=null;
 function esc(v){return String(v==null?"":v).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
 function jasaLogo(neg,uid){var a=neg?"#ffffff":"#1a1716",band=neg?"#0d0d0d":"#ffffff",id="lb"+(uid||"x");
   return '<svg viewBox="0 0 440 200" role="img" aria-label="Extintores JASA"><defs><clipPath id="'+id+'"><rect x="0" y="98" width="440" height="16"/></clipPath></defs><g transform="translate(10 24)"><path d="M30 18 L6 8" stroke="'+a+'" stroke-width="7" stroke-linecap="round" fill="none"/><rect x="26" y="14" width="22" height="20" rx="3" fill="'+a+'"/><path d="M48 20 L96 6 L96 34 L48 28 Z" fill="#E10F0F"/><rect x="10" y="32" width="54" height="120" rx="16" fill="#E10F0F"/><rect x="10" y="74" width="54" height="16" fill="'+band+'"/></g><text x="128" y="50" textLength="300" lengthAdjust="spacingAndGlyphs" font-family="Barlow, Arial, sans-serif" font-weight="500" font-size="30" fill="'+a+'">EXTINTORES</text><g transform="translate(26 0) skewX(-8)"><text x="96" y="176" font-family="Saira Condensed, Arial Narrow, Impact, sans-serif" font-weight="900" font-size="150" fill="#E10F0F">JASA</text><text x="96" y="176" font-family="Saira Condensed, Arial Narrow, Impact, sans-serif" font-weight="900" font-size="150" fill="'+band+'" clip-path="url(#'+id+')">JASA</text></g></svg>';}
+var PERMS=[["cotizaciones","Cotizaciones y lista de precios"],["clientes","Clientes"],["proveedores","Proveedores"],["finanzas","Finanzas: ingresos, egresos y utilidad"],["taller","Taller: órdenes"],["inventario","Inventario y órdenes de compra"],["costos","Costos y recetas"],["extintores","Extintores y etiquetas QR"],["inspecciones","Inspecciones y visitas"],["pendientes","Pendientes"],["campo","App del técnico (jasaextintores.com/tecnico)"]];
+var PUESTOS=[["admin","Administrador: todo, incluso personal y permisos"],["oficina","Oficina"],["taller","Taller"],["tecnico","Técnico de campo"],["otro","Personalizado"]];
+var PRESET={oficina:["cotizaciones","clientes","proveedores","finanzas","taller","inventario","costos","extintores","inspecciones","pendientes"],taller:["taller","inventario","extintores","pendientes","campo"],tecnico:["campo","extintores"]};
+var SCREEN_PERM={quotes:"cotizaciones",clientes:"clientes",proveedores:"proveedores",finanzas:"finanzas",taller:"taller",inventario:"inventario",costos:"costos",extintores:"extintores",inspecciones:"inspecciones",pendientes:"pendientes",personal:"_admin"};
+function isAdmin(){return !S.me||!S.me.rol||S.me.rol==="admin";}
+function perm(k){if(isAdmin())return true;if(k==="_admin")return false;var l=(S.me.permisos||[]).slice();if(S.me.rol==="tecnico")l.push("campo");return l.indexOf(k)>=0;}
+function canScreen(sc){var k=SCREEN_PERM[sc];return !k||perm(k);}
+function puestoTxt(r){var x=PUESTOS.find(function(p){return p[0]===r;});return x?x[1].split(":")[0]:(r||"—");}
 function money(n){n=+n||0;return "$"+n.toLocaleString("es-MX",{minimumFractionDigits:2,maximumFractionDigits:2});}
 function pad(n){return String(n).padStart(2,"0");}
 function today(){var d=new Date();return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());}
@@ -774,17 +782,20 @@ function exportInsp(i){
 }
 
 /* ---------- vistas ---------- */
-var TITLES={panel:["Resumen","Panel"],quotes:["Bandeja","Cotizaciones"],clientes:["Cartera","Clientes"],proveedores:["Compras","Proveedores"],finanzas:["Contabilidad","Ingresos y egresos"],taller:["Taller JASA","Órdenes de taller"],inventario:["Taller JASA","Inventario"],pendientes:["Agenda","Pendientes"],extintores:["Expedientes","Extintores"],inspecciones:["Campo","Inspecciones"],costos:["Taller JASA","Costos y precios"]};
+var TITLES={panel:["Resumen","Panel"],quotes:["Bandeja","Cotizaciones"],clientes:["Cartera","Clientes"],proveedores:["Compras","Proveedores"],finanzas:["Contabilidad","Ingresos y egresos"],taller:["Taller JASA","Órdenes de taller"],inventario:["Taller JASA","Inventario"],pendientes:["Agenda","Pendientes"],extintores:["Expedientes","Extintores"],inspecciones:["Campo","Inspecciones"],costos:["Taller JASA","Costos y precios"],personal:["Equipo","Personal y permisos"]};
 function lowStock(){return S.data.inventario.filter(function(i){return (+i.stock||0)<(+i.min||0);});}
 function dueClients(){
   var lim=addMonths(today().slice(0,7),2);
   return S.data.clientes.filter(function(c){return c.proximaRecarga&&c.proximaRecarga<=lim;}).sort(function(a,b){return a.proximaRecarga<b.proximaRecarga?-1:1;});
 }
 function renderNav(){
+  if(!canScreen(S.screen))S.screen="panel";
   var sb=document.getElementById("sideBrand");if(sb&&!sb.getAttribute("data-l")){sb.setAttribute("data-l","1");sb.innerHTML=jasaLogo(true,"sd")+'<span class="eyebrow">Administración</span>';}
   var pend=S.data.quotes.filter(function(q){return q.status==="Nueva";}).length;
   var open=S.data.ordenes.filter(function(o){return (o.etapa||0)<DONE;}).length;
   var items=[["panel","Panel",""],["quotes","Cotizaciones",pend||""],["clientes","Clientes",""],["proveedores","Proveedores",""],["finanzas","Finanzas",""],["taller","Taller",open||""],["inventario","Inventario",(lowStock().length+ocAbiertas())||""],["costos","Costos y precios",recAlert()||""],["extintores","Extintores",extVencidos().length||""],["inspecciones","Inspecciones",inspPend()||""],["pendientes","Pendientes",(function(){var t0=today();var n=dayTasks(t0).filter(function(t){return !isDone(t,t0);}).length+overdue().length;return n||"";})()]];
+  if(isAdmin()&&S.me)items.push(["personal","Personal y permisos",""]);
+  items=items.filter(function(n){return canScreen(n[0]);});
   document.getElementById("nav").innerHTML=items.map(function(n){return '<button type="button" class="nav-b" data-act="go" data-v="'+n[0]+'"'+(S.screen===n[0]?' aria-current="page"':"")+'><span>'+n[1]+'</span><span class="cnt">'+n[2]+'</span></button>';}).join("");
 }
 function statusNote(){
@@ -805,7 +816,8 @@ function vPanel(){
   var egr=mv.filter(function(m){return m.tipo==="egreso";}).reduce(function(a,m){return a+(+m.monto||0);},0);
   var open=S.data.ordenes.filter(function(o){return (o.etapa||0)<DONE;}).length;
   var mes=MESES[+mk.slice(5)-1];
-  var k=[["Cotizaciones nuevas",String(S.data.quotes.filter(function(q){return q.status==="Nueva";}).length),"Por contestar","var(--amber)"],["Ingresos "+mes,money(ing),mv.filter(function(m){return m.tipo==="ingreso";}).length+" movimientos","var(--green)"],["Egresos "+mes,money(egr),"Utilidad "+money(ing-egr),"var(--red)"],["En taller",String(open),"Órdenes abiertas","var(--blue)"]];
+  var k0=[["Cotizaciones nuevas",String(S.data.quotes.filter(function(q){return q.status==="Nueva";}).length),"Por contestar","var(--amber)"],["Ingresos "+mes,money(ing),mv.filter(function(m){return m.tipo==="ingreso";}).length+" movimientos","var(--green)"],["Egresos "+mes,money(egr),"Utilidad "+money(ing-egr),"var(--red)"],["En taller",String(open),"Órdenes abiertas","var(--blue)"]];
+  var k=k0.filter(function(x,i){return i===0?perm("cotizaciones"):i===3?perm("taller"):perm("finanzas");});
   var due=dueClients().filter(match),low=lowStock();
   var cur=today().slice(0,7);
   return '<div class="kpis">'+k.map(function(x){return '<div class="kpi" style="--k:'+x[3]+'"><span class="eyebrow">'+x[0]+'</span><span class="v">'+x[1]+'</span><span class="n">'+x[2]+'</span></div>';}).join("")+'</div>'+
@@ -1045,6 +1057,42 @@ function ocReceive(pagada){
     return ch.then(function(){return patch("compras",id,{estado:"Recibida",pago:pagada?"pagada":"por pagar",recibida:hoy});});
   }).then(function(){S.oc=ocDraft(byId("compras",o.id)||o);render();toast("Mercancía recibida y sumada a existencias");},function(){});
 }
+/* ---------- personal y permisos ---------- */
+function staffList(){return (S.staff||[]).slice().sort(function(a,b){return (a.rol==="admin"?0:1)-(b.rol==="admin"?0:1)||String(a.nombre||a.email).localeCompare(String(b.nombre||b.email),"es");});}
+function permsOf(x){if(x.rol==="admin")return PERMS.map(function(p){return p[0];});var l=(x.permisos||[]).slice();if(x.rol==="tecnico"&&l.indexOf("campo")<0)l.push("campo");return l;}
+function reloadStaff(){return SB.from("staff").select("*").then(function(r){if(!r.error){S.staff=r.data||[];var me=String(S.user.email).toLowerCase();S.me=S.staff.find(function(x){return String(x.email).toLowerCase()===me;})||S.me;}render();});}
+function vPersonal(){
+  var list=staffList(),hasCol=list.some(function(x){return "permisos" in x;});
+  return '<div class="hint">Aquí decides quién entra al sistema y qué puede ver y modificar cada persona. Los permisos se cumplen en la base de datos: aunque alguien sepa de sistemas, no puede ver lo que no tiene permitido.</div>'+
+  (hasCol||!list.length?"":'<div class="notice"><b>Falta un paso en Supabase.</b> Corre el archivo <span class="mono">supabase/05_permisos.sql</span> en SQL Editor para que los permisos se puedan guardar.</div>')+
+  '<div class="box"><div class="box-h"><h2>Personal</h2><button type="button" class="btn sm" data-act="stNew">+ Agregar persona</button></div>'+
+  '<div class="tbl-wrap"><table><thead><tr><th>NOMBRE</th><th>PUESTO</th><th>PUEDE USAR</th><th></th></tr></thead><tbody>'+list.map(function(x){var pl=permsOf(x);return '<tr><td><b style="font-weight:600">'+esc(x.nombre||"Sin nombre")+'</b><div class="mono" style="color:var(--muted)">'+esc(x.email)+'</div></td><td>'+esc(puestoTxt(x.rol))+'</td><td style="max-width:520px">'+(x.rol==="admin"?'<span style="color:var(--muted)">Todo</span>':pl.length?'<div class="eq-chips">'+pl.map(function(k){var pp=PERMS.find(function(p){return p[0]===k;});return '<span class="eq-c">'+esc(pp?pp[1].split(":")[0].split(" (")[0]:k)+'</span>';}).join("")+'</div>':'<span style="color:var(--rose)">Nada todavía</span>')+'</td><td class="num"><button type="button" class="link" data-act="stEdit" data-id="'+esc(x.email)+'">Editar</button></td></tr>';}).join("")+'</tbody></table></div></div>'+
+  '<div class="box"><div class="box-h"><h2>Cómo darle acceso a alguien nuevo</h2></div><div class="plan"><span>1. Agrégalo aquí con su correo, puesto y permisos.</span><span>2. Créale su usuario en Supabase: <a href="https://supabase.com/dashboard/project/psggoagcdokwrkykgufr/auth/users" target="_blank" rel="noopener" class="link" style="padding:0">Authentication › Users</a> › <b>Add user</b> › <b>Create new user</b>, con el mismo correo y una contraseña temporal, y marca <b>Auto Confirm User</b>.</span><span>3. Pásale su correo y contraseña en persona. Entra en <span class="mono">jasaextintores.com/admin</span> (oficina) o <span class="mono">jasaextintores.com/tecnico</span> (técnicos).</span><span class="hint">Para quitarle el acceso a alguien, elimínalo aquí: deja de ver todo al momento. También puedes borrar su usuario en Supabase.</span></div></div>';
+}
+function staffDrawer(x){
+  var nuevo=!x;x=x||{email:"",nombre:"",rol:"tecnico",permisos:PRESET.tecnico.slice()};var pl=permsOf(x),adm=x.rol==="admin";
+  document.getElementById("drawerRoot").innerHTML='<div class="overlay" data-act="closeDrawer"><div class="drawer" role="dialog" aria-modal="true" aria-label="'+(nuevo?"Agregar persona":"Editar persona")+'"><div class="box-h"><h2>'+(nuevo?"Agregar persona":"Editar persona")+'</h2><button type="button" class="btn ghost sm" data-act="closeDrawer">Cerrar</button></div>'+
+    '<form id="staffForm" data-old="'+esc(x.email)+'"><div class="field"><label for="stMail">Correo con el que entra *</label><input class="inp" id="stMail" type="email" autocomplete="off" required value="'+esc(x.email)+'"'+(nuevo?"":" readonly")+'></div>'+
+    '<div class="field"><label for="stName">Nombre *</label><input class="inp" id="stName" autocomplete="off" required value="'+esc(x.nombre||"")+'"></div>'+
+    '<div class="field"><label for="stRol">Puesto</label><select class="inp" id="stRol">'+PUESTOS.map(function(p){return '<option value="'+p[0]+'"'+(p[0]===(PUESTOS.some(function(q){return q[0]===x.rol;})?x.rol:"otro")?" selected":"")+'>'+esc(p[1])+'</option>';}).join("")+'</select><small>Al cambiar el puesto se marcan sus permisos típicos; puedes ajustarlos abajo.</small></div>'+
+    '<fieldset class="field" id="stPerms" style="border:0;padding:0;margin:0"'+(adm?" disabled":"")+'><legend class="eyebrow" style="margin-bottom:6px">Puede usar</legend>'+PERMS.map(function(p){return '<label style="display:flex;gap:10px;align-items:center;padding:8px 10px;border:1px solid var(--line);border-radius:3px;cursor:pointer;text-transform:none;letter-spacing:0;font-family:var(--body);font-size:15px;color:var(--ink)"><input type="checkbox" value="'+p[0]+'"'+(pl.indexOf(p[0])>=0?" checked":"")+' style="width:18px;height:18px;accent-color:var(--red)">'+esc(p[1])+'</label>';}).join("")+'</fieldset>'+
+    '<div class="err" id="stErr" role="alert" style="color:var(--rose);font-size:14px"></div>'+
+    '<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" type="submit">'+(nuevo?"Agregar":"Guardar cambios")+'</button>'+(nuevo?"":'<button type="button" class="btn ghost" data-act="stDel">Quitar acceso</button>')+'</div>'+
+    (nuevo?'<small style="color:var(--muted)">Después créale su usuario en Supabase (los pasos están abajo en esta pantalla).</small>':"")+'</form></div></div>';
+}
+function staffSave(f){
+  var em=document.getElementById("stMail").value.trim().toLowerCase(),nm=document.getElementById("stName").value.trim(),rol=document.getElementById("stRol").value,er=document.getElementById("stErr");
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)){er.textContent="Revisa el correo.";return;}
+  var pl=Array.prototype.slice.call(document.querySelectorAll("#stPerms input:checked")).map(function(i){return i.value;});
+  if(rol==="admin")pl=[];else if(!pl.length){er.textContent="Marca al menos una sección.";return;}
+  var nuevo=!f.getAttribute("data-old");if(nuevo&&(S.staff||[]).some(function(x){return String(x.email).toLowerCase()===em;})){er.textContent="Ese correo ya está en el personal.";return;}
+  var me=String(S.user.email).toLowerCase();if(em===me&&rol!=="admin"&&!window.confirm("Te vas a quitar el puesto de administrador a ti mismo. ¿Seguro?"))return;
+  er.textContent="Guardando…";
+  var row={email:em,nombre:nm,rol:rol,permisos:pl};
+  (nuevo?SB.from("staff").insert(row):SB.from("staff").update({nombre:nm,rol:rol,permisos:pl}).eq("email",f.getAttribute("data-old"))).then(function(r){
+    if(r.error){er.textContent=/administrador/i.test(r.error.message)?"Debe quedar al menos un administrador.":/permisos/.test(r.error.message)?"Falta correr supabase/05_permisos.sql en Supabase.":"No se pudo guardar: "+r.error.message;return;}
+    S.drawer=null;renderDrawer();toast(nuevo?nm+" agregado. Ahora créale su usuario en Supabase.":"Cambios guardados");reloadStaff();});
+}
 function vInvStock(){
   var CORD=["Extintores","Agentes y polvo","Refacciones","Señalamientos","Otros"];var list=S.data.inventario.filter(match).sort(function(a,b){var ca=CORD.indexOf(a.categoria||"Otros"),cb=CORD.indexOf(b.categoria||"Otros");return (ca<0?9:ca)-(cb<0?9:cb)||String(a.nombre).localeCompare(String(b.nombre),"es");});
   var shop=S.data.inventario.filter(function(i){return (+i.stock||0)<(+i.min||0);}).map(function(i){return {n:i.nombre,u:i.unidad,q:Math.max(0,(+i.optimo||0)-(+i.stock||0))};});
@@ -1068,6 +1116,7 @@ function render(){
   else if(S.screen==="extintores")html+=vExt();
   else if(S.screen==="inspecciones")html+=vInsp();
   else if(S.screen==="costos")html+=vCostos();
+  else if(S.screen==="personal")html+=vPersonal();
   else html+=vInv();
   var view=document.getElementById("view"),ae=document.activeElement,keep=ae&&view.contains(ae)&&ae.id?ae.id:null;
   view.innerHTML=html;
@@ -1137,6 +1186,9 @@ document.addEventListener("click",function(e){
   if(a==="inspBack"){S.inspSel=null;render();return;}
   if(a==="inspQuote"){var iq=byId("inspecciones",S.inspSel);if(iq)inspQuote(iq);return;}
   if(a==="inspReviewed"){patch("inspecciones",S.inspSel,{estado:"revisada"}).then(function(){toast("Marcada como revisada");});return;}
+  if(a==="stNew"){staffDrawer(null);return;}
+  if(a==="stEdit"){var sx=(S.staff||[]).find(function(x){return x.email===id;});if(sx)staffDrawer(sx);return;}
+  if(a==="stDel"){var sf=document.getElementById("staffForm"),de=sf&&sf.getAttribute("data-old");if(!de)return;if(de.toLowerCase()===String(S.user.email).toLowerCase()){document.getElementById("stErr").textContent="No te puedes quitar el acceso a ti mismo.";return;}if(!window.confirm("¿Quitarle el acceso a "+de+"? Deja de ver todo al momento."))return;SB.from("staff").delete().eq("email",de).then(function(r){if(r.error){document.getElementById("stErr").textContent=/administrador/i.test(r.error.message)?"Debe quedar al menos un administrador.":"No se pudo: "+r.error.message;return;}S.drawer=null;renderDrawer();toast("Acceso quitado");reloadStaff();});return;}
   if(a==="invTab"){S.invTab=v;S.oc=null;render();return;}
   if(a==="cntStart"){write("conteos",null,{fecha:today(),estado:"en curso",quien:(function(){var e=(S.user&&S.user.email)||"",m=(S.staff||[]).find(function(x){return x.email===e;});return m&&m.nombre?m.nombre:e;})(),items:{},creado:Date.now()}).then(function(){render();});return;}
   if(a==="cntPrint"){cntPrint();return;}
@@ -1151,7 +1203,7 @@ document.addEventListener("click",function(e){
   if(a==="ocSave"){ocSave().then(function(){render();},function(){});return;}
   if(a==="ocPrint"){ocPrint();return;}
   if(a==="ocWa"){var pv0=S.data.proveedores.find(function(p){return String(p.nombre).trim().toLowerCase()===String(S.oc.proveedor).trim().toLowerCase();});var wwin=window.open("","_blank");ocSave(true).then(function(id){var url=waLink(pv0.tel,ocText(S.oc));if(wwin)wwin.location=url;else location.href=url;if(S.oc.estado==="Borrador"){S.oc.estado="Enviada";return patch("compras",id,{estado:"Enviada"});}}).then(function(){render();},function(){if(wwin)wwin.close();});return;}
-  if(a==="ocRecvAsk"){var rb=document.getElementById("ocRecv");if(rb)rb.innerHTML='<div class="plan" style="border-top:1px solid var(--line)"><b>¿Ya le pagaste al proveedor?</b><span class="hint">Las cantidades de la orden se suman a tus existencias y el costo de cada artículo se actualiza. Si llegó distinto, corrige las cantidades antes.</span><div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn sm" data-act="ocRecv" data-v="1">Recibida y pagada</button><button type="button" class="btn ghost sm" data-act="ocRecv" data-v="0">Recibida, queda por pagar</button></div></div>';return;}
+  if(a==="ocRecvAsk"){var rb=document.getElementById("ocRecv");if(rb)rb.innerHTML='<div class="plan" style="border-top:1px solid var(--line)"><b>¿Ya le pagaste al proveedor?</b><span class="hint">Las cantidades de la orden se suman a tus existencias y el costo de cada artículo se actualiza. Si llegó distinto, corrige las cantidades antes.</span><div style="display:flex;gap:8px;flex-wrap:wrap">'+(perm("finanzas")?'<button type="button" class="btn sm" data-act="ocRecv" data-v="1">Recibida y pagada</button>':"")+'<button type="button" class="btn ghost sm" data-act="ocRecv" data-v="0">Recibida, queda por pagar</button></div></div>';return;}
   if(a==="ocRecv"){ocReceive(v==="1");return;}
   if(a==="ocCancel"){if(!window.confirm("¿Cancelar esta orden de compra?"))return;patch("compras",S.oc.id,{estado:"Cancelada"}).then(function(){S.oc.estado="Cancelada";render();});return;}
   if(a==="recNew"){S.rec={id:null,art:"",insumos:[],margen:40};render();window.scrollTo(0,0);return;}
@@ -1206,6 +1258,7 @@ document.addEventListener("change",function(e){
   if(t.id==="finMes"){S.finMes=t.value;render();return;}
   if(t.id==="extCli"){S.extCli=t.value;render();return;}
   if(t.id==="cntCat"){S.cntCat=t.value;render();return;}
+  if(t.id==="stRol"){var fs=document.getElementById("stPerms");if(fs){fs.disabled=t.value==="admin";var pr=t.value==="admin"?PERMS.map(function(p){return p[0];}):PRESET[t.value];if(pr)fs.querySelectorAll("input").forEach(function(i){i.checked=pr.indexOf(i.value)>=0;});}return;}
   if(S.oc&&t.getAttribute&&t.getAttribute("data-ok")==="inv"){var ol2=S.oc.lines[+t.getAttribute("data-ix")];if(ol2){ol2.inv=t.value;var iv2=byId("inventario",t.value);if(iv2&&+iv2.costo>0)ol2.costo=+iv2.costo;render();}return;}
   if(S.rec&&t.getAttribute&&t.getAttribute("data-rk")==="inv"){var rs=S.rec.insumos[+t.getAttribute("data-ix")];if(rs){rs.inv=t.value;if(!rs.inv){rs.nombre=rs.nombre||"";rs.costo=rs.costo||"";}render();}return;}
   if(t.hasAttribute&&t.hasAttribute("data-hall")&&S.hall){var hr=S.hall.rows[+t.getAttribute("data-hall")],hk=t.getAttribute("data-hk");if(hr){hr[hk]=hk==="on"?t.checked:t.value;render();}return;}
@@ -1227,7 +1280,7 @@ document.addEventListener("change",function(e){
   if(S.drawer&&S.drawer.kind==="ordenes"&&t.id==="f_cliente"){var cl=findClient(t.value);if(cl){var fc=document.getElementById("f_contacto"),ft=document.getElementById("f_tel");if(fc&&!fc.value)fc.value=cl.contacto||"";if(ft&&!ft.value)ft.value=cl.tel||"";}}
   if(S.drawer&&t.name==="tipo"){var c=document.getElementById("f_categoria");if(c)c.value=t.value==="ingreso"?"Ventas":"Insumos";}
 });
-document.addEventListener("submit",function(e){e.preventDefault();if(e.target.id==="drawerForm")submitDrawer(e.target);});
+document.addEventListener("submit",function(e){if(e.target.id==="staffForm"){e.preventDefault();staffSave(e.target);return;}e.preventDefault();if(e.target.id==="drawerForm")submitDrawer(e.target);});
 document.addEventListener("keydown",function(e){if(e.key==="Escape"&&S.drawer){S.drawer=null;renderDrawer();}});
 
 function backup(){
@@ -1422,12 +1475,12 @@ function startSupabase(){
     return SB.auth.getSession();
   }).then(function(r){
     var ses=r&&r.data&&r.data.session;if(!ses){showLogin();return;}
-    return SB.from("staff").select("email").limit(1).then(function(q){
-      if(q.error||!q.data||!q.data.length){showLogin(q.error?"No se pudo revisar tu acceso: "+q.error.message:"El correo "+ses.user.email+" entró, pero no está en la lista de personal (public.staff).");SB.auth.signOut();return;}
-      document.getElementById("loginRoot").innerHTML="";S.user=ses.user;
+    return SB.from("staff").select("*").then(function(q){
+      var me=String(ses.user.email||"").toLowerCase(),yo=(q.data||[]).find(function(x){return String(x.email).toLowerCase()===me;});
+      if(q.error||!yo){showLogin(q.error?"No se pudo revisar tu acceso: "+q.error.message:"El correo "+ses.user.email+" entró, pero no está en la lista de personal (public.staff).");SB.auth.signOut();return;}
+      document.getElementById("loginRoot").innerHTML="";S.user=ses.user;S.me=yo;S.staff=q.data||[];
       db=makeSupaDb(SB);startDb();
-      SB.from("staff").select("*").then(function(sr){if(!sr.error)S.staff=sr.data||[];});
-      ["backupBtn","importBtn","logoutBtn"].forEach(function(i){document.getElementById(i).hidden=false;});
+      (isAdmin()?["backupBtn","importBtn","logoutBtn"]:["logoutBtn"]).forEach(function(i){document.getElementById(i).hidden=false;});
       var w=document.getElementById("whoNote");w.textContent=ses.user.email;w.hidden=false;
     });
   }).catch(function(){S.dbState="error";render();});
@@ -1466,7 +1519,7 @@ function doImport(){
 }
 
 /* ---------- enlaces directos ---------- */
-var HASH={compras:"inventario",conteo:"inventario",costos:"costos",recetas:"costos",extintores:"extintores",inspecciones:"inspecciones",panel:"panel",cotizaciones:"quotes",quotes:"quotes",clientes:"clientes",proveedores:"proveedores",finanzas:"finanzas",taller:"taller",inventario:"inventario",pendientes:"pendientes",agenda:"pendientes"};
+var HASH={personal:"personal",permisos:"personal",compras:"inventario",conteo:"inventario",costos:"costos",recetas:"costos",extintores:"extintores",inspecciones:"inspecciones",panel:"panel",cotizaciones:"quotes",quotes:"quotes",clientes:"clientes",proveedores:"proveedores",finanzas:"finanzas",taller:"taller",inventario:"inventario",pendientes:"pendientes",agenda:"pendientes"};
 function fromHash(){var h=(location.hash||"").replace("#","").toLowerCase();if(HASH[h]&&S.screen!==HASH[h]){S.screen=HASH[h];S.otSel=null;render();}}
 window.addEventListener("hashchange",fromHash);fromHash();
 

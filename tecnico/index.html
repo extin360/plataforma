@@ -287,7 +287,7 @@ function loadData(){
 function extOf(cli){var n=String(cli||"").trim().toLowerCase();return Object.keys(S.ext).map(function(k){return S.ext[k];}).filter(function(x){return String(x.cliente||"").trim().toLowerCase()===n&&x.estado!=="baja"&&x.estado!=="sin asignar";}).sort(function(a,b){return String(a.ubicacion||"").localeCompare(String(b.ubicacion||""),"es");});}
 function findCli(n){n=String(n||"").trim().toLowerCase();return S.clientes.find(function(x){return String(x.nombre).trim().toLowerCase()===n;});}
 function nextFolio(cli){var c=findCli(cli)||{},p=c.prefijo||jasaPrefijo(cli),re=new RegExp("^"+p+"-(\\d+)$"),n=Object.keys(S.ext).reduce(function(a,k){var m=k.match(re);return m?Math.max(a,+m[1]):a;},0);return p+"-"+String(n+1).padStart(3,"0");}
-function misVisitas(){var me=String(S.user&&S.user.email||"").toLowerCase();return S.visitas.filter(function(x){return x.estado!=="completa"&&(S.rol!=="tecnico"||String(x.tecnico||"").toLowerCase()===me);}).sort(function(a,b){return String(a.fecha).localeCompare(String(b.fecha));});}
+function misVisitas(){var me=String(S.user&&S.user.email||"").toLowerCase();return S.visitas.filter(function(x){return x.estado!=="completa"&&(S.rol==="admin"||String(x.tecnico||"").toLowerCase()===me);}).sort(function(a,b){return String(a.fecha).localeCompare(String(b.fecha));});}
 function saveVisita(id,ch){var x=S.visitas.find(function(y){return y.id===id;});if(!x)return;Object.assign(x,ch);var d=Object.assign({},x);delete d.id;enqueue({col:"visitas",id:id,t:Date.now(),data:d});save("jasaCache",{clientes:S.clientes,ext:S.ext,visitas:S.visitas});}
 
 /* ---------- visita ---------- */
@@ -311,7 +311,7 @@ function render(){stopCam();var v=S.view,h="";
 }
 function vLogin(){dock("");return '<h1>Entrar</h1><form class="card" id="loginForm"><div class="field"><label for="lgMail">Correo</label><input class="inp" id="lgMail" type="email" autocomplete="username" required></div><div class="field"><label for="lgPass">Contraseña</label><input class="inp" id="lgPass" type="password" autocomplete="current-password" required></div><div class="err" id="lgErr" role="alert"></div><button class="btn" type="submit">Entrar</button><span class="hint">Usa el mismo correo y contraseña del panel de JASA.</span></form>';}
 function vHome(){
-  var v=visit(),rev=load(KR,"")||S.nombre||String(S.user.email).split("@")[0],mv=misVisitas(),t0=today(),tec=S.rol==="tecnico";
+  var v=visit(),rev=load(KR,"")||S.nombre||String(S.user.email).split("@")[0],mv=misVisitas(),t0=today(),tec=S.rol!=="admin";
   dock("");
   return (v&&v.estado==="en curso"?'<div class="card"><span class="eyebrow">Inspección en curso</span><h2>'+esc(v.cliente)+'</h2><span class="hint">'+Object.keys(v.items).length+' extintores revisados</span><button type="button" class="btn" data-act="resume">Continuar</button></div>':"")+
     '<h1>'+(tec?"Mis visitas":"Visitas programadas")+'</h1>'+
@@ -451,7 +451,8 @@ document.addEventListener("submit",function(e){e.preventDefault();var f=e.target
 function boot(){
   sb.auth.getSession().then(function(r){var ses=r&&r.data&&r.data.session;if(!ses){S.view="login";render();return;}
     S.user=ses.user;return sb.from("staff").select("*").then(function(q){
-      var yo=(q.data||[]).find(function(x){return String(x.email).toLowerCase()===String(ses.user.email).toLowerCase();});if(yo){S.rol=yo.rol||"admin";S.nombre=yo.nombre||"";save("jasaYo",{rol:S.rol,nombre:S.nombre});}
+      var yo=(q.data||[]).find(function(x){return String(x.email).toLowerCase()===String(ses.user.email).toLowerCase();});if(yo){S.rol=yo.rol||"admin";S.nombre=yo.nombre||"";save("jasaYo",{rol:S.rol,nombre:S.nombre});
+        if(S.rol!=="admin"&&S.rol!=="tecnico"&&(yo.permisos||[]).indexOf("campo")<0){S.view="login";render();$("lgErr").textContent="Tu usuario no tiene permiso para la app del técnico. Pídelo en Personal y permisos del panel.";sb.auth.signOut();return;}}
       if(!q.error&&!yo){sb.auth.signOut();S.view="login";render();$("lgErr").textContent="Tu correo no tiene acceso. Pide que te agreguen al personal.";return;}
       return loadData().then(function(){S.view=visit()&&visit().estado==="en curso"?"visit":"home";render();flush();
         var hm=jasaFolio(decodeURIComponent(location.hash.slice(1)));if(hm){try{history.replaceState(null,"",location.pathname);}catch(e){}if(visit()&&visit().estado==="en curso")openItem(hm);else toast("Empieza o continúa una inspección para revisar "+hm+".");}});
