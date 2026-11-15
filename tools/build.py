@@ -18,6 +18,10 @@ REPORTE = (ROOT / "src" / "reporte.js").read_text(encoding="utf-8").strip()
 MARK = re.compile(r"/\*@reporte\*/.*?/\*@/reporte\*/", re.S)
 
 
+def inject_opt(text):
+    return inject(text) if MARK.search(text) else text
+
+
 def inject(text):
     if not MARK.search(text):
         raise SystemExit("Falta el marcador /*@reporte*/ en una fuente")
@@ -42,8 +46,8 @@ head = (
 portal = inject((ROOT / "src" / "clientes.html").read_text(encoding="utf-8"))
 (ROOT / "clientes").mkdir(exist_ok=True)
 (ROOT / "clientes" / "index.html").write_text(portal, encoding="utf-8")
-for src, out in (("tecnico.html", "tecnico"), ("ficha.html", "e")):
-    page = inject((ROOT / "src" / src).read_text(encoding="utf-8")).replace("__JASA_VERSION__", VERSION)
+for src, out in (("tecnico.html", "tecnico"), ("ficha.html", "e"), ("cotizacion.html", "q")):
+    page = inject_opt((ROOT / "src" / src).read_text(encoding="utf-8")).replace("__JASA_VERSION__", VERSION)
     (ROOT / out).mkdir(exist_ok=True)
     (ROOT / out / "index.html").write_text(page, encoding="utf-8")
-print("Listo: admin/, clientes/, tecnico/ y e/ (ficha pública)")
+print("Listo: admin/, clientes/, tecnico/, e/ (ficha pública) y q/ (cotización en línea)")

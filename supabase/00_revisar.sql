@@ -9,4 +9,5 @@ select
           where table_schema = 'public' and table_name = 'staff' and column_name = 'rol')           as "04_puestos",
   exists (select 1 from pg_proc where proname = 'puede_escribir')                                   as "05_permisos",
   exists (select 1 from pg_proc where proname = 'solicitar_cotizacion'
-          and prosrc like '%''email''%')                                                            as "06_cotizacion_correo";
+          and prosrc like '%''email''%')                                                            as "06_cotizacion_correo",
+  exists (select 1 from pg_proc where proname = 'autorizar_cotizacion')                             as "07_cotizacion_en_linea";

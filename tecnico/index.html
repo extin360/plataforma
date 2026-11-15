@@ -266,7 +266,7 @@ function jasaHallazgos(items, hoyMes) {
 }
 /*@/reporte*/
 var sb=window.supabase.createClient(SUPA_URL,SUPA_KEY);
-var S={miFirma:load("jasaFirma",""),user:null,rol:"admin",nombre:"",visitas:[],clientes:[],ext:{},view:"home",cur:null,draft:null,stream:null,online:navigator.onLine};
+var S={ordenes:[],miFirma:load("jasaFirma",""),user:null,rol:"admin",nombre:"",visitas:[],clientes:[],ext:{},view:"home",cur:null,draft:null,stream:null,online:navigator.onLine};
 var KV="jasaVisita",KQ="jasaCola",KR="jasaReviso";
 var TIPOS=[["PQS","PQS"],["CO2","CO₂"],["TIPO K","Tipo K"],["AGUA","Agua"],["AFFF","Espuma AFFF"],["TIPO D","Tipo D"],["AGENTE LIMPIO","Agente limpio"]];
 var COMENT=["Vencido","Requiere recarga","Señalamiento","Obstruido","Despresurizado","Cambio de manguera","Sin seguro","Golpeado"];
@@ -299,20 +299,39 @@ window.addEventListener("online",flush);setInterval(flush,20000);
 
 /* ---------- datos ---------- */
 function loadData(){
-  return Promise.all([sb.from("docs").select("id,data").eq("col","clientes").limit(5000),sb.from("docs").select("id,data").eq("col","extintores").limit(20000),sb.from("docs").select("id,data").eq("col","visitas").limit(5000),sb.from("docs").select("id,data").eq("col","firmas").eq("id",String(S.user.email).toLowerCase()).limit(1)]).then(function(r){
+  return Promise.all([sb.from("docs").select("id,data").eq("col","clientes").limit(5000),sb.from("docs").select("id,data").eq("col","extintores").limit(20000),sb.from("docs").select("id,data").eq("col","visitas").limit(5000),sb.from("docs").select("id,data").eq("col","firmas").eq("id",String(S.user.email).toLowerCase()).limit(1),sb.from("docs").select("id,data").eq("col","ordenes").limit(5000)]).then(function(r){
     if(r[0].error||r[1].error)throw r[0].error||r[1].error;
     S.visitas=(r[2].data||[]).map(function(x){return Object.assign({id:x.id},x.data);});
+    S.ordenes=(r[4]&&r[4].data||[]).map(function(x){return Object.assign({id:x.id},x.data);});
     var fr=(r[3]&&r[3].data||[])[0];if(fr&&fr.data&&fr.data.firma){S.miFirma=fr.data.firma;save("jasaFirma",S.miFirma);}
     S.clientes=r[0].data.map(function(x){return Object.assign({id:x.id},x.data);}).sort(function(a,b){return String(a.nombre).localeCompare(String(b.nombre),"es");});
     S.ext={};r[1].data.forEach(function(x){S.ext[x.id]=Object.assign({},x.data,{folio:x.id});});
-    save("jasaCache",{clientes:S.clientes,ext:S.ext,visitas:S.visitas});
-  },function(){var c=load("jasaCache",null);if(c){S.clientes=c.clientes;S.ext=c.ext;S.visitas=c.visitas||[];toast("Sin señal: usando la última copia guardada.");}});
+    save("jasaCache",{clientes:S.clientes,ext:S.ext,visitas:S.visitas,ordenes:S.ordenes});
+  },function(){var c=load("jasaCache",null);if(c){S.clientes=c.clientes;S.ext=c.ext;S.visitas=c.visitas||[];S.ordenes=c.ordenes||[];toast("Sin señal: usando la última copia guardada.");}});
 }
 function extOf(cli){var n=String(cli||"").trim().toLowerCase();return Object.keys(S.ext).map(function(k){return S.ext[k];}).filter(function(x){return String(x.cliente||"").trim().toLowerCase()===n&&x.estado!=="baja"&&x.estado!=="sin asignar";}).sort(function(a,b){return String(a.ubicacion||"").localeCompare(String(b.ubicacion||""),"es");});}
 function findCli(n){n=String(n||"").trim().toLowerCase();return S.clientes.find(function(x){return String(x.nombre).trim().toLowerCase()===n;});}
 function nextFolio(cli){var c=findCli(cli)||{},p=c.prefijo||jasaPrefijo(cli),re=new RegExp("^"+p+"-(\\d+)$"),n=Object.keys(S.ext).reduce(function(a,k){var m=k.match(re);return m?Math.max(a,+m[1]):a;},0);return p+"-"+String(n+1).padStart(3,"0");}
+var PRIO={urgente:["Urgente","var(--red-2)"],normal:["Normal","var(--muted)"],programada:["Programada","var(--blue)"]};
+function misOrdenes(){var me=String(S.user&&S.user.email||"").toLowerCase();return S.ordenes.filter(function(o){var e=+o.etapa||0;return (e===0||e===3)&&(o.tecnico?String(o.tecnico).toLowerCase()===me:S.rol==="admin");}).sort(function(a,b){var pa=a.prioridad==="urgente"?0:1,pb=b.prioridad==="urgente"?0:1;return pa-pb||String(a.fechaVisita||"9").localeCompare(String(b.fechaVisita||"9"));});}
+function eqN(o){return (o.equiposDet||[]).reduce(function(a,e){return a+(+e.qty||0);},0)||(+o.equipos||0);}
+function dirOf(c){return [c.direccion,c.ciudad,c.estado].filter(Boolean).join(", ");}
+function mapOf(c){var d=dirOf(c);return c.mapa||(d?"https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(d+(c.cp?" "+c.cp:"")):"");}
+function saveOrden(o,ch){Object.assign(o,ch);var d=Object.assign({},o);delete d.id;enqueue({col:"ordenes",id:o.id,t:Date.now(),data:d});save("jasaCache",{clientes:S.clientes,ext:S.ext,visitas:S.visitas,ordenes:S.ordenes});}
+function ordenCard(o){var pr=PRIO[o.prioridad||"normal"]||PRIO.normal,t0=today(),e=+o.etapa||0;
+  return '<div class="card"><span class="eyebrow" style="color:'+pr[1]+'">'+(e===3?"Por entregar":"Por recoger")+' · '+pr[0]+(o.fechaVisita?" · "+esc(o.fechaVisita.split("-").reverse().join("/")):"")+(o.enRuta===t0?" · en mi ruta de hoy":"")+'</span><h2>'+esc(o.cliente)+'</h2><span class="hint">'+esc(o.folio)+' · '+eqN(o)+' extintores</span><button type="button" class="btn'+(o.prioridad==="urgente"?"":" ghost")+'" data-act="verOrden" data-id="'+esc(o.id)+'">Ver orden</button></div>';}
+function vOrden(){var o=S.ordenes.find(function(x){return x.id===S.ordenSel;});if(!o){S.view="home";return vHome();}
+  var c=findCli(o.cliente)||{},tel=String(o.tel||c.tel||"").replace(/\D/g,""),map=mapOf(c),pr=PRIO[o.prioridad||"normal"]||PRIO.normal,e=+o.etapa||0,t0=today();
+  dock(e===0?'<button type="button" class="btn" data-act="recogido">Ya lo recogí</button><button type="button" class="btn ghost" style="width:auto" data-act="home">Volver</button>':'<button type="button" class="btn ghost" data-act="home">Volver</button>');
+  return '<div><span class="eyebrow" style="color:'+pr[1]+'">'+esc(o.folio)+' · '+(e===3?"Por entregar":"Por recoger")+' · '+pr[0]+'</span><h1>'+esc(o.cliente)+'</h1></div>'+
+    '<div class="card"><dl class="ficha"><dt>Contacto</dt><dd>'+esc(o.contacto||c.contacto||"—")+'</dd><dt>Teléfono</dt><dd>'+esc(o.tel||c.tel||"—")+'</dd><dt>Dirección</dt><dd>'+esc(dirOf(c)||"Sin dirección registrada")+'</dd>'+(o.fechaVisita?'<dt>Fecha</dt><dd>'+esc(o.fechaVisita.split("-").reverse().join("/"))+'</dd>':"")+'</dl>'+
+    '<div style="display:flex;gap:8px;flex-wrap:wrap">'+(map?'<a class="btn" style="width:auto" target="_blank" rel="noopener" href="'+esc(map)+'">Cómo llegar</a>':"")+(tel?'<a class="btn ghost" style="width:auto" href="tel:'+esc(tel)+'">Llamar</a><a class="btn ghost" style="width:auto" target="_blank" rel="noopener" href="https://wa.me/52'+esc(tel.slice(-10))+'">WhatsApp</a>':"")+'</div></div>'+
+    '<div class="card"><h2>'+(e===3?"Qué entregar":"Qué recoger")+'</h2><div class="list">'+((o.equiposDet||[]).length?o.equiposDet.map(function(x){return '<div class="row" style="cursor:default"><span><b style="font-weight:600">'+esc(x.qty)+' × '+esc(tl(x.tipo))+' '+esc(String(x.cap||"").toLowerCase())+'</b><div class="s">'+esc(x.servicio||"")+'</div></span></div>';}).join(""):'<p class="hint">'+esc(o.detalle||"Sin detalle de equipos.")+'</p>')+'</div>'+(o.notas?'<span class="hint">Notas: '+esc(o.notas)+'</span>':"")+'</div>'+
+    '<div class="card"><span class="eyebrow">Mi ruta</span>'+(o.enRuta===t0?'<span class="hint">Está en tu ruta de hoy.</span><button type="button" class="btn ghost" data-act="quitarRuta">Quitar de mi ruta</button>':'<button type="button" class="btn ghost" data-act="aRuta">Agregar a mi ruta de hoy</button>')+'</div>';}
+function rutaHoy(){var t0=today();return misOrdenes().filter(function(o){return o.enRuta===t0;});}
+function rutaMaps(){var pts=rutaHoy().map(function(o){var c=findCli(o.cliente)||{};var d=dirOf(c);return d?d+(c.cp?" "+c.cp:""):"";}).filter(Boolean);if(!pts.length)return "";var dest=pts.pop();return "https://www.google.com/maps/dir/?api=1&travelmode=driving&destination="+encodeURIComponent(dest)+(pts.length?"&waypoints="+encodeURIComponent(pts.join("|")):"");}
 function misVisitas(){var me=String(S.user&&S.user.email||"").toLowerCase();return S.visitas.filter(function(x){return x.estado!=="completa"&&(S.rol==="admin"||String(x.tecnico||"").toLowerCase()===me);}).sort(function(a,b){return String(a.fecha).localeCompare(String(b.fecha));});}
-function saveVisita(id,ch){var x=S.visitas.find(function(y){return y.id===id;});if(!x)return;Object.assign(x,ch);var d=Object.assign({},x);delete d.id;enqueue({col:"visitas",id:id,t:Date.now(),data:d});save("jasaCache",{clientes:S.clientes,ext:S.ext,visitas:S.visitas});}
+function saveVisita(id,ch){var x=S.visitas.find(function(y){return y.id===id;});if(!x)return;Object.assign(x,ch);var d=Object.assign({},x);delete d.id;enqueue({col:"visitas",id:id,t:Date.now(),data:d});save("jasaCache",{clientes:S.clientes,ext:S.ext,visitas:S.visitas,ordenes:S.ordenes});}
 
 /* ---------- visita ---------- */
 function visit(){return S.cur||(S.cur=load(KV,null));}
@@ -329,15 +348,16 @@ function resultado(it){
 /* ---------- vistas ---------- */
 function dock(html){$("dockIn").innerHTML=html||"";$("dock").hidden=!html;}
 function render(){stopCam();var v=S.view,h="";
-  if(v==="login")h=vLogin();else if(v==="firma")h=vFirma();else if(v==="home")h=vHome();else if(v==="visit")h=vVisit();else if(v==="scan")h=vScan();else if(v==="form")h=vForm();else if(v==="finish")h=vFinish();else if(v==="done")h=vDone();
+  if(v==="login")h=vLogin();else if(v==="orden")h=vOrden();else if(v==="firma")h=vFirma();else if(v==="home")h=vHome();else if(v==="visit")h=vVisit();else if(v==="scan")h=vScan();else if(v==="form")h=vForm();else if(v==="finish")h=vFinish();else if(v==="done")h=vDone();
   $("app").innerHTML=h;window.scrollTo(0,0);
   if(v==="scan"&&!S.manual)startCam();if(v==="finish"||v==="firma")initSig();updSync();
 }
-function vLogin(){dock("");return '<h1>Entrar</h1><form class="card" id="loginForm"><div class="field"><label for="lgMail">Correo</label><input class="inp" id="lgMail" type="email" autocomplete="username" required></div><div class="field"><label for="lgPass">Contraseña</label><input class="inp" id="lgPass" type="password" autocomplete="current-password" required></div><div class="err" id="lgErr" role="alert"></div><button class="btn" type="submit">Entrar</button><span class="hint">Usa el mismo correo y contraseña del panel de JASA. · Versión 14/11/2026 23:05</span></form>';}
+function vLogin(){dock("");return '<h1>Entrar</h1><form class="card" id="loginForm"><div class="field"><label for="lgMail">Correo</label><input class="inp" id="lgMail" type="email" autocomplete="username" required></div><div class="field"><label for="lgPass">Contraseña</label><input class="inp" id="lgPass" type="password" autocomplete="current-password" required></div><div class="err" id="lgErr" role="alert"></div><button class="btn" type="submit">Entrar</button><span class="hint">Usa el mismo correo y contraseña del panel de JASA. · Versión 14/11/2026 23:25</span></form>';}
 function vHome(){
   var v=visit(),rev=load(KR,"")||S.nombre||String(S.user.email).split("@")[0],mv=misVisitas(),t0=today(),tec=S.rol!=="admin";
   dock("");
   return (S.miFirma?"":'<div class="card" style="border-left:4px solid var(--amber-f)"><span class="eyebrow">Falta tu firma</span><span class="hint">Agrégala una sola vez; aparece en el recuadro Revisó de tus reportes.</span><button type="button" class="btn" data-act="firma">Agregar mi firma</button></div>')+(v&&v.estado==="en curso"?'<div class="card"><span class="eyebrow">Inspección en curso</span><h2>'+esc(v.cliente)+'</h2><span class="hint">'+Object.keys(v.items).length+' extintores revisados</span><button type="button" class="btn" data-act="resume">Continuar</button></div>':"")+
+    (function(){var mo=misOrdenes(),rh=rutaHoy(),rm=rutaMaps();if(!mo.length)return "";return '<h1>'+(tec?"Mis órdenes":"Órdenes de taller")+'</h1>'+(rh.length?'<div class="card"><span class="eyebrow">Mi ruta de hoy · '+rh.length+(rh.length===1?" parada":" paradas")+'</span>'+(rm?'<a class="btn" target="_blank" rel="noopener" href="'+esc(rm)+'">Abrir ruta en Maps</a>':'<span class="hint">Los clientes de tu ruta no tienen dirección registrada.</span>')+'</div>':"")+mo.map(ordenCard).join("");})()+
     '<h1>'+(tec?"Mis visitas":"Visitas programadas")+'</h1>'+
     (mv.length?mv.map(function(x){var late=x.fecha<t0,hoy=x.fecha===t0;return '<div class="card"><span class="eyebrow" style="color:'+(late?"var(--red-2)":hoy?"var(--amber)":"var(--muted)")+'">'+(hoy?"Hoy":late?"Atrasada · ":"")+(hoy?"":esc(String(x.fecha).split("-").reverse().join("/")))+' · '+esc(x.tipo||"Inspección")+'</span><h2>'+esc(x.cliente)+'</h2>'+(function(){var cl=findCli(x.cliente)||{},dir=[cl.direccion,cl.ciudad,cl.estado].filter(Boolean).join(", "),map=cl.mapa||(dir?"https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(dir+(cl.cp?" "+cl.cp:"")):"");return (dir?'<span class="hint">'+esc(dir)+'</span>':"")+(cl.contacto||cl.tel?'<span class="hint">'+esc([cl.contacto,cl.tel].filter(Boolean).join(" · "))+'</span>':"")+(map||cl.tel?'<div style="display:flex;gap:8px;flex-wrap:wrap">'+(map?'<a class="btn ghost sm" style="width:auto" target="_blank" rel="noopener" href="'+esc(map)+'">Cómo llegar</a>':"")+(cl.tel?'<a class="btn ghost sm" style="width:auto" href="tel:'+esc(String(cl.tel).replace(/\D/g,""))+'">Llamar</a>':"")+'</div>':"");})()+(x.notas?'<span class="hint">'+esc(x.notas)+'</span>':"")+(v&&v.estado==="en curso"?"":'<button type="button" class="btn" data-act="startVis" data-id="'+esc(x.id)+'">'+(x.estado==="en curso"?"Continuar":"Empezar inspección")+'</button>')+'</div>';}).join(""):'<div class="card"><span class="hint">'+(tec?"No tienes visitas programadas. Cuando la oficina te asigne una, aparece aquí.":"No hay visitas programadas. Prográmalas en el panel, en Inspecciones.")+'</span></div>')+
     (tec||(v&&v.estado==="en curso")?"":'<h1>Inspección sin programar</h1><form class="card" id="newForm"><div class="field"><label for="nfCli">Cliente</label><input class="inp" id="nfCli" list="cliList" required autocomplete="off" placeholder="Escribe o elige"><datalist id="cliList">'+S.clientes.map(function(c){return '<option value="'+esc(c.nombre)+'">';}).join("")+'</datalist></div>'+
@@ -452,6 +472,9 @@ document.addEventListener("click",function(e){var b=e.target.closest("[data-act]
   if(a==="resume"||a==="backVisit"){S.view="visit";render();return;}
   if(a==="scan"){S.manual=false;S.view="scan";render();return;}
   if(a==="firma"){S.view="firma";render();return;}
+  if(a==="verOrden"){S.ordenSel=b.getAttribute("data-id");S.view="orden";render();return;}
+  if(a==="aRuta"||a==="quitarRuta"){var oo=S.ordenes.find(function(x){return x.id===S.ordenSel;});if(oo){saveOrden(oo,{enRuta:a==="aRuta"?today():""});toast(a==="aRuta"?"Agregada a tu ruta de hoy":"Quitada de tu ruta");render();}return;}
+  if(a==="recogido"){var orx=S.ordenes.find(function(x){return x.id===S.ordenSel;});if(!orx)return;if(!window.confirm("¿Ya recogiste los equipos de "+orx.cliente+"? La orden pasa a Recibido en el taller."))return;saveOrden(orx,{etapa:1,etapaV:2,recogido:new Date().toISOString(),recogio:S.nombre||String(S.user.email).split("@")[0],enRuta:""});toast("Listo: la orden "+orx.folio+" pasó a Recibido");S.view="home";render();return;}
   if(a==="firmaSave"){firmaSave();return;}
   if(a==="startVis"&&!S.miFirma){toast("Primero agrega tu firma: va en tus reportes.");S.view="firma";render();return;}
   if(a==="startVis"){var vx=S.visitas.find(function(y){return y.id===b.getAttribute("data-id");});if(!vx)return;var cl=findCli(vx.cliente)||{};
@@ -486,8 +509,9 @@ function boot(){
         if(S.rol!=="admin"&&S.rol!=="tecnico"&&(yo.permisos||[]).indexOf("campo")<0){S.view="login";render();$("lgErr").textContent="Tu usuario no tiene permiso para la app del técnico. Pídelo en Personal y permisos del panel.";sb.auth.signOut();return;}}
       if(!q.error&&!yo){sb.auth.signOut();S.view="login";render();$("lgErr").textContent="Tu correo no tiene acceso. Pide que te agreguen al personal.";return;}
       return loadData().then(function(){S.view=visit()&&visit().estado==="en curso"?"visit":"home";render();flush();
+        var ho=decodeURIComponent(location.hash.slice(1)).match(/^orden-(.+)$/i);if(ho){var oh=S.ordenes.find(function(x){return String(x.folio).toUpperCase()===ho[1].toUpperCase();});try{history.replaceState(null,"",location.pathname);}catch(e){}if(oh){S.ordenSel=oh.id;S.view="orden";render();}else toast("No encontré la orden "+ho[1]+". Pide que te la asignen.");return;}
         var hm=jasaFolio(decodeURIComponent(location.hash.slice(1)));if(hm){try{history.replaceState(null,"",location.pathname);}catch(e){}if(visit()&&visit().estado==="en curso")openItem(hm);else toast("Empieza o continúa una inspección para revisar "+hm+".");}});
-    },function(){var c=load("jasaCache",null);if(c){S.clientes=c.clientes;S.ext=c.ext;S.visitas=c.visitas||[];}var me=load("jasaYo",null);if(me){S.rol=me.rol;S.nombre=me.nombre;}S.view=visit()?"visit":"home";render();});
+    },function(){var c=load("jasaCache",null);if(c){S.clientes=c.clientes;S.ext=c.ext;S.visitas=c.visitas||[];S.ordenes=c.ordenes||[];}var me=load("jasaYo",null);if(me){S.rol=me.rol;S.nombre=me.nombre;}S.view=visit()?"visit":"home";render();});
   });
 }
 boot();

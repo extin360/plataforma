@@ -21,7 +21,7 @@ language sql immutable set search_path = public as $$
       when 'extintores'   then array['extintores','clientes']
       when 'inspecciones' then array['inspecciones','visitas','clientes','extintores','quotes','precios','firmas']
       when 'pendientes'   then array['pendientes','ordenes','clientes']
-      when 'campo'        then array['visitas','clientes','extintores','inspecciones','firmas']
+      when 'campo'        then array['visitas','clientes','extintores','inspecciones','firmas','ordenes']
       else array[]::text[] end) as c
     from unnest(coalesce(p, '{}') || case when rol = 'tecnico' then array['campo'] else array[]::text[] end) as s
   ) x;

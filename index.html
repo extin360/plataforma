@@ -788,7 +788,7 @@ footer .legal{border-top:1px solid var(--line);padding-block:18px;display:flex;f
       <p>Agrega cada partida que necesitas y se arma tu hoja de cotización en el formato de JASA. Envíala por WhatsApp y te respondemos con precios y tiempo de entrega.</p>
     </div>
     <div class="cq">
-      <form name="solicitud-cotizacion" data-netlify="true" netlify-honeypot="bot-field" hidden aria-hidden="true"><input name="bot-field"><input name="subject"><input name="folio"><input name="cliente"><input name="telefono"><input name="correo"><input name="ciudad"><textarea name="detalle"></textarea><input name="panel"></form>
+      <form name="solicitud-cotizacion" data-netlify="true" netlify-honeypot="bot-field" hidden aria-hidden="true"><input name="bot-field"><input name="subject"><input name="folio"><input name="cliente"><input name="telefono"><input name="correo"><input name="ciudad"><textarea name="detalle"></textarea><input name="ver_solicitud"></form>
       <form class="cq-form" id="cqForm" novalidate>
         <div class="cq-step"><span class="cq-n">1</span><h3>Tus datos</h3></div>
         <div class="cq-grid">
@@ -1078,7 +1078,7 @@ footer .legal{border-top:1px solid var(--line);padding-block:18px;display:flex;f
     function avisoCorreo(f,d){
       try{
         var txt=String(window.__cqTxt||"").replace(/^SOLICITUD DE COTIZACIÓN · JASA EXTINTORES\n/,"").replace(/^Número: .*\n/,"").replace(/\nQuedo atento a los precios\. ¡Gracias!$/,"");
-        var body=new URLSearchParams({"form-name":"solicitud-cotizacion",subject:"Nueva cotización del sitio "+f+": "+(d.cliente||""),folio:f,cliente:d.cliente||"",telefono:d.tel||"",correo:d.email||"",ciudad:d.ciudad||"",detalle:txt,panel:"https://jasaextintores.com/admin/#cotizaciones"});
+        var body=new URLSearchParams({"form-name":"solicitud-cotizacion",subject:"Nueva cotización del sitio "+f+": "+(d.cliente||""),folio:f,cliente:d.cliente||"",telefono:d.tel||"",correo:d.email||"",ciudad:d.ciudad||"",detalle:txt,ver_solicitud:"https://jasaextintores.com/admin/#cotizacion-"+encodeURIComponent(f)});
         fetch("/",{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:body.toString()}).catch(function(){});
       }catch(e){}
     }

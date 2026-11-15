@@ -12,6 +12,7 @@ barras y encabezados de tabla, franja roja, Saira Condensed / Barlow / IBM Plex 
 | Panel interno | https://jasaextintores.com/admin | `admin.html` → `tools/build.py` genera `admin/index.html` | Netlify |
 | Portal de clientes | https://jasaextintores.com/clientes | `src/clientes.html` → `clientes/index.html` | Netlify |
 | App del técnico | https://jasaextintores.com/tecnico | `src/tecnico.html` → `tecnico/index.html` | Netlify |
+| Cotización en línea | https://jasaextintores.com/q/<token> | `src/cotizacion.html` → `q/index.html` (`_redirects` manda `/q/*` ahí) | Netlify |
 | Ficha pública del QR | https://jasaextintores.com/e/JX-000245 | `src/ficha.html` → `e/index.html` (`_redirects` manda `/e/*` ahí) | Netlify |
 | Reportes PDF y puntos de inspección | — | `src/reporte.js` (lo inserta el build en panel, portal, app y ficha) | — |
 | Base de datos | Supabase `psggoagcdokwrkykgufr` | `supabase/*.sql` (se pegan en SQL Editor) | Supabase |
@@ -50,6 +51,14 @@ generados.
 - Sitio público: función `public.solicitar_cotizacion(datos)` crea una cotización `Nueva` con `origen: web` (con `email`
   desde `06_cotizacion_correo.sql`) y manda copia a Netlify Forms (`solicitud-cotizacion`) para el aviso por correo.
   Al aceptarla en el panel se crea el cliente con los datos de la solicitud (o se llenan los que le falten).
+- Flujo de cotización: el panel la manda por WhatsApp o correo (cc jasa-extintores@live.com.mx) con enlace
+  `/q/<quotes.token>`; el cliente la autoriza (`public.autorizar_cotizacion`, estado `Autorizada`, `autorizo{}`) y
+  Netlify Forms `cotizacion-autorizada` avisa por correo. Al aceptarla se abre la orden; en ella se asigna `tecnico`,
+  `prioridad` (urgente|normal|programada) y `fechaVisita`, y se avisa al técnico por WhatsApp (`staff.tel`) con enlace
+  `/tecnico/#orden-<folio>`. En la app el técnico ve sus órdenes por recoger/entregar, las agrega a su ruta del día
+  (`enRuta`, ruta en Google Maps) y marca "Ya lo recogí" (etapa 0 → 1). `supabase/07_cotizacion_en_linea.sql`.
+- Avisos por correo: Netlify Forms `solicitud-cotizacion` y `cotizacion-autorizada`; el enlace del aviso abre
+  `/admin/#cotizacion-<folio>`.
 - Ficha del QR: función `public.ficha_extintor(folio)` (sin cliente ni serie).
 - Etiquetas: impresora Zebra ZD420, se imprimen desde el panel (Extintores › Generar etiquetas) con QR a `/e/<folio>`.
 - Inspección: los puntos están en `JASA_PUNTOS` (formato en papel de JASA + manómetro, válvula y soporte; `na` = no aplica,
