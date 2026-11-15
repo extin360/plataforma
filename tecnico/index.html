@@ -352,7 +352,7 @@ function render(){stopCam();var v=S.view,h="";
   $("app").innerHTML=h;window.scrollTo(0,0);
   if(v==="scan"&&!S.manual)startCam();if(v==="finish"||v==="firma")initSig();updSync();
 }
-function vLogin(){dock("");return '<h1>Entrar</h1><form class="card" id="loginForm"><div class="field"><label for="lgMail">Correo</label><input class="inp" id="lgMail" type="email" autocomplete="username" required></div><div class="field"><label for="lgPass">Contraseña</label><input class="inp" id="lgPass" type="password" autocomplete="current-password" required></div><div class="err" id="lgErr" role="alert"></div><button class="btn" type="submit">Entrar</button><span class="hint">Usa el mismo correo y contraseña del panel de JASA. · Versión 14/11/2026 23:25</span></form>';}
+function vLogin(){dock("");return '<h1>Entrar</h1><form class="card" id="loginForm"><div class="field"><label for="lgMail">Correo</label><input class="inp" id="lgMail" type="email" autocomplete="username" required></div><div class="field"><label for="lgPass">Contraseña</label><input class="inp" id="lgPass" type="password" autocomplete="current-password" required></div><div class="err" id="lgErr" role="alert"></div><button class="btn" type="submit">Entrar</button><span class="hint">Usa el mismo correo y contraseña del panel de JASA. · Versión 14/11/2026 23:50</span></form>';}
 function vHome(){
   var v=visit(),rev=load(KR,"")||S.nombre||String(S.user.email).split("@")[0],mv=misVisitas(),t0=today(),tec=S.rol!=="admin";
   dock("");
