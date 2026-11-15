@@ -788,6 +788,7 @@ footer .legal{border-top:1px solid var(--line);padding-block:18px;display:flex;f
       <p>Agrega cada partida que necesitas y se arma tu hoja de cotización en el formato de JASA. Envíala por WhatsApp y te respondemos con precios y tiempo de entrega.</p>
     </div>
     <div class="cq">
+      <form name="solicitud-cotizacion" data-netlify="true" netlify-honeypot="bot-field" hidden aria-hidden="true"><input name="bot-field"><input name="subject"><input name="folio"><input name="cliente"><input name="telefono"><input name="ciudad"><textarea name="detalle"></textarea><input name="panel"></form>
       <form class="cq-form" id="cqForm" novalidate>
         <div class="cq-step"><span class="cq-n">1</span><h3>Tus datos</h3></div>
         <div class="cq-grid">
@@ -1068,9 +1069,18 @@ footer .legal{border-top:1px solid var(--line);padding-block:18px;display:flex;f
       if(dom||notas){L.push("","*CONDICIONES*"); if(dom) L.push("Servicio a domicilio"); if(notas) L.push(notas);}
       L.push("","Quedo atento a los precios. ¡Gracias!");
       document.getElementById("cqSend").href="https://wa.me/528781174728?text="+encodeURIComponent(L.join("\n"));
+      window.__cqTxt=L.join("\n").replace(/\*/g,"");
       window.__cq={folio:folio,cliente:cli,dirigido:dir,direccion:domi,ciudad:ciu,rfc:rfc,tel:tel,cond:cond.join(" · ").replace(/SERVICIO A DOMICILIO/,"Servicio a domicilio"),lines:items.map(function(it){return {art:it[0],qty:it[1]};})};
     }
     var sent=false;
+    // Aviso por correo a JASA (Netlify Forms manda el correo; si falla, la solicitud ya quedó en el panel)
+    function avisoCorreo(f,d){
+      try{
+        var txt=String(window.__cqTxt||"").replace(/^SOLICITUD DE COTIZACIÓN · JASA EXTINTORES\n/,"").replace(/^Número: .*\n/,"").replace(/\nQuedo atento a los precios\. ¡Gracias!$/,"");
+        var body=new URLSearchParams({"form-name":"solicitud-cotizacion",subject:"Nueva cotización del sitio "+f+": "+(d.cliente||""),folio:f,cliente:d.cliente||"",telefono:d.tel||"",ciudad:d.ciudad||"",detalle:txt,panel:"https://jasaextintores.com/admin/#cotizaciones"});
+        fetch("/",{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:body.toString()}).catch(function(){});
+      }catch(e){}
+    }
     document.getElementById("cqSubmit").addEventListener("click",function(){
       var b=this, st=document.getElementById("cqStatus"), d=window.__cq||{};
       if(sent){st.textContent="Tu solicitud "+sent+" ya fue enviada. Te contactamos pronto.";return;}
@@ -1080,7 +1090,7 @@ footer .legal{border-top:1px solid var(--line);padding-block:18px;display:flex;f
       b.disabled=true; st.textContent="Enviando…";
       fetch("https://psggoagcdokwrkykgufr.supabase.co/rest/v1/rpc/solicitar_cotizacion",{method:"POST",headers:{"apikey":"sb_publishable_jwx2IRxOqdCW-SjmKcYW2A_lrJTFJa3","Content-Type":"application/json"},body:JSON.stringify({datos:d})})
         .then(function(r){return r.json().then(function(j){if(!r.ok)throw new Error(j&&j.message||"error");return j;});})
-        .then(function(f){sent=f; b.textContent="Solicitud enviada"; st.textContent="¡Listo! Recibimos tu solicitud "+f+". Te respondemos por WhatsApp con los precios.";},
+        .then(function(f){sent=f; avisoCorreo(f,d); b.textContent="Solicitud enviada"; st.textContent="¡Listo! Recibimos tu solicitud "+f+". Te respondemos por WhatsApp con los precios.";},
               function(e){b.disabled=false; st.textContent=(e&&e.message&&!/fetch|network/i.test(e.message)?e.message+". ":"No se pudo enviar. ")+"Si prefieres, mándala por WhatsApp.";});
     });
     document.getElementById("cqAdd").addEventListener("click",function(){addRow("recarga","PQS","6 KG","",1,true);});
