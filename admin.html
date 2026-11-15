@@ -157,7 +157,7 @@ textarea.inp{resize:vertical;min-height:120px;font-family:var(--mono);font-size:
 .unit-tbl input.inp{padding:6px 8px;font-size:13px}
 .unit-tbl td{padding:6px 8px}
 .unit-tbl input[type=checkbox]{width:20px;height:20px;accent-color:var(--green)}
-.unit-tbl tr.done td{background:rgba(95,207,106,.06)}
+.unit-tbl tr.done td{background:rgba(30,123,52,.06)}.listo-t{display:inline-flex;align-items:center;gap:6px;cursor:pointer;border:1px solid var(--line-2);border-radius:3px;padding:5px 9px;font-size:13px;font-weight:600;color:var(--muted);white-space:nowrap}.listo-t.on{border-color:var(--green);color:var(--green);background:#e5f3e8}
 .inp.warn{border-color:var(--rose)}
 .check{display:flex;gap:10px;align-items:flex-start;font-size:14px}
 .check input{width:18px;height:18px;margin-top:2px;accent-color:var(--red)}
@@ -593,7 +593,7 @@ function vOrden(o){
     '<span class="hint" id="otSaved">'+(ro?"":"Los cambios se guardan solos al elegir o al salir de cada campo.")+(o.modificado?" Último cambio: "+esc(fmtDate(String(o.modificado).slice(0,10)))+" "+esc(new Date(o.modificado).toTimeString().slice(0,5))+".":"")+'</span>'+
     (o.avisado&&o.modificado&&o.modificado>o.avisado?'<span class="hint" style="color:var(--amber)">Hiciste cambios después del último aviso: avísale para que los vea.</span>':"")+
     (ro?"":tc?(tc.tel?'<div><button type="button" class="btn wa" data-act="otAviso">'+(o.avisado&&o.modificado&&o.modificado>o.avisado?"Avisar cambios a ":"Avisar a ")+esc(tc.nombre||tc.email)+' por WhatsApp</button></div>':'<span class="hint" style="color:var(--amber)">Agrega el teléfono de '+esc(tc.nombre||tc.email)+' en Personal y permisos para avisarle por WhatsApp.</span>'):'<span class="hint">Elige un técnico para avisarle.</span>')+'</div></div>';
-  out+='<div class="box"><div class="box-h"><h2>Extintores</h2><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span class="mono" style="color:'+(pg.t&&pg.n===pg.t?"var(--green)":"var(--muted)")+'">'+pg.n+' de '+pg.t+' listos</span>'+(ro||!pg.t||pg.n===pg.t?"":'<button type="button" class="btn ghost sm" data-act="allReady">Marcar todos listos</button>')+'</div></div>'+
+  out+='<div class="box"><div class="box-h"><h2>Extintores</h2><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span class="mono" style="color:'+(pg.t&&pg.n===pg.t?"var(--green)":"var(--muted)")+'">'+pg.n+' de '+pg.t+' listos</span>'+(ro||!pg.t?"":pg.n===pg.t?'<button type="button" class="btn ghost sm" data-act="noneReady">Quitar todos los listos</button>':'<button type="button" class="btn ghost sm" data-act="allReady">Marcar todos listos</button>')+'</div></div>'+
     (pg.t?'<div style="padding:12px 18px 0"><div class="bar"><i style="width:'+pct+'%;background:var(--green)"></i></div></div><div class="tbl-wrap" style="padding-top:8px"><table class="unit-tbl"><thead><tr><th>#</th><th>EQUIPO</th><th>NO. DE SERIE</th><th>FABRICACIÓN</th><th>PRÓX. HIDROSTÁTICA</th><th>ETIQUETA NOM-154</th><th>LISTO</th></tr></thead><tbody>'+
       us.map(function(u,i){var k=u.key.replace("-","_"),dis=ro?" disabled":"",phLate=u.ph&&u.ph<cm;
         return '<tr'+(u.listo?' class="done"':"")+'><td class="mono">'+(i+1)+'</td><td style="min-width:150px"><b style="font-weight:600">'+esc(tipoLabel(u.row.tipo))+' '+esc(String(u.row.cap).toLowerCase())+'</b><div style="color:var(--muted);font-size:12px">'+esc(u.row.servicio||"")+'</div></td>'+
@@ -601,7 +601,7 @@ function vOrden(o){
         '<td><input class="inp" type="month" id="u_'+k+'_fab" data-unit="'+u.key+'" data-uk="fab" value="'+esc(u.fab)+'" aria-label="Fabricación del extintor '+(i+1)+'"'+dis+'></td>'+
         '<td><input class="inp'+(phLate?" warn":"")+'" type="month" id="u_'+k+'_ph" data-unit="'+u.key+'" data-uk="ph" value="'+esc(u.ph)+'" aria-label="Próxima prueba hidrostática del extintor '+(i+1)+'"'+dis+'>'+(phLate?'<div style="color:var(--rose);font-size:11px;margin-top:2px">Prueba vencida</div>':"")+'</td>'+
         '<td><input class="inp" autocomplete="off" style="min-width:100px" id="u_'+k+'_etiqueta" data-unit="'+u.key+'" data-uk="etiqueta" value="'+esc(u.etiqueta)+'" aria-label="Etiqueta del extintor '+(i+1)+'"'+dis+'></td>'+
-        '<td style="text-align:center"><input type="checkbox" id="u_'+k+'_listo" data-unit="'+u.key+'" data-uk="listo"'+(u.listo?" checked":"")+' aria-label="Extintor '+(i+1)+' listo"'+dis+'></td></tr>';}).join("")+'</tbody></table></div>'
+        '<td style="text-align:center"><label class="listo-t'+(u.listo?" on":"")+'"><input type="checkbox" id="u_'+k+'_listo" data-unit="'+u.key+'" data-uk="listo"'+(u.listo?" checked":"")+' aria-label="Extintor '+(i+1)+' listo"'+dis+'><span>'+(u.listo?"Listo":"Pendiente")+'</span></label></td></tr>';}).join("")+'</tbody></table></div>'
     :'<div class="empty"><b>Esta orden no tiene extintores capturados.</b><span>Toca “Editar orden” y agrega los extintores por tipo y capacidad.</span></div>')+'</div>';
   if(si===DONE){
     out+='<div class="box"><div class="box-h"><h2>Entregada</h2><span class="mono" style="color:var(--green)">'+fmtDate(o.entregado)+'</span></div><div class="q-meta">'+[["Entregó (JASA)",o.entrego||"—"],["Recibió (cliente)",o.recibioCliente||"—"]].map(function(m){return '<div><span class="eyebrow">'+m[0]+'</span><span>'+esc(m[1])+'</span></div>';}).join("")+'</div></div>';
@@ -1272,6 +1272,7 @@ document.addEventListener("click",function(e){
   if(a==="otOpen"){S.otSel=id;S.dlv={};render();if(v==="entrega"){var en=document.getElementById("entrega");if(en)en.scrollIntoView();}else window.scrollTo(0,0);return;}
   if(a==="otBack"){S.otSel=null;render();window.scrollTo(0,0);return;}
   var oc=S.otSel&&byId("ordenes",S.otSel);
+  if(a==="noneReady"&&oc){patch("ordenes",oc.id,{unidades:cleanUnits(unitsOf(oc).map(function(u){u.listo=false;return u;}))}).then(function(){toast("Se quitaron los listos; márcalos de nuevo uno por uno");});return;}
   if(a==="allReady"&&oc){patch("ordenes",oc.id,{unidades:cleanUnits(unitsOf(oc).map(function(u){u.listo=true;return u;}))});return;}
   if(a==="otDeliver"&&oc){deliver(oc);return;}
   if(a==="otReport"&&oc){exportDoc("pdf",jasaReportHTML(oc,findClient(oc.cliente),LOGO),"Reporte-JASA-"+String(oc.folio).replace(/[^A-Za-z0-9-]/g,"")+".pdf","otStatus","Envíaselo al cliente; también lo puede descargar en su portal.");return;}
