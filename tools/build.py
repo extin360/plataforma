@@ -7,8 +7,11 @@
 
 Uso: python3 tools/build.py
 """
+import datetime
 import pathlib
 import re
+
+VERSION = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=-6))).strftime("%d/%m/%Y %H:%M")
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 REPORTE = (ROOT / "src" / "reporte.js").read_text(encoding="utf-8").strip()
@@ -34,13 +37,13 @@ head = (
     "[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>\n"
 )
 (ROOT / "admin").mkdir(exist_ok=True)
-(ROOT / "admin" / "index.html").write_text(head + admin + "\n</body></html>\n", encoding="utf-8")
+(ROOT / "admin" / "index.html").write_text(head + admin.replace("__JASA_VERSION__", VERSION) + "\n</body></html>\n", encoding="utf-8")
 
 portal = inject((ROOT / "src" / "clientes.html").read_text(encoding="utf-8"))
 (ROOT / "clientes").mkdir(exist_ok=True)
 (ROOT / "clientes" / "index.html").write_text(portal, encoding="utf-8")
 for src, out in (("tecnico.html", "tecnico"), ("ficha.html", "e")):
-    page = inject((ROOT / "src" / src).read_text(encoding="utf-8"))
+    page = inject((ROOT / "src" / src).read_text(encoding="utf-8")).replace("__JASA_VERSION__", VERSION)
     (ROOT / out).mkdir(exist_ok=True)
     (ROOT / out / "index.html").write_text(page, encoding="utf-8")
 print("Listo: admin/, clientes/, tecnico/ y e/ (ficha pública)")
