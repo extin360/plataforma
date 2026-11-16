@@ -15,6 +15,7 @@ barras y encabezados de tabla, franja roja, Saira Condensed / Barlow / IBM Plex 
 | Cotización en línea | https://jasaextintores.com/q/<token> | `src/cotizacion.html` → `q/index.html` (`_redirects` manda `/q/*` ahí) | Netlify |
 | Ficha pública del QR | https://jasaextintores.com/e/JX-000245 | `src/ficha.html` → `e/index.html` (`_redirects` manda `/e/*` ahí) | Netlify |
 | Reportes PDF y puntos de inspección | — | `src/reporte.js` (lo inserta el build en panel, portal, app y ficha) | — |
+| Reporte semanal de asistencia | — | `netlify/functions/asistencia-semanal.mjs` (lunes 13:15 UTC) | Netlify Functions |
 | Base de datos | Supabase `psggoagcdokwrkykgufr` | `supabase/*.sql` (se pegan en SQL Editor) | Supabase |
 | Panel viejo (solo lectura) | claude.ai artifact BHJcxnzgNkVbLfyVe49MNu | `admin.html` en modo claude.ai | Artifact |
 
@@ -66,6 +67,13 @@ generados.
   p. ej. manómetro en CO₂). Reporte PDF horizontal con datos de `JASA_EMPRESA`, cliente y firmas de técnico y responsable. Al terminar, la app
   manda la inspección `por revisar`; en el panel se revisa, `jasaHallazgos()` agrupa lo encontrado por categoría y un
   botón crea la cotización `origen: inspeccion` (la inspección queda `revisada`). La app guarda sin señal en localStorage.
+- Asistencia (`supabase/09_asistencia.sql`): colección `asistencia` (id `<correo>-<ms>`: email, tipo entrada|salida, t, fecha,
+  hora, lat, lng, distancia, `manual`/`nota`/`por` si la agregó un admin). Se marca solo con `public.marcar_asistencia()`
+  (hora del servidor, America/Matamoros; rechaza fuera del radio de `docs('ajustes','asistencia') {lat,lng,radio,correo}`).
+  Cada quien lee sus marcas (política "asistencia propia"); admin todo. Panel `#asistencia` (todos), app › Mi cuenta (personal
+  sin permiso `campo` entra solo a Mi cuenta). Horas: `jasaAsistCalc()` en `src/reporte.js` (copia en la función de Netlify).
+  Reporte del lunes: función programada lee `public.reporte_asistencia(clave,…)` con `JASA_CLAVE_ASISTENCIA` (env de Netlify;
+  la clave vive en `public.claves_privadas`) y manda por Resend si hay `RESEND_API_KEY`, si no por Netlify Forms `reporte-asistencia`.
 - Llave publicable en el código (es pública por diseño). Nunca poner la Secret key ni contraseñas en el repo.
 - Registro de usuarios cerrado: el personal se da de alta en Authentication › Users y en `public.staff`.
 

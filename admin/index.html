@@ -253,7 +253,7 @@ body.monitor-mode aside,body.monitor-mode header.top,body.monitor-mode .mtabs{di
     <nav id="nav" aria-label="Secciones"></nav>
     <div class="side-foot">
       <span id="syncNote">Conectando…</span>
-      <span id="verNote" style="font-family:var(--mono);font-size:10px;color:var(--faint)">Versión 15/11/2026 15:51</span>
+      <span id="verNote" style="font-family:var(--mono);font-size:10px;color:var(--faint)">Versión 16/11/2026 12:36</span>
       <button type="button" class="link" data-act="backup" id="backupBtn" hidden style="text-align:left;padding:0">Descargar respaldo</button>
       <button type="button" class="link" data-act="importAsk" id="importBtn" hidden style="text-align:left;padding:0">Importar respaldo</button>
       <input type="file" id="importFile" accept=".json,application/json" hidden>
@@ -283,7 +283,7 @@ body.monitor-mode aside,body.monitor-mode header.top,body.monitor-mode .mtabs{di
 <script>
 (function(){
 "use strict";
-var COLS=["quotes","clientes","proveedores","movs","ordenes","inventario","precios","pendientes","extintores","inspecciones","visitas","recetas","compras","conteos","firmas"];
+var COLS=["quotes","clientes","proveedores","movs","ordenes","inventario","precios","pendientes","extintores","inspecciones","visitas","recetas","compras","conteos","firmas","asistencia","ajustes"];
 var S={invTab:"stock",cntCat:"",screen:"panel",data:{},ready:{},sel:null,finTab:"todos",finMes:null,search:"",paste:"",pasteMsg:"",drawer:null,otSel:null,dlv:{},confirm:null,readOnly:false,dbState:"loading"};
 COLS.forEach(function(c){S.data[c]=[];S.ready[c]=false;});
 var db=null, dl=null;
@@ -295,7 +295,7 @@ function jasaLogo(neg,uid){var a=neg?"#ffffff":"#1a1716",band=neg?"#0d0d0d":"#ff
 var PERMS=[["cotizaciones","Cotizaciones y lista de precios"],["clientes","Clientes"],["proveedores","Proveedores"],["finanzas","Finanzas: ingresos, egresos y utilidad"],["taller","Taller: órdenes"],["inventario","Inventario y órdenes de compra"],["costos","Costos y recetas"],["extintores","Extintores y etiquetas QR"],["inspecciones","Inspecciones y visitas"],["pendientes","Pendientes"],["campo","App del técnico (jasaextintores.com/tecnico)"]];
 var PUESTOS=[["admin","Administrador: todo, incluso personal y permisos"],["oficina","Oficina"],["taller","Taller"],["tecnico","Técnico de campo"],["otro","Personalizado"]];
 var PRESET={oficina:["cotizaciones","clientes","proveedores","finanzas","taller","inventario","costos","extintores","inspecciones","pendientes"],taller:["taller","inventario","extintores","pendientes","campo"],tecnico:["campo","extintores"]};
-var SCREEN_PERM={reportes:"finanzas",monitor:"taller",quotes:"cotizaciones",clientes:"clientes",proveedores:"proveedores",finanzas:"finanzas",taller:"taller",inventario:"inventario",costos:"costos",extintores:"extintores",inspecciones:"inspecciones",pendientes:"pendientes",personal:"_admin"};
+var SCREEN_PERM={reportes:"finanzas",monitor:"taller",quotes:"cotizaciones",clientes:"clientes",proveedores:"proveedores",finanzas:"finanzas",taller:"taller",inventario:"inventario",costos:"costos",extintores:"extintores",inspecciones:"inspecciones",pendientes:"pendientes",personal:"_admin",asistencia:""};
 function isAdmin(){return !S.me||!S.me.rol||S.me.rol==="admin";}
 function perm(k){if(isAdmin())return true;if(k==="_admin")return false;var l=(S.me.permisos||[]).slice();if(S.me.rol==="tecnico")l.push("campo");return l.indexOf(k)>=0;}
 function canScreen(sc){var k=SCREEN_PERM[sc];return !k||perm(k);}
@@ -850,7 +850,7 @@ function exportInsp(i){
 }
 
 /* ---------- vistas ---------- */
-var TITLES={panel:["Resumen","Panel"],quotes:["Bandeja","Cotizaciones"],clientes:["Cartera","Clientes"],proveedores:["Compras","Proveedores"],finanzas:["Contabilidad","Ingresos y egresos"],taller:["Taller JASA","Órdenes de taller"],inventario:["Taller JASA","Inventario"],pendientes:["Agenda","Pendientes"],extintores:["Expedientes","Extintores"],inspecciones:["Campo","Inspecciones"],costos:["Taller JASA","Costos y precios"],reportes:["Análisis","Reportes"],monitor:["Taller JASA","Monitor de taller"],personal:["Equipo","Personal y permisos"]};
+var TITLES={asistencia:["Personal","Asistencia"],panel:["Resumen","Panel"],quotes:["Bandeja","Cotizaciones"],clientes:["Cartera","Clientes"],proveedores:["Compras","Proveedores"],finanzas:["Contabilidad","Ingresos y egresos"],taller:["Taller JASA","Órdenes de taller"],inventario:["Taller JASA","Inventario"],pendientes:["Agenda","Pendientes"],extintores:["Expedientes","Extintores"],inspecciones:["Campo","Inspecciones"],costos:["Taller JASA","Costos y precios"],reportes:["Análisis","Reportes"],monitor:["Taller JASA","Monitor de taller"],personal:["Equipo","Personal y permisos"]};
 function lowStock(){return S.data.inventario.filter(function(i){return (+i.stock||0)<(+i.min||0);});}
 function dueClients(){
   var lim=addMonths(today().slice(0,7),2);
@@ -864,6 +864,7 @@ function renderNav(){
   var pend=S.data.quotes.filter(function(q){return q.status==="Nueva"||q.status==="Autorizada";}).length;
   var open=S.data.ordenes.filter(function(o){return (o.etapa||0)<DONE;}).length;
   var items=[["panel","Panel",""],["reportes","Reportes",""],["quotes","Cotizaciones",pend||""],["clientes","Clientes",""],["proveedores","Proveedores",""],["finanzas","Finanzas",""],["taller","Taller",open||""],["inventario","Inventario",(lowStock().length+ocAbiertas())||""],["costos","Costos y precios",recAlert()||""],["extintores","Extintores",extVencidos().length||""],["inspecciones","Inspecciones",inspPend()||""],["pendientes","Pendientes",(function(){var t0=today();var n=dayTasks(t0).filter(function(t){return !isDone(t,t0);}).length+overdue().length;return n||"";})()]];
+  items.push(["asistencia","Asistencia",""]);
   if(isAdmin()&&S.me)items.push(["personal","Personal y permisos",""]);
   items=items.filter(function(n){return canScreen(n[0]);});
   document.getElementById("nav").innerHTML=items.map(function(n){return '<button type="button" class="nav-b" data-act="go" data-v="'+n[0]+'"'+(S.screen===n[0]?' aria-current="page"':"")+'><span>'+n[1]+'</span><span class="cnt">'+n[2]+'</span></button>';}).join("");
@@ -1356,6 +1357,69 @@ function eiDo(){var I=S.extImp,rows=I.rows.filter(function(r){return !r.err;}),g
     return write("extintores",d.folio,Object.assign({folio:d.folio,cliente:d.cliente,numero:"",ubicacion:"",tipo:"PQS",cap:"",serie:"",recarga:"",vence:"",ph:"",estado:"servicio",etiquetaPendiente:true,creado:Date.now()},body,u?{ultima:u}:{}));});});
   ch.then(function(){S.extImp=null;S.drawer=null;renderDrawer();render();toast(n+" extintores importados"+(ni?" y "+ni+(ni===1?" reporte de inspección":" reportes de inspección"):"")+". Sus etiquetas quedan en “Imprimir etiquetas pendientes”.");},function(){if(btn)btn.disabled=false;if(msg)msg.textContent="Se detuvo la importación. Revisa tu conexión y vuelve a intentar: los que ya entraron se actualizan, no se duplican.";});}
 
+/* ---------- asistencia ---------- */
+function asCfg(){return byId("ajustes","asistencia")||null;}
+function asMine(){var me=String(S.user&&S.user.email||"").toLowerCase();return S.data.asistencia.filter(function(m){return String(m.email).toLowerCase()===me;});}
+function asNombre(em){var st=(S.staff||[]).find(function(x){return String(x.email).toLowerCase()===em;});return st&&st.nombre||em.split("@")[0];}
+function vAsist(){
+  var t0=today(),me=String(S.user&&S.user.email||"").toLowerCase(),adm=isAdmin()&&!!S.me,cfg=asCfg();
+  var lun=S.asWk||jasaLunes(t0),dias=jasaSemana(lun),fin=dias[6];
+  var mine=asMine(),last=mine.slice().sort(function(a,b){return String(b.t).localeCompare(String(a.t));})[0],dentro=last&&last.tipo==="entrada"&&last.fecha===t0;
+  var myCalc=jasaAsistCalc(mine,jasaLunes(t0),jasaSemana(jasaLunes(t0))[6],t0)[me]||{total:0,dias:{}},hoyM=mine.filter(function(m){return m.fecha===t0;}).sort(function(a,b){return String(a.t).localeCompare(String(b.t));});
+  var out='<div class="box"><div class="box-h"><h2>Mi asistencia</h2><span class="pill" style="color:'+(dentro?"var(--green)":"var(--muted)")+'">'+(dentro?"Dentro desde las "+esc(last.hora):"Fuera")+'</span></div><div class="plan">'+
+    (S.readOnly||!db?'<span class="hint">Solo lectura.</span>':'<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center"><button type="button" class="btn" data-act="asMark" data-v="'+(dentro?"salida":"entrada")+'" style="min-width:220px">'+(dentro?"Marcar salida":"Marcar entrada")+'</button><span class="hint">Se usa la ubicación de tu teléfono o computadora; tienes que estar en el negocio'+(cfg&&cfg.radio?" (a menos de "+esc(cfg.radio)+" m)":"")+'.</span></div><span class="hint" id="asMsg" role="status"></span>')+
+    '<span class="hint">Hoy: '+(hoyM.length?hoyM.map(function(m){return (m.tipo==="entrada"?"entrada ":"salida ")+esc(m.hora)+(m.manual?" (manual)":"");}).join(" · "):"sin marcas")+' · Esta semana: <b>'+jasaHM(myCalc.total)+' h</b></span></div></div>';
+  if(!adm)return out+asSemanaBox([me],lun,dias,false);
+  var ems={};(S.staff||[]).forEach(function(x){ems[String(x.email).toLowerCase()]=1;});S.data.asistencia.forEach(function(m){if(m.fecha>=lun&&m.fecha<=fin)ems[String(m.email).toLowerCase()]=1;});
+  out+=asSemanaBox(Object.keys(ems).sort(function(a,b){return asNombre(a).localeCompare(asNombre(b),"es");}),lun,dias,true);
+  out+='<div class="box"><div class="box-h"><h2>Ubicación del negocio</h2>'+(cfg&&cfg.lat?'<a class="link" target="_blank" rel="noopener" href="https://www.google.com/maps?q='+esc(cfg.lat)+','+esc(cfg.lng)+'">Ver en el mapa</a>':'<span class="pill" style="color:var(--rose)">Falta fijarla</span>')+'</div><div class="plan">'+
+    '<span class="hint">Párate dentro del negocio y toca “Usar mi ubicación actual”. Solo se puede marcar dentro del radio.</span>'+
+    '<div class="f2"><div class="field"><label for="asLat">Latitud</label><input class="inp" id="asLat" inputmode="decimal" value="'+esc(cfg&&cfg.lat||"")+'"></div><div class="field"><label for="asLng">Longitud</label><input class="inp" id="asLng" inputmode="decimal" value="'+esc(cfg&&cfg.lng||"")+'"></div><div class="field"><label for="asRadio">Radio permitido (metros)</label><input class="inp" id="asRadio" type="number" min="30" max="2000" value="'+esc(cfg&&cfg.radio||150)+'"><small>150 m cubre el local y la calle; súbelo si el GPS falla adentro.</small></div><div class="field"><label for="asCorreo">Correo para el reporte semanal</label><input class="inp" id="asCorreo" type="email" value="'+esc(cfg&&cfg.correo||S.user&&S.user.email||"")+'"><small>Llega cada lunes en la mañana con la semana anterior.</small></div></div>'+
+    '<div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn ghost sm" data-act="asHere">Usar mi ubicación actual</button><button type="button" class="btn sm" data-act="asCfgSave">Guardar</button></div><span class="hint" id="asCfgMsg"></span></div></div>';
+  return out;
+}
+function asSemanaBox(ems,lun,dias,adm){
+  var t0=today(),calc=jasaAsistCalc(S.data.asistencia,dias[0],dias[6],t0),tot=0,sel=S.asSel;
+  var fmtD=function(f){var p=f.split("-");return +p[2]+"/"+p[1];};
+  var rows=ems.map(function(em){var c=calc[em]||{total:0,dias:{},alertas:[]};tot+=c.total;
+    return '<tr'+(adm?' data-act="asSel" data-v="'+esc(em)+'" style="cursor:pointer"':"")+'><td><b style="font-weight:600">'+esc(asNombre(em))+'</b>'+(c.alertas.length?'<div style="color:var(--amber);font-size:12px">'+c.alertas.length+(c.alertas.length===1?" aviso":" avisos")+'</div>':"")+'</td>'+dias.map(function(f){var d=c.dias[f];return '<td class="num mono" style="font-size:13px'+(f===t0?";background:var(--panel-2)":"")+'">'+(d?(d.min?jasaHM(d.min):'<span style="color:var(--amber)">—</span>'):'<span style="color:var(--faint)">·</span>')+'</td>';}).join("")+'<td class="num mono"><b>'+jasaHM(c.total)+'</b></td></tr>';}).join("");
+  var det="";if(adm&&sel&&ems.indexOf(sel)>=0){var c=calc[sel]||{dias:{},alertas:[]},ms=S.data.asistencia.filter(function(m){return String(m.email).toLowerCase()===sel&&m.fecha>=dias[0]&&m.fecha<=dias[6];}).sort(function(a,b){return String(a.t).localeCompare(String(b.t));});
+    det='<div class="plan" style="border-top:1px solid var(--line)"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><b>'+esc(asNombre(sel))+' · marcas de la semana</b><button type="button" class="btn ghost sm" data-act="asManual" data-v="'+esc(sel)+'">+ Marca manual</button></div>'+
+      (c.alertas.length?'<div class="notice">'+c.alertas.map(function(a){return fmtD(a.fecha)+": "+esc(a.txt);}).join("<br>")+'</div>':"")+
+      (ms.length?'<div class="tbl-wrap"><table><thead><tr><th>DÍA</th><th>HORA</th><th>TIPO</th><th>UBICACIÓN</th><th></th></tr></thead><tbody>'+ms.map(function(m){return '<tr><td>'+JASA_DIAS[dias.indexOf(m.fecha)]+' '+fmtD(m.fecha)+'</td><td class="mono">'+esc(m.hora)+'</td><td>'+(m.tipo==="entrada"?"Entrada":"Salida")+'</td><td style="font-size:13px;color:var(--muted)">'+(m.manual?"Manual"+(m.nota?": "+esc(m.nota):""):(m.lat?'<a class="link" target="_blank" rel="noopener" href="https://www.google.com/maps?q='+m.lat+','+m.lng+'">a '+esc(m.distancia)+' m</a>':"—")+(m.dispositivo?" · "+esc(m.dispositivo):""))+'</td><td class="num">'+(S.readOnly?"":'<button type="button" class="link" data-act="asDel" data-id="'+esc(m.id)+'">Borrar</button>')+'</td></tr>';}).join("")+'</tbody></table></div>':'<span class="hint">Sin marcas esta semana.</span>')+'</div>';}
+  return '<div class="box"><div class="box-h"><h2>Semana del '+fmtD(dias[0])+' al '+fmtD(dias[6])+'</h2><div style="display:flex;gap:6px;flex-wrap:wrap"><button type="button" class="btn ghost sm" data-act="asWk" data-v="-1" aria-label="Semana anterior">‹</button>'+(lun!==jasaLunes(t0)?'<button type="button" class="btn ghost sm" data-act="asWk" data-v="0">Esta semana</button>':"")+'<button type="button" class="btn ghost sm" data-act="asWk" data-v="1" aria-label="Semana siguiente">›</button>'+(adm?'<button type="button" class="btn ghost sm" data-act="asXls">Excel</button><button type="button" class="btn ghost sm" data-act="asMail">Enviar por correo</button>':"")+'</div></div>'+
+    '<div class="tbl-wrap"><table><thead><tr><th>PERSONA</th>'+dias.map(function(f,i){return '<th class="num">'+JASA_DIAS[i].toUpperCase()+' '+fmtD(f)+'</th>';}).join("")+'<th class="num">TOTAL</th></tr></thead><tbody>'+rows+(adm?'<tr><td><b>Total</b></td>'+dias.map(function(){return "<td></td>";}).join("")+'<td class="num mono"><b>'+jasaHM(tot)+'</b></td></tr>':"")+'</tbody></table></div>'+
+    (adm?'<div class="plan" style="padding-top:0"><span class="hint">Toca a una persona para ver sus marcas, agregar una marca manual (si olvidó marcar) o borrar una equivocada.</span></div>':"")+det+'</div>';
+}
+function asTexto(){var lun=S.asWk||jasaLunes(today()),dias=jasaSemana(lun),calc=jasaAsistCalc(S.data.asistencia,dias[0],dias[6],today()),fmtD=function(f){var p=f.split("-");return +p[2]+"/"+p[1];};
+  var ems=Object.keys(calc).sort(function(a,b){return asNombre(a).localeCompare(asNombre(b),"es");}),tot=0;
+  var txt="Asistencia JASA Extintores\nSemana del "+fmtD(dias[0])+" al "+fmtD(dias[6])+"\n\n"+ems.map(function(em){var c=calc[em];tot+=c.total;return asNombre(em)+": "+jasaHM(c.total)+" h\n  "+dias.map(function(f,i){var d=c.dias[f];return JASA_DIAS[i]+" "+(d&&d.min?jasaHM(d.min):"—");}).join(" · ")+(c.alertas.length?"\n  Avisos: "+c.alertas.map(function(a){return fmtD(a.fecha)+" "+a.txt;}).join("; "):"");}).join("\n\n")+"\n\nTotal: "+jasaHM(tot)+" h\n\nDetalle: "+SITE+"/admin/#asistencia";
+  return txt;}
+function asXls(){var lun=S.asWk||jasaLunes(today()),dias=jasaSemana(lun),calc=jasaAsistCalc(S.data.asistencia,dias[0],dias[6],today());
+  loadXLSX().then(function(X){var hd=["Persona"].concat(dias.map(function(f,i){return JASA_DIAS[i]+" "+f;}),["Total (h:mm)","Total (horas)","Avisos"]);
+    var rows=Object.keys(calc).sort().map(function(em){var c=calc[em];return [asNombre(em)].concat(dias.map(function(f){var d=c.dias[f];return d&&d.min?jasaHM(d.min):"";}),[jasaHM(c.total),Math.round(c.total/6)/10,c.alertas.map(function(a){return a.fecha+" "+a.txt;}).join("; ")]);});
+    var marcas=S.data.asistencia.filter(function(m){return m.fecha>=dias[0]&&m.fecha<=dias[6];}).sort(function(a,b){return String(a.t).localeCompare(String(b.t));}).map(function(m){return [asNombre(String(m.email).toLowerCase()),m.fecha,m.hora,m.tipo,m.manual?"Manual":(m.distancia!=null?m.distancia+" m":""),m.nota||""];});
+    var wb=X.utils.book_new();X.utils.book_append_sheet(wb,X.utils.aoa_to_sheet([hd].concat(rows)),"Horas");X.utils.book_append_sheet(wb,X.utils.aoa_to_sheet([["Persona","Fecha","Hora","Tipo","Distancia","Nota"]].concat(marcas)),"Marcas");
+    X.writeFile(wb,"Asistencia-JASA-"+dias[0]+".xlsx");},function(){toast("No se pudo preparar el Excel. Revisa tu conexión.");});}
+function asManualDrawer(em){var t0=today();
+  document.getElementById("drawerRoot").innerHTML='<div class="overlay" data-act="closeDrawer"><div class="drawer" role="dialog" aria-modal="true" aria-label="Marca manual"><div class="box-h"><h2>Marca manual</h2><button type="button" class="btn ghost sm" data-act="closeDrawer">Cerrar</button></div><div class="plan">'+
+    '<span>Para <b>'+esc(asNombre(em))+'</b>. Úsala solo si olvidó marcar; queda registrado que la agregaste tú.</span>'+
+    '<div class="f2"><div class="field"><label for="amTipo">Tipo</label><select class="inp" id="amTipo"><option value="entrada">Entrada</option><option value="salida">Salida</option></select></div><div class="field"><label for="amFecha">Fecha</label><input class="inp" type="date" id="amFecha" value="'+t0+'"></div><div class="field"><label for="amHora">Hora</label><input class="inp" type="time" id="amHora" value="08:00"></div><div class="field"><label for="amNota">Motivo</label><input class="inp" id="amNota" placeholder="Ej. Olvidó marcar al salir"></div></div>'+
+    '<div><button type="button" class="btn" data-act="asManualDo" data-v="'+esc(em)+'">Guardar marca</button></div><span class="hint" id="amMsg"></span></div></div></div>';}
+function asManualDo(em){var tipo=document.getElementById("amTipo").value,f=document.getElementById("amFecha").value,h=document.getElementById("amHora").value,nota=document.getElementById("amNota").value.trim();
+  if(!f||!h){document.getElementById("amMsg").textContent="Escribe la fecha y la hora.";return;}
+  var d=new Date(f+"T"+h+":00"),st=(S.staff||[]).find(function(x){return String(x.email).toLowerCase()===em;})||{};
+  write("asistencia",em+"-m"+d.getTime(),{email:em,nombre:st.nombre||"",rol:st.rol||"",tipo:tipo,t:d.toISOString(),fecha:f,hora:h,manual:true,nota:nota,por:String(S.user.email).toLowerCase()}).then(function(){document.getElementById("drawerRoot").innerHTML="";toast("Marca agregada");render();});}
+function asMark(tipo,btn){var msg=document.getElementById("asMsg");btn.disabled=true;msg.textContent="Obteniendo tu ubicación…";
+  jasaMarcar(SB,tipo).then(function(r){btn.disabled=false;msg.textContent=r.msg;msg.style.color=r.ok?"var(--green)":"var(--rose)";if(r.ok){toast(r.msg);db.reload().then(function(){render();var m2=document.getElementById("asMsg");if(m2){m2.textContent=r.msg;m2.style.color="var(--green)";}});}});}
+function asHere(){var msg=document.getElementById("asCfgMsg");msg.textContent="Obteniendo tu ubicación…";
+  if(!navigator.geolocation){msg.textContent="Este dispositivo no comparte su ubicación.";return;}
+  navigator.geolocation.getCurrentPosition(function(p){document.getElementById("asLat").value=p.coords.latitude.toFixed(6);document.getElementById("asLng").value=p.coords.longitude.toFixed(6);msg.textContent="Listo (precisión ±"+Math.round(p.coords.accuracy)+" m). Revisa en el mapa y toca Guardar.";},
+    function(e){msg.textContent=e&&e.code===1?"Permite la ubicación en el navegador y vuelve a intentar.":"No se pudo obtener tu ubicación.";},{enableHighAccuracy:true,timeout:20000,maximumAge:0});}
+function asCfgSave(){var lat=parseFloat(document.getElementById("asLat").value),lng=parseFloat(document.getElementById("asLng").value),radio=Math.max(30,Math.min(2000,parseInt(document.getElementById("asRadio").value,10)||150)),correo=document.getElementById("asCorreo").value.trim().toLowerCase(),msg=document.getElementById("asCfgMsg");
+  if(!(lat>=-90&&lat<=90&&lng>=-180&&lng<=180)||!lat||!lng){msg.textContent="Escribe una latitud y longitud válidas, o usa tu ubicación actual.";return;}
+  var base=Object.assign({},asCfg()||{});delete base.id;write("ajustes","asistencia",Object.assign(base,{lat:Math.round(lat*1e6)/1e6,lng:Math.round(lng*1e6)/1e6,radio:radio,correo:correo,actualizado:new Date().toISOString(),por:String(S.user.email).toLowerCase()})).then(function(){toast("Ubicación del negocio guardada");render();});}
+
 function vInvStock(){
   var CORD=["Extintores","Agentes y polvo","Refacciones","Señalamientos","Otros"];var list=S.data.inventario.filter(match).sort(function(a,b){var ca=CORD.indexOf(a.categoria||"Otros"),cb=CORD.indexOf(b.categoria||"Otros");return (ca<0?9:ca)-(cb<0?9:cb)||String(a.nombre).localeCompare(String(b.nombre),"es");});
   var shop=S.data.inventario.filter(function(i){return (+i.stock||0)<(+i.min||0);}).map(function(i){return {n:i.nombre,u:i.unidad,q:Math.max(0,(+i.optimo||0)-(+i.stock||0))};});
@@ -1381,6 +1445,7 @@ function render(){
   else if(S.screen==="inspecciones")html+=vInsp();
   else if(S.screen==="costos")html+=vCostos();
   else if(S.screen==="personal")html+=vPersonal();
+  else if(S.screen==="asistencia")html+=vAsist();
   else if(S.screen==="reportes")html+=vReportes();
   else if(S.screen==="monitor")html+=vMonitor();
   else html+=vInv();
@@ -1497,6 +1562,16 @@ document.addEventListener("click",function(e){
   if(a==="pcDo"){precargaDo();return;}
   if(a==="extImp"){extImpOpen(b.hasAttribute("data-v")?v:(S.extCli||""));return;}
   if(a==="eiTpl"){eiTpl();return;}
+  if(a==="asMark"){asMark(v,b);return;}
+  if(a==="asWk"){var lw=S.asWk||jasaLunes(today());if(v==="0")S.asWk=null;else{var dw=new Date(lw+"T12:00:00");dw.setDate(dw.getDate()+7*(+v));S.asWk=jasaIso(dw);}render();return;}
+  if(a==="asSel"){S.asSel=S.asSel===v?null:v;render();return;}
+  if(a==="asManual"){asManualDrawer(v);return;}
+  if(a==="asManualDo"){asManualDo(v);return;}
+  if(a==="asDel"){if(confirm("¿Borrar esta marca?"))remove("asistencia",id).then(function(){toast("Marca borrada");});return;}
+  if(a==="asHere"){asHere();return;}
+  if(a==="asCfgSave"){asCfgSave();return;}
+  if(a==="asXls"){asXls();return;}
+  if(a==="asMail"){var cf=asCfg()||{};location.href=mailLink(cf.correo||S.user.email,"Asistencia JASA · semana del "+(S.asWk||jasaLunes(today())),asTexto());return;}
   if(a==="cliExt"){S.extCli=v;S.drawer=null;renderDrawer();S.screen="extintores";try{history.replaceState(null,"","#extintores");}catch(er){}render();window.scrollTo(0,0);return;}
   if(a==="eiDo"){eiDo();return;}
   if(a==="inspPdf"){var ins=byId("inspecciones",id);if(ins)exportInsp(ins);return;}
@@ -1769,6 +1844,51 @@ function jasaHallazgos(items, hoyMes) {
   });
   return out.sort(function (a, b) { return JASA_CATS.indexOf(a.cat) - JASA_CATS.indexOf(b.cat); });
 }
+
+/* ---------- asistencia (panel y app) ---------- */
+function jasaHM(min) { min = Math.max(0, Math.round(min || 0)); return Math.floor(min / 60) + ":" + String(min % 60).padStart(2, "0"); }
+function jasaIso(d) { return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
+function jasaLunes(fecha) { var d = new Date(fecha + "T12:00:00"); d.setDate(d.getDate() - (d.getDay() + 6) % 7); return jasaIso(d); }
+function jasaSemana(lunes) { var out = [], d = new Date(lunes + "T12:00:00"); for (var i = 0; i < 7; i++) { out.push(jasaIso(d)); d.setDate(d.getDate() + 1); } return out; }
+var JASA_DIAS = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
+// Empareja entradas y salidas de cada persona y suma las horas por día.
+function jasaAsistCalc(marcas, desde, hasta, hoy) {
+  var per = {};
+  (marcas || []).filter(function (m) { return m.fecha >= desde && m.fecha <= hasta; }).slice().sort(function (a, b) { return String(a.t).localeCompare(String(b.t)); }).forEach(function (m) {
+    var em = String(m.email || "").toLowerCase(), p = per[em] = per[em] || { email: em, nombre: m.nombre || em.split("@")[0], dias: {}, total: 0, alertas: [], abierto: null };
+    var dia = p.dias[m.fecha] = p.dias[m.fecha] || { min: 0, marcas: [] }; dia.marcas.push(m);
+    if (m.tipo === "entrada") { if (p.abierto) p.alertas.push({ fecha: p.abierto.fecha, txt: "Entrada de las " + p.abierto.hora + " sin salida" }); p.abierto = m; return; }
+    if (!p.abierto) { p.alertas.push({ fecha: m.fecha, txt: "Salida de las " + m.hora + " sin entrada" }); return; }
+    var min = (new Date(m.t) - new Date(p.abierto.t)) / 60000, d0 = p.dias[p.abierto.fecha];
+    if (min > 16 * 60) p.alertas.push({ fecha: p.abierto.fecha, txt: "Turno de más de 16 horas (" + jasaHM(min) + ")" });
+    d0.min += min; p.total += min; p.abierto = null;
+  });
+  Object.keys(per).forEach(function (k) { var p = per[k]; if (p.abierto && p.abierto.fecha !== hoy) { p.alertas.push({ fecha: p.abierto.fecha, txt: "Entrada de las " + p.abierto.hora + " sin salida" }); p.abierto = null; } });
+  return per;
+}
+// Pide la ubicación del teléfono y marca en el servidor (Supabase: public.marcar_asistencia).
+function jasaMarcar(sb, tipo) {
+  if (!navigator.geolocation) return Promise.resolve({ ok: false, msg: "Este dispositivo no puede compartir su ubicación." });
+  return new Promise(function (ok) {
+    navigator.geolocation.getCurrentPosition(function (pos) { ok(pos); }, function (e) { ok({ err: e && e.code }); }, { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 });
+  }).then(function (pos) {
+    if (pos.err === 1) return { ok: false, msg: "Activa la ubicación para marcar. En iPhone: Ajustes › Privacidad y seguridad › Localización › Safari (o Chrome) › Al usar la app, con Ubicación exacta encendida. En Android: toca el candado junto a la dirección › Permisos › Ubicación." };
+    if (pos.err) return { ok: false, msg: "No se pudo obtener tu ubicación. Revisa que la ubicación (GPS) del teléfono esté encendida y vuelve a intentar." };
+    var c = pos.coords, dev = (navigator.userAgent.match(/iPhone|iPad|Android|Windows|Macintosh/) || [""])[0];
+    return sb.rpc("marcar_asistencia", { tipo: tipo, lat: c.latitude, lng: c.longitude, precision_m: c.accuracy, dispositivo: dev }).then(function (r) {
+      if (r.error) return { ok: false, msg: /marcar_asistencia|PGRST202|404/.test(String(r.error.message) + r.error.code) ? "Falta instalar la asistencia en Supabase (09_asistencia.sql)." : "No se pudo marcar: " + r.error.message };
+      var d = r.data || {};
+      if (d.ok) return { ok: true, msg: (tipo === "entrada" ? "Entrada" : "Salida") + " registrada a las " + d.hora + ".", hora: d.hora };
+      return { ok: false, msg: {
+        fuera: "Estás a " + Number(d.distancia || 0).toLocaleString("es-MX") + " m del negocio. Para marcar tienes que estar a menos de " + d.radio + " m.",
+        precision: "Tu ubicación no es precisa (±" + d.precision + " m). Activa la ubicación exacta, espera unos segundos y vuelve a intentar.",
+        sin_negocio: "Falta fijar la ubicación del negocio. La fija un administrador en el panel › Asistencia.",
+        repetido: "Ya marcaste tu " + tipo + " hoy a las " + d.hora + ".",
+        sin_acceso: "Tu correo no está en la lista de personal."
+      }[d.motivo] || "No se pudo marcar." };
+    }, function () { return { ok: false, msg: "Sin conexión. Vuelve a intentar cuando tengas señal." }; });
+  });
+}
 /*@/reporte*/
 
 /* ---------- modo Supabase (jasaextintores.com/admin) ---------- */
@@ -1865,7 +1985,7 @@ function doImport(){
 }
 
 /* ---------- enlaces directos ---------- */
-var HASH={reportes:"reportes",dashboard:"reportes",monitor:"monitor",personal:"personal",permisos:"personal",compras:"inventario",conteo:"inventario",costos:"costos",recetas:"costos",extintores:"extintores",inspecciones:"inspecciones",panel:"panel",cotizaciones:"quotes",quotes:"quotes",clientes:"clientes",proveedores:"proveedores",finanzas:"finanzas",taller:"taller",inventario:"inventario",pendientes:"pendientes",agenda:"pendientes"};
+var HASH={asistencia:"asistencia",reportes:"reportes",dashboard:"reportes",monitor:"monitor",personal:"personal",permisos:"personal",compras:"inventario",conteo:"inventario",costos:"costos",recetas:"costos",extintores:"extintores",inspecciones:"inspecciones",panel:"panel",cotizaciones:"quotes",quotes:"quotes",clientes:"clientes",proveedores:"proveedores",finanzas:"finanzas",taller:"taller",inventario:"inventario",pendientes:"pendientes",agenda:"pendientes"};
 function fromHash(){var hq=(location.hash||"").match(/^#cotizacion-(.+)$/i);if(hq){S.goFolio=decodeURIComponent(hq[1]).toUpperCase();S.screen="quotes";render();return;}var h=(location.hash||"").replace("#","").toLowerCase();if(HASH[h]&&S.screen!==HASH[h]){S.screen=HASH[h];S.otSel=null;render();}}
 window.addEventListener("hashchange",fromHash);fromHash();
 
