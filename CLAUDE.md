@@ -67,9 +67,10 @@ generados.
   p. ej. manómetro en CO₂). Reporte PDF horizontal con datos de `JASA_EMPRESA`, cliente y firmas de técnico y responsable. Al terminar, la app
   manda la inspección `por revisar`; en el panel se revisa, `jasaHallazgos()` agrupa lo encontrado por categoría y un
   botón crea la cotización `origen: inspeccion` (la inspección queda `revisada`). La app guarda sin señal en localStorage.
-- Asistencia (`supabase/09_asistencia.sql`): colección `asistencia` (id `<correo>-<ms>`: email, tipo entrada|salida, t, fecha,
+- Asistencia (`supabase/09_asistencia.sql`): colección `asistencia` (id `<correo>-<ms>[-tipo]`: email, tipo entrada|comida|regreso|salida, t, fecha,
   hora, lat, lng, distancia, `manual`/`nota`/`por` si la agregó un admin). Se marca solo con `public.marcar_asistencia()`
-  (hora del servidor, America/Matamoros; rechaza fuera del radio de `docs('ajustes','asistencia') {lat,lng,radio,correo}`).
+  (hora del servidor, America/Matamoros; entrada y salida solo dentro del radio de `docs('ajustes','asistencia')
+  {lat,lng,radio,correo}`; comida y regreso desde cualquier lugar, `10_asistencia_comida.sql`). Horas = trabajadas sin comida.
   Cada quien lee sus marcas (política "asistencia propia"); admin todo. Panel `#asistencia` (todos), app › Mi cuenta (personal
   sin permiso `campo` entra solo a Mi cuenta). Horas: `jasaAsistCalc()` en `src/reporte.js` (copia en la función de Netlify).
   Reporte del lunes: función programada lee `public.reporte_asistencia(clave,…)` con `JASA_CLAVE_ASISTENCIA` (env de Netlify;

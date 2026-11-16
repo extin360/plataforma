@@ -12,4 +12,5 @@ select
           and prosrc like '%''email''%')                                                            as "06_cotizacion_correo",
   exists (select 1 from pg_proc where proname = 'autorizar_cotizacion')                             as "07_cotizacion_en_linea",
   exists (select 1 from pg_proc where proname = 'portal' and prosrc like '%inspecciones%')         as "08_portal_inspecciones",
-  exists (select 1 from pg_proc where proname = 'marcar_asistencia')                                as "09_asistencia";
+  exists (select 1 from pg_proc where proname = 'marcar_asistencia')                                as "09_asistencia",
+  exists (select 1 from pg_proc where proname = 'marcar_asistencia' and prosrc like '%regreso%')    as "10_asistencia_comida";

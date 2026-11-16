@@ -1363,11 +1363,12 @@ function asNombre(em){var st=(S.staff||[]).find(function(x){return String(x.emai
 function vAsist(){
   var t0=today(),me=String(S.user&&S.user.email||"").toLowerCase(),adm=isAdmin()&&!!S.me,cfg=asCfg();
   var lun=S.asWk||jasaLunes(t0),dias=jasaSemana(lun),fin=dias[6];
-  var mine=asMine(),last=mine.slice().sort(function(a,b){return String(b.t).localeCompare(String(a.t));})[0],dentro=last&&last.tipo==="entrada"&&last.fecha===t0;
+  var mine=asMine(),est=jasaAsistEstado(mine,t0),last=est.m;
   var myCalc=jasaAsistCalc(mine,jasaLunes(t0),jasaSemana(jasaLunes(t0))[6],t0)[me]||{total:0,dias:{}},hoyM=mine.filter(function(m){return m.fecha===t0;}).sort(function(a,b){return String(a.t).localeCompare(String(b.t));});
-  var out='<div class="box"><div class="box-h"><h2>Mi asistencia</h2><span class="pill" style="color:'+(dentro?"var(--green)":"var(--muted)")+'">'+(dentro?"Dentro desde las "+esc(last.hora):"Fuera")+'</span></div><div class="plan">'+
-    (S.readOnly||!db?'<span class="hint">Solo lectura.</span>':'<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center"><button type="button" class="btn" data-act="asMark" data-v="'+(dentro?"salida":"entrada")+'" style="min-width:220px">'+(dentro?"Marcar salida":"Marcar entrada")+'</button><span class="hint">Se usa la ubicación de tu teléfono o computadora; tienes que estar en el negocio'+(cfg&&cfg.radio?" (a menos de "+esc(cfg.radio)+" m)":"")+'.</span></div><span class="hint" id="asMsg" role="status"></span>')+
-    '<span class="hint">Hoy: '+(hoyM.length?hoyM.map(function(m){return (m.tipo==="entrada"?"entrada ":"salida ")+esc(m.hora)+(m.manual?" (manual)":"");}).join(" · "):"sin marcas")+' · Esta semana: <b>'+jasaHM(myCalc.total)+' h</b></span></div></div>';
+  var btns=est.e==="fuera"?[["entrada","Marcar entrada",""]]:est.e==="comida"?[["regreso","Regresé de comer",""]]:[["comida","Salir a comer"," ghost"],["salida","Marcar salida",""]];
+  var out='<div class="box"><div class="box-h"><h2>Mi asistencia</h2><span class="pill" style="color:'+(est.e==="dentro"?"var(--green)":est.e==="comida"?"var(--amber)":"var(--muted)")+'">'+(est.e==="dentro"?"Dentro desde las "+esc(last.hora):est.e==="comida"?"En comida desde las "+esc(last.hora):"Fuera")+'</span></div><div class="plan">'+
+    (S.readOnly||!db?'<span class="hint">Solo lectura.</span>':'<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">'+btns.map(function(x){return '<button type="button" class="btn'+x[2]+'" data-act="asMark" data-v="'+x[0]+'" style="min-width:200px">'+x[1]+'</button>';}).join("")+'</div><span class="hint">Entrada y salida: tienes que estar en el negocio'+(cfg&&cfg.radio?" (a menos de "+esc(cfg.radio)+" m)":"")+'. La comida se marca desde donde estés.</span><span class="hint" id="asMsg" role="status"></span>')+
+    '<span class="hint">Hoy: '+(hoyM.length?hoyM.map(function(m){return esc((JASA_TIPO_AS[m.tipo]||m.tipo).toLowerCase())+" "+esc(m.hora)+(m.manual?" (manual)":"");}).join(" · "):"sin marcas")+' · Esta semana: <b>'+jasaHM(myCalc.total)+' h</b> trabajadas</span></div></div>';
   if(!adm)return out+asSemanaBox([me],lun,dias,false);
   var ems={};(S.staff||[]).forEach(function(x){ems[String(x.email).toLowerCase()]=1;});S.data.asistencia.forEach(function(m){if(m.fecha>=lun&&m.fecha<=fin)ems[String(m.email).toLowerCase()]=1;});
   out+=asSemanaBox(Object.keys(ems).sort(function(a,b){return asNombre(a).localeCompare(asNombre(b),"es");}),lun,dias,true);
@@ -1385,7 +1386,7 @@ function asSemanaBox(ems,lun,dias,adm){
   var det="";if(adm&&sel&&ems.indexOf(sel)>=0){var c=calc[sel]||{dias:{},alertas:[]},ms=S.data.asistencia.filter(function(m){return String(m.email).toLowerCase()===sel&&m.fecha>=dias[0]&&m.fecha<=dias[6];}).sort(function(a,b){return String(a.t).localeCompare(String(b.t));});
     det='<div class="plan" style="border-top:1px solid var(--line)"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><b>'+esc(asNombre(sel))+' · marcas de la semana</b><button type="button" class="btn ghost sm" data-act="asManual" data-v="'+esc(sel)+'">+ Marca manual</button></div>'+
       (c.alertas.length?'<div class="notice">'+c.alertas.map(function(a){return fmtD(a.fecha)+": "+esc(a.txt);}).join("<br>")+'</div>':"")+
-      (ms.length?'<div class="tbl-wrap"><table><thead><tr><th>DÍA</th><th>HORA</th><th>TIPO</th><th>UBICACIÓN</th><th></th></tr></thead><tbody>'+ms.map(function(m){return '<tr><td>'+JASA_DIAS[dias.indexOf(m.fecha)]+' '+fmtD(m.fecha)+'</td><td class="mono">'+esc(m.hora)+'</td><td>'+(m.tipo==="entrada"?"Entrada":"Salida")+'</td><td style="font-size:13px;color:var(--muted)">'+(m.manual?"Manual"+(m.nota?": "+esc(m.nota):""):(m.lat?'<a class="link" target="_blank" rel="noopener" href="https://www.google.com/maps?q='+m.lat+','+m.lng+'">a '+esc(m.distancia)+' m</a>':"—")+(m.dispositivo?" · "+esc(m.dispositivo):""))+'</td><td class="num">'+(S.readOnly?"":'<button type="button" class="link" data-act="asDel" data-id="'+esc(m.id)+'">Borrar</button>')+'</td></tr>';}).join("")+'</tbody></table></div>':'<span class="hint">Sin marcas esta semana.</span>')+'</div>';}
+      (ms.length?'<div class="tbl-wrap"><table><thead><tr><th>DÍA</th><th>HORA</th><th>TIPO</th><th>UBICACIÓN</th><th></th></tr></thead><tbody>'+ms.map(function(m){return '<tr><td>'+JASA_DIAS[dias.indexOf(m.fecha)]+' '+fmtD(m.fecha)+'</td><td class="mono">'+esc(m.hora)+'</td><td>'+esc(JASA_TIPO_AS[m.tipo]||m.tipo)+'</td><td style="font-size:13px;color:var(--muted)">'+(m.manual?"Manual"+(m.nota?": "+esc(m.nota):""):(m.lat==null?"Sin ubicación":m.distancia==null?"Con ubicación":'<a class="link" target="_blank" rel="noopener" href="https://www.google.com/maps?q='+m.lat+','+m.lng+'">a '+esc(Number(m.distancia).toLocaleString("es-MX"))+' m</a>')+(m.dispositivo?" · "+esc(m.dispositivo):""))+'</td><td class="num">'+(S.readOnly?"":'<button type="button" class="link" data-act="asDel" data-id="'+esc(m.id)+'">Borrar</button>')+'</td></tr>';}).join("")+'</tbody></table></div>':'<span class="hint">Sin marcas esta semana.</span>')+'</div>';}
   return '<div class="box"><div class="box-h"><h2>Semana del '+fmtD(dias[0])+' al '+fmtD(dias[6])+'</h2><div style="display:flex;gap:6px;flex-wrap:wrap"><button type="button" class="btn ghost sm" data-act="asWk" data-v="-1" aria-label="Semana anterior">‹</button>'+(lun!==jasaLunes(t0)?'<button type="button" class="btn ghost sm" data-act="asWk" data-v="0">Esta semana</button>':"")+'<button type="button" class="btn ghost sm" data-act="asWk" data-v="1" aria-label="Semana siguiente">›</button>'+(adm?'<button type="button" class="btn ghost sm" data-act="asXls">Excel</button><button type="button" class="btn ghost sm" data-act="asMail">Enviar por correo</button>':"")+'</div></div>'+
     '<div class="tbl-wrap"><table><thead><tr><th>PERSONA</th>'+dias.map(function(f,i){return '<th class="num">'+JASA_DIAS[i].toUpperCase()+' '+fmtD(f)+'</th>';}).join("")+'<th class="num">TOTAL</th></tr></thead><tbody>'+rows+(adm?'<tr><td><b>Total</b></td>'+dias.map(function(){return "<td></td>";}).join("")+'<td class="num mono"><b>'+jasaHM(tot)+'</b></td></tr>':"")+'</tbody></table></div>'+
     (adm?'<div class="plan" style="padding-top:0"><span class="hint">Toca a una persona para ver sus marcas, agregar una marca manual (si olvidó marcar) o borrar una equivocada.</span></div>':"")+det+'</div>';
@@ -1395,15 +1396,15 @@ function asTexto(){var lun=S.asWk||jasaLunes(today()),dias=jasaSemana(lun),calc=
   var txt="Asistencia JASA Extintores\nSemana del "+fmtD(dias[0])+" al "+fmtD(dias[6])+"\n\n"+ems.map(function(em){var c=calc[em];tot+=c.total;return asNombre(em)+": "+jasaHM(c.total)+" h\n  "+dias.map(function(f,i){var d=c.dias[f];return JASA_DIAS[i]+" "+(d&&d.min?jasaHM(d.min):"—");}).join(" · ")+(c.alertas.length?"\n  Avisos: "+c.alertas.map(function(a){return fmtD(a.fecha)+" "+a.txt;}).join("; "):"");}).join("\n\n")+"\n\nTotal: "+jasaHM(tot)+" h\n\nDetalle: "+SITE+"/admin/#asistencia";
   return txt;}
 function asXls(){var lun=S.asWk||jasaLunes(today()),dias=jasaSemana(lun),calc=jasaAsistCalc(S.data.asistencia,dias[0],dias[6],today());
-  loadXLSX().then(function(X){var hd=["Persona"].concat(dias.map(function(f,i){return JASA_DIAS[i]+" "+f;}),["Total (h:mm)","Total (horas)","Avisos"]);
-    var rows=Object.keys(calc).sort().map(function(em){var c=calc[em];return [asNombre(em)].concat(dias.map(function(f){var d=c.dias[f];return d&&d.min?jasaHM(d.min):"";}),[jasaHM(c.total),Math.round(c.total/6)/10,c.alertas.map(function(a){return a.fecha+" "+a.txt;}).join("; ")]);});
-    var marcas=S.data.asistencia.filter(function(m){return m.fecha>=dias[0]&&m.fecha<=dias[6];}).sort(function(a,b){return String(a.t).localeCompare(String(b.t));}).map(function(m){return [asNombre(String(m.email).toLowerCase()),m.fecha,m.hora,m.tipo,m.manual?"Manual":(m.distancia!=null?m.distancia+" m":""),m.nota||""];});
+  loadXLSX().then(function(X){var hd=["Persona"].concat(dias.map(function(f,i){return JASA_DIAS[i]+" "+f;}),["Total trabajado (h:mm)","Total (horas)","Comida (h:mm)","Avisos"]);
+    var rows=Object.keys(calc).sort().map(function(em){var c=calc[em];return [asNombre(em)].concat(dias.map(function(f){var d=c.dias[f];return d&&d.min?jasaHM(d.min):"";}),[jasaHM(c.total),Math.round(c.total/6)/10,jasaHM(c.comida||0),c.alertas.map(function(a){return a.fecha+" "+a.txt;}).join("; ")]);});
+    var marcas=S.data.asistencia.filter(function(m){return m.fecha>=dias[0]&&m.fecha<=dias[6];}).sort(function(a,b){return String(a.t).localeCompare(String(b.t));}).map(function(m){return [asNombre(String(m.email).toLowerCase()),m.fecha,m.hora,JASA_TIPO_AS[m.tipo]||m.tipo,m.manual?"Manual":(m.distancia!=null?m.distancia+" m":""),m.nota||""];});
     var wb=X.utils.book_new();X.utils.book_append_sheet(wb,X.utils.aoa_to_sheet([hd].concat(rows)),"Horas");X.utils.book_append_sheet(wb,X.utils.aoa_to_sheet([["Persona","Fecha","Hora","Tipo","Distancia","Nota"]].concat(marcas)),"Marcas");
     X.writeFile(wb,"Asistencia-JASA-"+dias[0]+".xlsx");},function(){toast("No se pudo preparar el Excel. Revisa tu conexión.");});}
 function asManualDrawer(em){var t0=today();
   document.getElementById("drawerRoot").innerHTML='<div class="overlay" data-act="closeDrawer"><div class="drawer" role="dialog" aria-modal="true" aria-label="Marca manual"><div class="box-h"><h2>Marca manual</h2><button type="button" class="btn ghost sm" data-act="closeDrawer">Cerrar</button></div><div class="plan">'+
     '<span>Para <b>'+esc(asNombre(em))+'</b>. Úsala solo si olvidó marcar; queda registrado que la agregaste tú.</span>'+
-    '<div class="f2"><div class="field"><label for="amTipo">Tipo</label><select class="inp" id="amTipo"><option value="entrada">Entrada</option><option value="salida">Salida</option></select></div><div class="field"><label for="amFecha">Fecha</label><input class="inp" type="date" id="amFecha" value="'+t0+'"></div><div class="field"><label for="amHora">Hora</label><input class="inp" type="time" id="amHora" value="08:00"></div><div class="field"><label for="amNota">Motivo</label><input class="inp" id="amNota" placeholder="Ej. Olvidó marcar al salir"></div></div>'+
+    '<div class="f2"><div class="field"><label for="amTipo">Tipo</label><select class="inp" id="amTipo"><option value="entrada">Entrada</option><option value="comida">Sale a comer</option><option value="regreso">Regresa de comer</option><option value="salida">Salida</option></select></div><div class="field"><label for="amFecha">Fecha</label><input class="inp" type="date" id="amFecha" value="'+t0+'"></div><div class="field"><label for="amHora">Hora</label><input class="inp" type="time" id="amHora" value="08:00"></div><div class="field"><label for="amNota">Motivo</label><input class="inp" id="amNota" placeholder="Ej. Olvidó marcar al salir"></div></div>'+
     '<div><button type="button" class="btn" data-act="asManualDo" data-v="'+esc(em)+'">Guardar marca</button></div><span class="hint" id="amMsg"></span></div></div></div>';}
 function asManualDo(em){var tipo=document.getElementById("amTipo").value,f=document.getElementById("amFecha").value,h=document.getElementById("amHora").value,nota=document.getElementById("amNota").value.trim();
   if(!f||!h){document.getElementById("amMsg").textContent="Escribe la fecha y la hora.";return;}
@@ -1850,39 +1851,53 @@ function jasaIso(d) { return d.getFullYear() + "-" + String(d.getMonth() + 1).pa
 function jasaLunes(fecha) { var d = new Date(fecha + "T12:00:00"); d.setDate(d.getDate() - (d.getDay() + 6) % 7); return jasaIso(d); }
 function jasaSemana(lunes) { var out = [], d = new Date(lunes + "T12:00:00"); for (var i = 0; i < 7; i++) { out.push(jasaIso(d)); d.setDate(d.getDate() + 1); } return out; }
 var JASA_DIAS = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
-// Empareja entradas y salidas de cada persona y suma las horas por día.
+var JASA_TIPO_AS = { entrada: "Entrada", comida: "Sale a comer", regreso: "Regresa de comer", salida: "Salida" };
+// Estado de una persona hoy según su última marca: dentro | comida | fuera
+function jasaAsistEstado(marcas, hoy) { var l = (marcas || []).filter(function (m) { return m.fecha === hoy; }).sort(function (a, b) { return String(b.t).localeCompare(String(a.t)); })[0];
+  return !l || l.tipo === "salida" ? { e: "fuera", m: l } : l.tipo === "comida" ? { e: "comida", m: l } : { e: "dentro", m: l }; }
+// Empareja las marcas de cada persona y suma las horas trabajadas por día (sin el tiempo de comida).
 function jasaAsistCalc(marcas, desde, hasta, hoy) {
   var per = {};
   (marcas || []).filter(function (m) { return m.fecha >= desde && m.fecha <= hasta; }).slice().sort(function (a, b) { return String(a.t).localeCompare(String(b.t)); }).forEach(function (m) {
-    var em = String(m.email || "").toLowerCase(), p = per[em] = per[em] || { email: em, nombre: m.nombre || em.split("@")[0], dias: {}, total: 0, alertas: [], abierto: null };
-    var dia = p.dias[m.fecha] = p.dias[m.fecha] || { min: 0, marcas: [] }; dia.marcas.push(m);
-    if (m.tipo === "entrada") { if (p.abierto) p.alertas.push({ fecha: p.abierto.fecha, txt: "Entrada de las " + p.abierto.hora + " sin salida" }); p.abierto = m; return; }
-    if (!p.abierto) { p.alertas.push({ fecha: m.fecha, txt: "Salida de las " + m.hora + " sin entrada" }); return; }
-    var min = (new Date(m.t) - new Date(p.abierto.t)) / 60000, d0 = p.dias[p.abierto.fecha];
-    if (min > 16 * 60) p.alertas.push({ fecha: p.abierto.fecha, txt: "Turno de más de 16 horas (" + jasaHM(min) + ")" });
-    d0.min += min; p.total += min; p.abierto = null;
+    var em = String(m.email || "").toLowerCase(), p = per[em] = per[em] || { email: em, nombre: m.nombre || em.split("@")[0], dias: {}, total: 0, comida: 0, alertas: [], abierto: null, pausa: null };
+    var dia = p.dias[m.fecha] = p.dias[m.fecha] || { min: 0, comida: 0, marcas: [] }; dia.marcas.push(m);
+    function cierra(fin) { var min = (new Date(fin.t) - new Date(p.abierto.t)) / 60000, d0 = p.dias[p.abierto.fecha];
+      if (min > 16 * 60) p.alertas.push({ fecha: p.abierto.fecha, txt: "Turno de más de 16 horas (" + jasaHM(min) + ")" });
+      d0.min += min; p.total += min; p.abierto = null; }
+    if (m.tipo === "entrada") { if (p.abierto || p.pausa) p.alertas.push({ fecha: (p.abierto || p.pausa).fecha, txt: "Entrada de las " + (p.abierto || p.pausa).hora + " sin salida" }); p.abierto = m; p.pausa = null; return; }
+    if (m.tipo === "comida") { if (p.abierto) cierra(m); else p.alertas.push({ fecha: m.fecha, txt: "Salió a comer a las " + m.hora + " sin entrada" }); p.pausa = m; return; }
+    if (m.tipo === "regreso") { if (p.pausa) { var cm = (new Date(m.t) - new Date(p.pausa.t)) / 60000; p.dias[p.pausa.fecha].comida += cm; p.comida += cm; if (cm > 3 * 60) p.alertas.push({ fecha: p.pausa.fecha, txt: "Comida de " + jasaHM(cm) + " h" }); } else if (p.abierto) cierra(m);
+      p.pausa = null; p.abierto = m; return; }
+    if (p.abierto) cierra(m);
+    else if (p.pausa) p.alertas.push({ fecha: p.pausa.fecha, txt: "Salió a comer a las " + p.pausa.hora + " y no marcó regreso" });
+    else p.alertas.push({ fecha: m.fecha, txt: "Salida de las " + m.hora + " sin entrada" });
+    p.pausa = null;
   });
-  Object.keys(per).forEach(function (k) { var p = per[k]; if (p.abierto && p.abierto.fecha !== hoy) { p.alertas.push({ fecha: p.abierto.fecha, txt: "Entrada de las " + p.abierto.hora + " sin salida" }); p.abierto = null; } });
+  Object.keys(per).forEach(function (k) { var p = per[k], o = p.abierto || p.pausa; if (o && o.fecha !== hoy) { p.alertas.push({ fecha: o.fecha, txt: (p.pausa ? "Salió a comer a las " + o.hora + " y no regresó" : "Entrada de las " + o.hora + " sin salida") }); p.abierto = null; p.pausa = null; } });
   return per;
 }
 // Pide la ubicación del teléfono y marca en el servidor (Supabase: public.marcar_asistencia).
 function jasaMarcar(sb, tipo) {
   if (!navigator.geolocation) return Promise.resolve({ ok: false, msg: "Este dispositivo no puede compartir su ubicación." });
   return new Promise(function (ok) {
-    navigator.geolocation.getCurrentPosition(function (pos) { ok(pos); }, function (e) { ok({ err: e && e.code }); }, { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 });
+    navigator.geolocation.getCurrentPosition(function (pos) { ok(pos); }, function (e) { ok({ err: e && e.code }); }, { enableHighAccuracy: true, timeout: tipo === "comida" || tipo === "regreso" ? 10000 : 20000, maximumAge: 0 });
   }).then(function (pos) {
-    if (pos.err === 1) return { ok: false, msg: "Activa la ubicación para marcar. En iPhone: Ajustes › Privacidad y seguridad › Localización › Safari (o Chrome) › Al usar la app, con Ubicación exacta encendida. En Android: toca el candado junto a la dirección › Permisos › Ubicación." };
-    if (pos.err) return { ok: false, msg: "No se pudo obtener tu ubicación. Revisa que la ubicación (GPS) del teléfono esté encendida y vuelve a intentar." };
+    var libre = tipo === "comida" || tipo === "regreso";
+    if (pos.err && libre) pos = { coords: { latitude: null, longitude: null, accuracy: null } };
+    else if (pos.err === 1) return { ok: false, msg: "Activa la ubicación para marcar. En iPhone: Ajustes › Privacidad y seguridad › Localización › Safari (o Chrome) › Al usar la app, con Ubicación exacta encendida. En Android: toca el candado junto a la dirección › Permisos › Ubicación." };
+    else if (pos.err) return { ok: false, msg: "No se pudo obtener tu ubicación. Revisa que la ubicación (GPS) del teléfono esté encendida y vuelve a intentar." };
     var c = pos.coords, dev = (navigator.userAgent.match(/iPhone|iPad|Android|Windows|Macintosh/) || [""])[0];
     return sb.rpc("marcar_asistencia", { tipo: tipo, lat: c.latitude, lng: c.longitude, precision_m: c.accuracy, dispositivo: dev }).then(function (r) {
       if (r.error) return { ok: false, msg: /marcar_asistencia|PGRST202|404/.test(String(r.error.message) + r.error.code) ? "Falta instalar la asistencia en Supabase (09_asistencia.sql)." : "No se pudo marcar: " + r.error.message };
       var d = r.data || {};
-      if (d.ok) return { ok: true, msg: (tipo === "entrada" ? "Entrada" : "Salida") + " registrada a las " + d.hora + ".", hora: d.hora };
+      if (d.ok) return { ok: true, msg: { entrada: "Entrada registrada", salida: "Salida registrada", comida: "Salida a comer registrada", regreso: "Regreso de comer registrado" }[tipo] + " a las " + d.hora + ".", hora: d.hora };
       return { ok: false, msg: {
         fuera: "Estás a " + Number(d.distancia || 0).toLocaleString("es-MX") + " m del negocio. Para marcar tienes que estar a menos de " + d.radio + " m.",
         precision: "Tu ubicación no es precisa (±" + d.precision + " m). Activa la ubicación exacta, espera unos segundos y vuelve a intentar.",
         sin_negocio: "Falta fijar la ubicación del negocio. La fija un administrador en el panel › Asistencia.",
-        repetido: "Ya marcaste tu " + tipo + " hoy a las " + d.hora + ".",
+        repetido: "Ya lo marcaste hoy a las " + d.hora + ".",
+        sin_entrada: "Primero marca tu entrada.",
+        sin_comida: "No tienes una salida a comer abierta.",
         sin_acceso: "Tu correo no está en la lista de personal."
       }[d.motivo] || "No se pudo marcar." };
     }, function () { return { ok: false, msg: "Sin conexión. Vuelve a intentar cuando tengas señal." }; });

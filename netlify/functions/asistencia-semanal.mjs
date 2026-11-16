@@ -25,20 +25,30 @@ function semanaAnterior(ahora = new Date()) {
   return dias;
 }
 
-// Igual que jasaAsistCalc en src/reporte.js
+// Igual que jasaAsistCalc en src/reporte.js (horas trabajadas sin el tiempo de comida)
 function calcular(marcas, desde, hasta) {
   const per = {};
   marcas.filter((m) => m.fecha >= desde && m.fecha <= hasta).sort((a, b) => String(a.t).localeCompare(String(b.t))).forEach((m) => {
     const em = String(m.email || "").toLowerCase();
-    const p = per[em] = per[em] || { email: em, nombre: m.nombre || em.split("@")[0], dias: {}, total: 0, alertas: [], abierto: null };
-    const dia = p.dias[m.fecha] = p.dias[m.fecha] || { min: 0 };
-    if (m.tipo === "entrada") { if (p.abierto) p.alertas.push(fmtD(p.abierto.fecha) + ": entrada de las " + p.abierto.hora + " sin salida"); p.abierto = m; return; }
-    if (!p.abierto) { p.alertas.push(fmtD(m.fecha) + ": salida de las " + m.hora + " sin entrada"); return; }
-    const min = (new Date(m.t) - new Date(p.abierto.t)) / 60000;
-    if (min > 16 * 60) p.alertas.push(fmtD(p.abierto.fecha) + ": turno de más de 16 horas (" + hm(min) + ")");
-    p.dias[p.abierto.fecha].min += min; p.total += min; p.abierto = null;
+    const p = per[em] = per[em] || { email: em, nombre: m.nombre || em.split("@")[0], dias: {}, total: 0, comida: 0, alertas: [], abierto: null, pausa: null };
+    p.dias[m.fecha] = p.dias[m.fecha] || { min: 0, comida: 0 };
+    const cierra = (fin) => {
+      const min = (new Date(fin.t) - new Date(p.abierto.t)) / 60000;
+      if (min > 16 * 60) p.alertas.push(fmtD(p.abierto.fecha) + ": turno de más de 16 horas (" + hm(min) + ")");
+      p.dias[p.abierto.fecha].min += min; p.total += min; p.abierto = null;
+    };
+    if (m.tipo === "entrada") { const o = p.abierto || p.pausa; if (o) p.alertas.push(fmtD(o.fecha) + ": entrada de las " + o.hora + " sin salida"); p.abierto = m; p.pausa = null; return; }
+    if (m.tipo === "comida") { if (p.abierto) cierra(m); else p.alertas.push(fmtD(m.fecha) + ": salió a comer a las " + m.hora + " sin entrada"); p.pausa = m; return; }
+    if (m.tipo === "regreso") {
+      if (p.pausa) { const cm = (new Date(m.t) - new Date(p.pausa.t)) / 60000; p.dias[p.pausa.fecha].comida += cm; p.comida += cm; if (cm > 180) p.alertas.push(fmtD(p.pausa.fecha) + ": comida de " + hm(cm) + " h"); } else if (p.abierto) cierra(m);
+      p.pausa = null; p.abierto = m; return;
+    }
+    if (p.abierto) cierra(m);
+    else if (p.pausa) p.alertas.push(fmtD(p.pausa.fecha) + ": salió a comer a las " + p.pausa.hora + " y no marcó regreso");
+    else p.alertas.push(fmtD(m.fecha) + ": salida de las " + m.hora + " sin entrada");
+    p.pausa = null;
   });
-  Object.values(per).forEach((p) => { if (p.abierto) { p.alertas.push(fmtD(p.abierto.fecha) + ": entrada de las " + p.abierto.hora + " sin salida"); p.abierto = null; } });
+  Object.values(per).forEach((p) => { const o = p.abierto || p.pausa; if (o) { p.alertas.push(fmtD(o.fecha) + (p.pausa ? ": salió a comer a las " + o.hora + " y no regresó" : ": entrada de las " + o.hora + " sin salida")); p.abierto = null; p.pausa = null; } });
   return per;
 }
 
@@ -51,15 +61,15 @@ function armarCorreo(datos, dias) {
   const total = lista.reduce((a, p) => a + p.total, 0);
   const titulo = "Asistencia JASA · semana del " + fmtD(dias[0]) + " al " + fmtD(dias[6]);
   const ver = SITE + "/admin/#asistencia";
-  const texto = titulo + "\n\n" + lista.map((p) => p.nombre + ": " + hm(p.total) + " h\n  " + dias.map((f, i) => DIAS[i] + " " + (p.dias[f] && p.dias[f].min ? hm(p.dias[f].min) : "—")).join(" · ") + (p.alertas.length ? "\n  Avisos: " + p.alertas.join("; ") : "")).join("\n\n") + "\n\nTotal: " + hm(total) + " h\nDetalle: " + ver;
+  const texto = titulo + "\n\nHoras trabajadas (sin comida)\n\n" + lista.map((p) => p.nombre + ": " + hm(p.total) + " h" + (p.comida ? " (comida " + hm(p.comida) + " h)" : "") + "\n  " + dias.map((f, i) => DIAS[i] + " " + (p.dias[f] && p.dias[f].min ? hm(p.dias[f].min) : "—")).join(" · ") + (p.alertas.length ? "\n  Avisos: " + p.alertas.join("; ") : "")).join("\n\n") + "\n\nTotal: " + hm(total) + " h\nDetalle: " + ver;
   const th = 'style="background:#1a1716;color:#fff;font:600 11px Arial,sans-serif;letter-spacing:.06em;padding:8px 10px;text-align:right"';
   const html = '<div style="font-family:Arial,Helvetica,sans-serif;color:#1a1716;max-width:760px">' +
     '<div style="background:#0d0d0d;border-bottom:4px solid #e10f0f;padding:14px 18px"><b style="color:#e10f0f;font:italic 900 26px Arial,sans-serif">JASA</b> <span style="color:#fff;font:12px Arial;letter-spacing:.12em">ASISTENCIA</span></div>' +
-    '<h2 style="margin:18px 0 6px">Semana del ' + fmtD(dias[0]) + ' al ' + fmtD(dias[6]) + '</h2><p style="margin:0 0 14px;color:#6f6864">Total del equipo: <b>' + hm(total) + ' h</b></p>' +
+    '<h2 style="margin:18px 0 6px">Semana del ' + fmtD(dias[0]) + ' al ' + fmtD(dias[6]) + '</h2><p style="margin:0 0 14px;color:#6f6864">Horas trabajadas sin contar la comida. Total del equipo: <b>' + hm(total) + ' h</b></p>' +
     '<table style="border-collapse:collapse;width:100%;font-size:14px"><tr><th ' + th.replace("right", "left") + '>PERSONA</th>' + dias.map((f, i) => '<th ' + th + '>' + DIAS[i].toUpperCase() + '<br>' + fmtD(f) + '</th>').join("") + '<th ' + th + '>TOTAL</th></tr>' +
     lista.map((p) => '<tr><td style="padding:8px 10px;border-bottom:1px solid #e4dfdc"><b>' + esc(p.nombre) + '</b>' + (p.alertas.length ? '<div style="color:#8f6100;font-size:12px">' + p.alertas.map(esc).join("<br>") + '</div>' : "") + '</td>' +
       dias.map((f) => '<td style="padding:8px 10px;border-bottom:1px solid #e4dfdc;text-align:right;font-family:monospace">' + (p.dias[f] && p.dias[f].min ? hm(p.dias[f].min) : '<span style="color:#b5aeaa">—</span>') + '</td>').join("") +
-      '<td style="padding:8px 10px;border-bottom:1px solid #e4dfdc;text-align:right;font-family:monospace"><b>' + hm(p.total) + '</b></td></tr>').join("") + '</table>' +
+      '<td style="padding:8px 10px;border-bottom:1px solid #e4dfdc;text-align:right;font-family:monospace"><b>' + hm(p.total) + '</b>' + (p.comida ? '<div style="color:#6f6864;font-size:11px">comida ' + hm(p.comida) + '</div>' : '') + '</td></tr>').join("") + '</table>' +
     '<p style="margin:18px 0"><a href="' + ver + '" style="background:#e10f0f;color:#fff;text-decoration:none;padding:10px 16px;border-radius:3px;font-weight:700">Ver detalle en el panel</a></p></div>';
   return { titulo, texto, html, ver };
 }

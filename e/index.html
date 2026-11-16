@@ -225,39 +225,53 @@ function jasaIso(d) { return d.getFullYear() + "-" + String(d.getMonth() + 1).pa
 function jasaLunes(fecha) { var d = new Date(fecha + "T12:00:00"); d.setDate(d.getDate() - (d.getDay() + 6) % 7); return jasaIso(d); }
 function jasaSemana(lunes) { var out = [], d = new Date(lunes + "T12:00:00"); for (var i = 0; i < 7; i++) { out.push(jasaIso(d)); d.setDate(d.getDate() + 1); } return out; }
 var JASA_DIAS = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
-// Empareja entradas y salidas de cada persona y suma las horas por día.
+var JASA_TIPO_AS = { entrada: "Entrada", comida: "Sale a comer", regreso: "Regresa de comer", salida: "Salida" };
+// Estado de una persona hoy según su última marca: dentro | comida | fuera
+function jasaAsistEstado(marcas, hoy) { var l = (marcas || []).filter(function (m) { return m.fecha === hoy; }).sort(function (a, b) { return String(b.t).localeCompare(String(a.t)); })[0];
+  return !l || l.tipo === "salida" ? { e: "fuera", m: l } : l.tipo === "comida" ? { e: "comida", m: l } : { e: "dentro", m: l }; }
+// Empareja las marcas de cada persona y suma las horas trabajadas por día (sin el tiempo de comida).
 function jasaAsistCalc(marcas, desde, hasta, hoy) {
   var per = {};
   (marcas || []).filter(function (m) { return m.fecha >= desde && m.fecha <= hasta; }).slice().sort(function (a, b) { return String(a.t).localeCompare(String(b.t)); }).forEach(function (m) {
-    var em = String(m.email || "").toLowerCase(), p = per[em] = per[em] || { email: em, nombre: m.nombre || em.split("@")[0], dias: {}, total: 0, alertas: [], abierto: null };
-    var dia = p.dias[m.fecha] = p.dias[m.fecha] || { min: 0, marcas: [] }; dia.marcas.push(m);
-    if (m.tipo === "entrada") { if (p.abierto) p.alertas.push({ fecha: p.abierto.fecha, txt: "Entrada de las " + p.abierto.hora + " sin salida" }); p.abierto = m; return; }
-    if (!p.abierto) { p.alertas.push({ fecha: m.fecha, txt: "Salida de las " + m.hora + " sin entrada" }); return; }
-    var min = (new Date(m.t) - new Date(p.abierto.t)) / 60000, d0 = p.dias[p.abierto.fecha];
-    if (min > 16 * 60) p.alertas.push({ fecha: p.abierto.fecha, txt: "Turno de más de 16 horas (" + jasaHM(min) + ")" });
-    d0.min += min; p.total += min; p.abierto = null;
+    var em = String(m.email || "").toLowerCase(), p = per[em] = per[em] || { email: em, nombre: m.nombre || em.split("@")[0], dias: {}, total: 0, comida: 0, alertas: [], abierto: null, pausa: null };
+    var dia = p.dias[m.fecha] = p.dias[m.fecha] || { min: 0, comida: 0, marcas: [] }; dia.marcas.push(m);
+    function cierra(fin) { var min = (new Date(fin.t) - new Date(p.abierto.t)) / 60000, d0 = p.dias[p.abierto.fecha];
+      if (min > 16 * 60) p.alertas.push({ fecha: p.abierto.fecha, txt: "Turno de más de 16 horas (" + jasaHM(min) + ")" });
+      d0.min += min; p.total += min; p.abierto = null; }
+    if (m.tipo === "entrada") { if (p.abierto || p.pausa) p.alertas.push({ fecha: (p.abierto || p.pausa).fecha, txt: "Entrada de las " + (p.abierto || p.pausa).hora + " sin salida" }); p.abierto = m; p.pausa = null; return; }
+    if (m.tipo === "comida") { if (p.abierto) cierra(m); else p.alertas.push({ fecha: m.fecha, txt: "Salió a comer a las " + m.hora + " sin entrada" }); p.pausa = m; return; }
+    if (m.tipo === "regreso") { if (p.pausa) { var cm = (new Date(m.t) - new Date(p.pausa.t)) / 60000; p.dias[p.pausa.fecha].comida += cm; p.comida += cm; if (cm > 3 * 60) p.alertas.push({ fecha: p.pausa.fecha, txt: "Comida de " + jasaHM(cm) + " h" }); } else if (p.abierto) cierra(m);
+      p.pausa = null; p.abierto = m; return; }
+    if (p.abierto) cierra(m);
+    else if (p.pausa) p.alertas.push({ fecha: p.pausa.fecha, txt: "Salió a comer a las " + p.pausa.hora + " y no marcó regreso" });
+    else p.alertas.push({ fecha: m.fecha, txt: "Salida de las " + m.hora + " sin entrada" });
+    p.pausa = null;
   });
-  Object.keys(per).forEach(function (k) { var p = per[k]; if (p.abierto && p.abierto.fecha !== hoy) { p.alertas.push({ fecha: p.abierto.fecha, txt: "Entrada de las " + p.abierto.hora + " sin salida" }); p.abierto = null; } });
+  Object.keys(per).forEach(function (k) { var p = per[k], o = p.abierto || p.pausa; if (o && o.fecha !== hoy) { p.alertas.push({ fecha: o.fecha, txt: (p.pausa ? "Salió a comer a las " + o.hora + " y no regresó" : "Entrada de las " + o.hora + " sin salida") }); p.abierto = null; p.pausa = null; } });
   return per;
 }
 // Pide la ubicación del teléfono y marca en el servidor (Supabase: public.marcar_asistencia).
 function jasaMarcar(sb, tipo) {
   if (!navigator.geolocation) return Promise.resolve({ ok: false, msg: "Este dispositivo no puede compartir su ubicación." });
   return new Promise(function (ok) {
-    navigator.geolocation.getCurrentPosition(function (pos) { ok(pos); }, function (e) { ok({ err: e && e.code }); }, { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 });
+    navigator.geolocation.getCurrentPosition(function (pos) { ok(pos); }, function (e) { ok({ err: e && e.code }); }, { enableHighAccuracy: true, timeout: tipo === "comida" || tipo === "regreso" ? 10000 : 20000, maximumAge: 0 });
   }).then(function (pos) {
-    if (pos.err === 1) return { ok: false, msg: "Activa la ubicación para marcar. En iPhone: Ajustes › Privacidad y seguridad › Localización › Safari (o Chrome) › Al usar la app, con Ubicación exacta encendida. En Android: toca el candado junto a la dirección › Permisos › Ubicación." };
-    if (pos.err) return { ok: false, msg: "No se pudo obtener tu ubicación. Revisa que la ubicación (GPS) del teléfono esté encendida y vuelve a intentar." };
+    var libre = tipo === "comida" || tipo === "regreso";
+    if (pos.err && libre) pos = { coords: { latitude: null, longitude: null, accuracy: null } };
+    else if (pos.err === 1) return { ok: false, msg: "Activa la ubicación para marcar. En iPhone: Ajustes › Privacidad y seguridad › Localización › Safari (o Chrome) › Al usar la app, con Ubicación exacta encendida. En Android: toca el candado junto a la dirección › Permisos › Ubicación." };
+    else if (pos.err) return { ok: false, msg: "No se pudo obtener tu ubicación. Revisa que la ubicación (GPS) del teléfono esté encendida y vuelve a intentar." };
     var c = pos.coords, dev = (navigator.userAgent.match(/iPhone|iPad|Android|Windows|Macintosh/) || [""])[0];
     return sb.rpc("marcar_asistencia", { tipo: tipo, lat: c.latitude, lng: c.longitude, precision_m: c.accuracy, dispositivo: dev }).then(function (r) {
       if (r.error) return { ok: false, msg: /marcar_asistencia|PGRST202|404/.test(String(r.error.message) + r.error.code) ? "Falta instalar la asistencia en Supabase (09_asistencia.sql)." : "No se pudo marcar: " + r.error.message };
       var d = r.data || {};
-      if (d.ok) return { ok: true, msg: (tipo === "entrada" ? "Entrada" : "Salida") + " registrada a las " + d.hora + ".", hora: d.hora };
+      if (d.ok) return { ok: true, msg: { entrada: "Entrada registrada", salida: "Salida registrada", comida: "Salida a comer registrada", regreso: "Regreso de comer registrado" }[tipo] + " a las " + d.hora + ".", hora: d.hora };
       return { ok: false, msg: {
         fuera: "Estás a " + Number(d.distancia || 0).toLocaleString("es-MX") + " m del negocio. Para marcar tienes que estar a menos de " + d.radio + " m.",
         precision: "Tu ubicación no es precisa (±" + d.precision + " m). Activa la ubicación exacta, espera unos segundos y vuelve a intentar.",
         sin_negocio: "Falta fijar la ubicación del negocio. La fija un administrador en el panel › Asistencia.",
-        repetido: "Ya marcaste tu " + tipo + " hoy a las " + d.hora + ".",
+        repetido: "Ya lo marcaste hoy a las " + d.hora + ".",
+        sin_entrada: "Primero marca tu entrada.",
+        sin_comida: "No tienes una salida a comer abierta.",
         sin_acceso: "Tu correo no está en la lista de personal."
       }[d.motivo] || "No se pudo marcar." };
     }, function () { return { ok: false, msg: "Sin conexión. Vuelve a intentar cuando tengas señal." }; });
