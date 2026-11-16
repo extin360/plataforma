@@ -1,0 +1,9 @@
+{
+  "name": "jasa-extintores",
+  "private": true,
+  "description": "Sitio y sistema de JASA Extintores. Las dependencias son solo para las funciones de Netlify.",
+  "dependencies": {
+    "@nodecfdi/sat-ws-descarga-masiva": "2.0.0",
+    "jszip": "3.10.1"
+  }
+}

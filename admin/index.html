@@ -253,7 +253,7 @@ body.monitor-mode aside,body.monitor-mode header.top,body.monitor-mode .mtabs{di
     <nav id="nav" aria-label="Secciones"></nav>
     <div class="side-foot">
       <span id="syncNote">Conectando…</span>
-      <span id="verNote" style="font-family:var(--mono);font-size:10px;color:var(--faint)">Versión 16/11/2026 12:57</span>
+      <span id="verNote" style="font-family:var(--mono);font-size:10px;color:var(--faint)">Versión 16/11/2026 15:42</span>
       <button type="button" class="link" data-act="backup" id="backupBtn" hidden style="text-align:left;padding:0">Descargar respaldo</button>
       <button type="button" class="link" data-act="importAsk" id="importBtn" hidden style="text-align:left;padding:0">Importar respaldo</button>
       <input type="file" id="importFile" accept=".json,application/json" hidden>
@@ -283,7 +283,7 @@ body.monitor-mode aside,body.monitor-mode header.top,body.monitor-mode .mtabs{di
 <script>
 (function(){
 "use strict";
-var COLS=["quotes","clientes","proveedores","movs","ordenes","inventario","precios","pendientes","extintores","inspecciones","visitas","recetas","compras","conteos","firmas","asistencia","ajustes"];
+var COLS=["quotes","clientes","proveedores","movs","ordenes","inventario","precios","pendientes","extintores","inspecciones","visitas","recetas","compras","conteos","firmas","asistencia","ajustes","cfdis"];
 var S={invTab:"stock",cntCat:"",screen:"panel",data:{},ready:{},sel:null,finTab:"todos",finMes:null,search:"",paste:"",pasteMsg:"",drawer:null,otSel:null,dlv:{},confirm:null,readOnly:false,dbState:"loading"};
 COLS.forEach(function(c){S.data[c]=[];S.ready[c]=false;});
 var db=null, dl=null;
@@ -295,7 +295,7 @@ function jasaLogo(neg,uid){var a=neg?"#ffffff":"#1a1716",band=neg?"#0d0d0d":"#ff
 var PERMS=[["cotizaciones","Cotizaciones y lista de precios"],["clientes","Clientes"],["proveedores","Proveedores"],["finanzas","Finanzas: ingresos, egresos y utilidad"],["taller","Taller: órdenes"],["inventario","Inventario y órdenes de compra"],["costos","Costos y recetas"],["extintores","Extintores y etiquetas QR"],["inspecciones","Inspecciones y visitas"],["pendientes","Pendientes"],["campo","App del técnico (jasaextintores.com/tecnico)"]];
 var PUESTOS=[["admin","Administrador: todo, incluso personal y permisos"],["oficina","Oficina"],["taller","Taller"],["tecnico","Técnico de campo"],["otro","Personalizado"]];
 var PRESET={oficina:["cotizaciones","clientes","proveedores","finanzas","taller","inventario","costos","extintores","inspecciones","pendientes"],taller:["taller","inventario","extintores","pendientes","campo"],tecnico:["campo","extintores"]};
-var SCREEN_PERM={reportes:"finanzas",monitor:"taller",quotes:"cotizaciones",clientes:"clientes",proveedores:"proveedores",finanzas:"finanzas",taller:"taller",inventario:"inventario",costos:"costos",extintores:"extintores",inspecciones:"inspecciones",pendientes:"pendientes",personal:"_admin",asistencia:""};
+var SCREEN_PERM={reportes:"finanzas",monitor:"taller",quotes:"cotizaciones",clientes:"clientes",proveedores:"proveedores",finanzas:"finanzas",taller:"taller",inventario:"inventario",costos:"costos",extintores:"extintores",inspecciones:"inspecciones",pendientes:"pendientes",personal:"_admin",asistencia:"",facturas:"finanzas"};
 function isAdmin(){return !S.me||!S.me.rol||S.me.rol==="admin";}
 function perm(k){if(isAdmin())return true;if(k==="_admin")return false;var l=(S.me.permisos||[]).slice();if(S.me.rol==="tecnico")l.push("campo");return l.indexOf(k)>=0;}
 function canScreen(sc){var k=SCREEN_PERM[sc];return !k||perm(k);}
@@ -397,7 +397,7 @@ var FORMS={
   clientes:{t:"cliente",f:[["_s1","Planta o ubicación donde se da el servicio","sec",0,null,"Aquí están los extintores. Si la planta factura a un corporativo u otra ciudad, eso va abajo en Datos de facturación."],["nombre","Nombre del cliente o planta","text",1,null,"Como lo identificas tú. Ej. ELASTOMEROS AC PTA 1"],["direccion","Calle, número y colonia","text"],["ciudad","Ciudad","text"],["estado","Estado","text"],["cp","Código postal","text"],["mapa","Ubicación en Google Maps (enlace)","url",0,null,"Opcional. Comparte la ubicación desde Maps y pega el enlace: el técnico lo abre para llegar."],["contacto","Responsable en planta","text"],["tel","Teléfono (10 dígitos)","tel"],["email","Correo del responsable","email",0,null,"Ahí se mandan los reportes de inspección y las cotizaciones."],
     ["_s2","Datos de facturación","sec",0,null,"Tal como vienen en la Constancia de Situación Fiscal del cliente."],["fiscalDe","¿Quién factura?","select",0,function(v){return [["","Esta misma planta / capturar aquí"]].concat(S.data.clientes.filter(function(c){return c.id!==(S.drawer&&S.drawer.id)&&!c.fiscalDe&&(c.rfc||c.razonSocial);}).sort(function(a,b){return String(a.nombre).localeCompare(String(b.nombre),"es");}).map(function(c){return [c.id,"Igual que "+c.nombre+(c.rfc?" ("+c.rfc+")":"")];}));},"Si varias plantas facturan al mismo corporativo, captura sus datos una vez y elige aquí “Igual que…”."],["razonSocial","Razón social","text",0,null,"Sin “S.A. de C.V.” si así viene en la constancia (CFDI 4.0)."],["rfc","RFC","text"],["regimen","Régimen fiscal","select",0,[["",""]].concat(REGIMENES)],["cpFiscal","Código postal fiscal","text",0,null,"El del domicilio fiscal, aunque la planta esté en otra ciudad."],["domFiscal","Domicilio fiscal","textarea",0,null,"Calle, número, colonia, ciudad y estado."],["usoCfdi","Uso del CFDI","select",0,[["",""]].concat(USOS_CFDI)],["metodoPago","Método de pago","select",0,[["",""],["PUE","PUE · Pago en una sola exhibición"],["PPD","PPD · Pago en parcialidades o diferido (crédito)"]]],["formaPago","Forma de pago","select",0,[["",""]].concat(FORMAS_PAGO)],["diasCredito","Días de crédito","number",0,null,"0 si paga de contado."],["requiereOC","¿Pide orden de compra para facturar?","select",0,[["","No"],["si","Sí, la factura debe llevar su número de orden de compra"]]],["emailFact","Correos para enviar la factura","text",0,null,"Varios separados por coma. Ej. cuentasporpagar@empresa.com, compras@empresa.com"],
     ["_s3","Servicio","sec"],["inspMensual","Inspección mensual","select",0,[["","No"],["si","Sí: programar una visita de inspección cada mes"]],"La NOM-002-STPS pide revisar los extintores cada mes. Con Sí, la visita aparece sola en Inspecciones y en el celular del técnico."],["diaVisita","Día del mes para la visita","number",0,null,"Ej. 15. Si el mes es más corto, se usa el último día."],["tecMensual","Técnico de la inspección mensual","select",0,function(){return [["","Elegir después"]].concat((S.staff||[]).map(function(x){return [x.email,(x.nombre||x.email)+(x.rol==="tecnico"?" · técnico":"")];}));}],["equiposDet","Extintores del cliente","equipos"],["proximaRecarga","Próxima recarga","month"],["saldo","Por cobrar ($)","number"],["prefijo","Prefijo de folios de sus extintores","text",0,null,"Ej. EAP1: sus extintores serán EAP1-001, EAP1-002… Déjalo vacío y se sugiere solo."],["codigoPortal","Código del portal de clientes","text",0,null,"Se genera con el botón Portal. Bórralo para quitarle el acceso."],["notas","Notas","textarea"]]},
-  proveedores:{t:"proveedor",f:[["nombre","Proveedor","text",1],["contacto","Contacto","text"],["tel","Teléfono","tel"],["ciudad","Ciudad","text"],["surte","Qué surte","text"],["saldo","Por pagar ($)","number"]]},
+  proveedores:{t:"proveedor",f:[["nombre","Proveedor","text",1],["contacto","Contacto","text"],["tel","Teléfono","tel"],["ciudad","Ciudad","text"],["rfc","RFC","text"],["surte","Qué surte","text"],["saldo","Por pagar ($)","number"]]},
   movs:{t:"movimiento",f:[["tipo","Tipo","select",1,[["ingreso","Ingreso"],["egreso","Egreso"]]],["fecha","Fecha","date",1],["concepto","Concepto","text",1],["quien","Cliente o proveedor","text"],["categoria","Categoría","select",0,CAT_ING.concat(CAT_EGR).map(function(c){return [c,c];})],["monto","Monto ($)","number",1],["articulo","Si es compra de insumo: artículo del inventario","select",0,function(){return [["","No es compra de inventario"]].concat(S.data.inventario.slice().sort(function(a,b){return String(a.nombre).localeCompare(String(b.nombre),"es");}).map(function(i){return [i.id,i.nombre+(i.unidad?" ("+i.unidad+")":"")];}));}],["cant","Cantidad comprada","number",0,null,"Ej. 25 si compraste un bulto de 25 kg. Con esto se calcula el costo por unidad y se suma a la existencia."]]},
   ordenes:{t:"orden de taller",f:[["cliente","Cliente","text",1],["contacto","Contacto","text"],["tel","Teléfono / WhatsApp","tel"],["recibido","Fecha de ingreso","date",1],["entrega","Entrega programada","date"],["equiposDet","Equipos recibidos","equipos"],["tecnico","Técnico asignado","select",0,function(){return [["","Sin asignar"]].concat((S.staff||[]).map(function(x){return [x.email,(x.nombre||x.email)+(x.rol==="tecnico"?" · técnico":"")];}));}],["prioridad","Prioridad","select",0,[["normal","Normal"],["urgente","Urgente: lo más pronto posible"],["programada","Programada para una fecha"]]],["fechaVisita","Fecha para recoger","date"],["recibio","Recibió en JASA","text",0,null,"Nombre de quien recibe los equipos"],["notas","Notas","textarea",0,null,"Estado del equipo, piezas a cambiar, planta…"],["etapa","Etapa","select",1,STAGES.map(function(s,i){return [String(i),s[0]];})]]},
   inventario:{t:"artículo",f:[["nombre","Artículo","text",1],["categoria","Categoría","select",0,[["Extintores","Extintores"],["Señalamientos","Señalamientos"],["Refacciones","Refacciones"],["Agentes y polvo","Agentes y polvo"],["Otros","Otros"]]],["unidad","Unidad","text",0,null,"kg, pza, rollos…"],["costo","Costo por unidad ($)","number",0,null,"Lo que te cuesta 1 unidad. Se actualiza solo cuando registras su compra en Finanzas."],["ubicacion","Ubicación","text",0,null,"Ej. Anaquel 2"],["stock","Existencia","number",1],["min","Mínimo","number",1],["optimo","Óptimo (para pedir)","number",1],["consumo","Se descuenta al entregar una orden","select",0,[["","No"],["PQS","Sí: polvo PQS (kg recargados)"],["CO2","Sí: CO₂ (kg recargados)"],["ETIQUETA","Sí: 1 etiqueta por extintor"]]]]},
@@ -850,7 +850,7 @@ function exportInsp(i){
 }
 
 /* ---------- vistas ---------- */
-var TITLES={asistencia:["Personal","Asistencia"],panel:["Resumen","Panel"],quotes:["Bandeja","Cotizaciones"],clientes:["Cartera","Clientes"],proveedores:["Compras","Proveedores"],finanzas:["Contabilidad","Ingresos y egresos"],taller:["Taller JASA","Órdenes de taller"],inventario:["Taller JASA","Inventario"],pendientes:["Agenda","Pendientes"],extintores:["Expedientes","Extintores"],inspecciones:["Campo","Inspecciones"],costos:["Taller JASA","Costos y precios"],reportes:["Análisis","Reportes"],monitor:["Taller JASA","Monitor de taller"],personal:["Equipo","Personal y permisos"]};
+var TITLES={asistencia:["Personal","Asistencia"],facturas:["Contabilidad","Facturas recibidas (SAT)"],panel:["Resumen","Panel"],quotes:["Bandeja","Cotizaciones"],clientes:["Cartera","Clientes"],proveedores:["Compras","Proveedores"],finanzas:["Contabilidad","Ingresos y egresos"],taller:["Taller JASA","Órdenes de taller"],inventario:["Taller JASA","Inventario"],pendientes:["Agenda","Pendientes"],extintores:["Expedientes","Extintores"],inspecciones:["Campo","Inspecciones"],costos:["Taller JASA","Costos y precios"],reportes:["Análisis","Reportes"],monitor:["Taller JASA","Monitor de taller"],personal:["Equipo","Personal y permisos"]};
 function lowStock(){return S.data.inventario.filter(function(i){return (+i.stock||0)<(+i.min||0);});}
 function dueClients(){
   var lim=addMonths(today().slice(0,7),2);
@@ -864,6 +864,8 @@ function renderNav(){
   var pend=S.data.quotes.filter(function(q){return q.status==="Nueva"||q.status==="Autorizada";}).length;
   var open=S.data.ordenes.filter(function(o){return (o.etapa||0)<DONE;}).length;
   var items=[["panel","Panel",""],["reportes","Reportes",""],["quotes","Cotizaciones",pend||""],["clientes","Clientes",""],["proveedores","Proveedores",""],["finanzas","Finanzas",""],["taller","Taller",open||""],["inventario","Inventario",(lowStock().length+ocAbiertas())||""],["costos","Costos y precios",recAlert()||""],["extintores","Extintores",extVencidos().length||""],["inspecciones","Inspecciones",inspPend()||""],["pendientes","Pendientes",(function(){var t0=today();var n=dayTasks(t0).filter(function(t){return !isDone(t,t0);}).length+overdue().length;return n||"";})()]];
+  var fxN=S.data.cfdis.filter(function(c){return c.estado==="nuevo"&&(c.tipo==="I"||c.tipo==="E"||c.tipo==="P");}).length;
+  items.splice(items.findIndex(function(n){return n[0]==="finanzas";})+1,0,["facturas","Facturas SAT",fxN||""]);
   items.push(["asistencia","Asistencia",""]);
   if(isAdmin()&&S.me)items.push(["personal","Personal y permisos",""]);
   items=items.filter(function(n){return canScreen(n[0]);});
@@ -1421,6 +1423,97 @@ function asCfgSave(){var lat=parseFloat(document.getElementById("asLat").value),
   if(!(lat>=-90&&lat<=90&&lng>=-180&&lng<=180)||!lat||!lng){msg.textContent="Escribe una latitud y longitud válidas, o usa tu ubicación actual.";return;}
   var base=Object.assign({},asCfg()||{});delete base.id;write("ajustes","asistencia",Object.assign(base,{lat:Math.round(lat*1e6)/1e6,lng:Math.round(lng*1e6)/1e6,radio:radio,correo:correo,actualizado:new Date().toISOString(),por:String(S.user.email).toLowerCase()})).then(function(){toast("Ubicación del negocio guardada");render();});}
 
+/* ---------- facturas recibidas (SAT) ---------- */
+var FX_EST={nuevo:["Por registrar","var(--amber)"],registrado:["Registrada","var(--green)"],ignorado:["Sin registrar","var(--faint)"]};
+function fxMXN(c){return Math.round((+c.total||0)*((c.moneda&&c.moneda!=="MXN"&&c.moneda!=="XXX")?(+c.tipoCambio||1):1)*100)/100;}
+function fxFolio(c){return (c.serie||"")+(c.folio?(c.serie?"-":"")+c.folio:"")||String(c.uuid||c.id).slice(0,8);}
+function fxProv(c){var r=String(c.emisorRfc||"").toUpperCase(),n=normH(c.emisorNombre);return S.data.proveedores.find(function(p){return r&&String(p.rfc||"").toUpperCase()===r;})||S.data.proveedores.find(function(p){return n&&normH(p.nombre)===n;})||null;}
+function vFacturas(){
+  var t0=today(),mes=S.fxMes||t0.slice(0,7),est=S.fxEst||"nuevo",all=S.data.cfdis,ro=S.readOnly||!db;
+  var delMes=all.filter(function(c){return String(c.fecha).slice(0,7)===mes;}),ing=delMes.filter(function(c){return c.tipo==="I";});
+  var porReg=all.filter(function(c){return c.estado==="nuevo"&&(c.tipo==="I"||c.tipo==="E"||c.tipo==="P");});
+  var list=(est==="nuevo"?porReg:delMes.filter(function(c){return est==="todas"||c.estado===est;})).filter(function(c){return match({nombre:c.emisorNombre,rfc:c.emisorRfc,folio:fxFolio(c),id:c.uuid});}).sort(function(a,b){return String(b.fecha).localeCompare(String(a.fecha));});
+  var k=[["Facturas del mes",String(ing.length),monthName(mes),"var(--carbon)"],["Gastos facturados",moneyK(ing.reduce(function(a,c){return a+fxMXN(c);},0)),"total con IVA","var(--red)"],["IVA acreditable",moneyK(ing.reduce(function(a,c){return a+(+c.iva||0)*((c.moneda&&c.moneda!=="MXN")?(+c.tipoCambio||1):1);},0)),"de facturas de ingreso","var(--blue)"],["Por registrar",String(porReg.length),"todas las fechas","var(--amber)"]];
+  var out='<div class="kpis sm">'+k.map(function(x){return '<div class="kpi" style="--k:'+x[3]+'"><span class="eyebrow">'+x[0]+'</span><span class="v">'+x[1]+'</span><span class="n">'+x[2]+'</span></div>';}).join("")+'</div>';
+  out+='<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">'+[["nuevo","Por registrar"],["todas","Todas"],["registrado","Registradas"],["ignorado","Sin registrar"]].map(function(x){return '<button type="button" class="btn sm'+(est===x[0]?"":" ghost")+'" data-act="fxEst" data-v="'+x[0]+'">'+x[1]+'</button>';}).join("")+
+    (est!=="nuevo"?'<span style="display:flex;gap:6px;align-items:center"><button type="button" class="btn ghost sm" data-act="fxMes" data-v="-1" aria-label="Mes anterior">‹</button><b style="min-width:110px;text-align:center">'+esc(monthName(mes))+'</b><button type="button" class="btn ghost sm" data-act="fxMes" data-v="1" aria-label="Mes siguiente">›</button></span>':"")+
+    (ro?"":'<span style="margin-left:auto;display:flex;gap:8px"><label class="btn ghost sm" for="fxFile" style="cursor:pointer">Subir XML o ZIP</label><input type="file" id="fxFile" accept=".xml,.zip" multiple hidden></span>')+'</div>';
+  out+='<div class="box"><div class="box-h"><h2>'+(est==="nuevo"?"Por registrar":esc(monthName(mes)))+'</h2><span class="mono" style="color:var(--muted)">'+list.length+'</span></div>'+
+    (list.length?'<div class="tbl-wrap"><table><thead><tr><th>FECHA</th><th>PROVEEDOR</th><th>FOLIO</th><th>TIPO</th><th class="num">TOTAL</th><th>ESTADO</th><th></th></tr></thead><tbody>'+list.map(function(c){var e=FX_EST[c.estado]||FX_EST.nuevo,pv=fxProv(c);
+      return '<tr><td class="mono" style="font-size:12px;white-space:nowrap">'+fmtDate(c.fecha)+'</td><td><b style="font-weight:600">'+esc(c.emisorNombre||c.emisorRfc)+'</b><div class="mono" style="color:var(--muted);font-size:12px">'+esc(c.emisorRfc)+(pv?"":' · <span style="color:var(--blue)">proveedor nuevo</span>')+'</div></td><td class="mono" style="font-size:12px">'+esc(fxFolio(c))+'</td><td style="font-size:13px">'+esc(c.tipo==="I"?"Factura":c.tipo==="E"?"Nota de crédito":c.tipo==="P"?"Pago":JASA_CFDI_TIPO[c.tipo]||c.tipo)+(c.metodoPago==="PPD"?' <span style="color:var(--muted)">· crédito</span>':"")+'</td>'+
+        '<td class="num mono">'+(c.tipo==="P"?money((c.pagos||[]).reduce(function(a,x){return a+(+x.monto||0);},0)):money(c.total))+(c.moneda&&c.moneda!=="MXN"&&c.moneda!=="XXX"?' <span style="color:var(--muted)">'+esc(c.moneda)+'</span>':"")+'</td><td><span class="pill" style="color:'+(c.estado==="registrado"&&c.forma==="credito"&&!(c.porPagar!=null&&+c.porPagar<=0)?"var(--amber)":e[1])+'">'+(c.estado==="registrado"&&c.forma==="credito"?((c.porPagar!=null&&+c.porPagar<=0)?"Pagada":"Por pagar"):e[0])+'</span></td>'+
+        '<td class="num" style="white-space:nowrap"><button type="button" class="link" data-act="fxVer" data-id="'+esc(c.id)+'">Ver</button>'+(!ro&&c.estado==="nuevo"&&c.tipo!=="N"&&c.tipo!=="T"?'<button type="button" class="link" data-act="fxReg" data-id="'+esc(c.id)+'">Registrar</button>':"")+'</td></tr>';}).join("")+'</tbody></table></div>':
+      '<div class="empty"><span>'+(est==="nuevo"?"No hay facturas por registrar.":"No hay facturas en "+esc(monthName(mes))+".")+(all.length?"":" Cuando se conecte la e.firma, aquí aparecen solas las facturas que te hacen tus proveedores. También puedes subir los XML o el ZIP que bajas del portal del SAT.")+'</span></div>')+'</div>';
+  out+=fxSatBox();
+  return out;
+}
+function fxSatBox(){
+  if(!(isAdmin()&&S.me))return '<p class="hint">La conexión con el SAT la configura un administrador.</p>';
+  var a=byId("ajustes","sat")||{},ef=a.efirma,pend=a.pendientes||[],lg=(a.log||[]).slice(-5).reverse();
+  var est=!ef?["Sin e.firma","var(--muted)"]:a.error?["Con error","var(--rose)"]:pend.length?["Descargando","var(--amber)"]:a.ultimaRevision?["Conectado","var(--green)"]:["Esperando la primera corrida","var(--amber)"];
+  return '<div class="box"><div class="box-h"><h2>Conexión con el SAT</h2><span class="pill" style="color:'+est[1]+'">'+est[0]+'</span></div><div class="plan">'+
+    '<span class="hint">Cada hora el sistema pide al SAT (Descarga Masiva) las facturas vigentes que le hicieron a JASA y las trae aquí. Las nuevas tardan de unos minutos a unas horas, según el SAT.</span>'+
+    (a.error?'<div class="notice"><b>Último error:</b> '+esc(a.error)+'</div>':"")+
+    '<div class="f2" style="font-size:14px"><div><span class="eyebrow">e.firma</span><div>'+(ef?"Cargada el "+esc(String(ef.cargada||"").slice(0,10).split("-").reverse().join("/"))+(a.rfc?" · RFC <b class=\"mono\">"+esc(a.rfc)+"</b>":""):"No se ha subido")+'</div></div><div><span class="eyebrow">Descargado hasta</span><div>'+(a.hasta?fmtDate(a.hasta):"—")+(a.ultimaRevision?' · revisado '+esc(new Date(a.ultimaRevision).toLocaleString("es-MX",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})):"")+'</div></div></div>'+
+    (pend.length?'<span class="hint">En proceso en el SAT: '+pend.map(function(x){return fmtDate(x.desde)+" a "+fmtDate(x.hasta)+(x.total!=null?" ("+x.total+" facturas)":"");}).join(" · ")+'</span>':"")+
+    (lg.length?'<details><summary class="hint" style="cursor:pointer">Últimos movimientos</summary><ul style="margin:6px 0 0;padding-left:18px;font-size:13px;color:var(--muted)">'+lg.map(function(x){return '<li>'+esc(new Date(x.t).toLocaleString("es-MX",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}))+' · '+esc(x.txt)+'</li>';}).join("")+'</ul></details>':"")+
+    '<b style="margin-top:6px">'+(ef?"Cambiar la e.firma":"Subir la e.firma")+'</b><span class="hint">Los archivos de tu e.firma (FIEL), no el sello digital (CSD). Se guardan en la base de datos donde nadie los puede leer desde el sistema. La <b>contraseña no se escribe aquí</b>: va en Netlify como variable secreta <span class="mono">SAT_EFIRMA_PASS</span>.</span>'+
+    '<div class="f2"><div class="field"><label for="fxCer">Certificado (.cer)</label><input class="inp" type="file" id="fxCer" accept=".cer"></div><div class="field"><label for="fxKey">Llave privada (.key)</label><input class="inp" type="file" id="fxKey" accept=".key"></div></div>'+
+    '<div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn sm" data-act="fxEfirma">Guardar e.firma</button>'+(ef?'<button type="button" class="btn ghost sm" data-act="fxQuitar">Quitar e.firma</button>':"")+'</div><span class="hint" id="fxEfMsg" role="status"></span>'+
+    '<b style="margin-top:6px">Desde qué fecha traer facturas</b><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:end"><div class="field" style="margin:0"><label for="fxDesde">Fecha inicial</label><input class="inp" type="date" id="fxDesde" value="'+esc(a.desde||"")+'"></div><button type="button" class="btn ghost sm" data-act="fxDesdeGo">'+(a.hasta?"Volver a descargar desde esa fecha":"Guardar fecha")+'</button></div><span class="hint">Si la dejas vacía empieza el día 1 del mes pasado. Las facturas que ya están no se duplican.</span>'+
+    '</div></div>';
+}
+function fxVer(c){var pv=fxProv(c),rel=(c.pagados||[]).map(function(x){var f=byId("cfdis",x.uuid);return '<tr><td class="mono" style="font-size:12px">'+esc(f?fxFolio(f):x.uuid.slice(0,8)+"…")+'</td><td>'+esc(x.parcialidad||"")+'</td><td class="num mono">'+money(x.pagado)+'</td><td class="num mono">'+money(x.saldo)+'</td><td>'+(f?(f.estado==="registrado"?(f.forma==="credito"?"Registrada a crédito":"Registrada pagada"):"Por registrar"):'<span style="color:var(--muted)">No está en el sistema</span>')+'</td></tr>';}).join("");
+  document.getElementById("drawerRoot").innerHTML='<div class="overlay" data-act="closeDrawer"><div class="drawer" role="dialog" aria-modal="true" aria-label="Factura" style="width:min(760px,100%)"><div class="box-h"><h2>'+esc(c.tipo==="P"?"Complemento de pago":c.tipo==="E"?"Nota de crédito":"Factura")+' '+esc(fxFolio(c))+'</h2><button type="button" class="btn ghost sm" data-act="closeDrawer">Cerrar</button></div><div class="plan">'+
+    '<div class="f2" style="font-size:14px"><div><span class="eyebrow">Emisor</span><div><b>'+esc(c.emisorNombre)+'</b><br><span class="mono">'+esc(c.emisorRfc)+'</span>'+(pv?' · proveedor <b>'+esc(pv.nombre)+'</b>':' · <span style="color:var(--blue)">aún no está en Proveedores</span>')+'</div></div><div><span class="eyebrow">Fecha · UUID</span><div>'+fmtDate(c.fecha)+' '+esc(c.hora||"")+'<br><span class="mono" style="font-size:11px">'+esc(c.uuid)+'</span></div></div>'+
+    '<div><span class="eyebrow">Pago</span><div>'+esc(c.metodoPago==="PPD"?"PPD · a crédito o en parcialidades":c.metodoPago==="PUE"?"PUE · pagada en una exhibición":"—")+(c.formaPago?" · forma "+esc(c.formaPago):"")+'</div></div><div><span class="eyebrow">Uso CFDI</span><div>'+esc(c.uso||"—")+(c.receptorRfc?' · receptor <span class="mono">'+esc(c.receptorRfc)+'</span>':"")+'</div></div></div>'+
+    ((c.conceptos||[]).length&&c.tipo!=="P"?'<div class="tbl-wrap"><table><thead><tr><th>CONCEPTO</th><th class="num">CANT.</th><th class="num">P. UNIT.</th><th class="num">IMPORTE</th></tr></thead><tbody>'+c.conceptos.map(function(x){return '<tr><td>'+esc(x.d)+'<div class="mono" style="color:var(--muted);font-size:11px">'+esc(x.clave)+(x.u?" · "+esc(x.u):"")+'</div></td><td class="num mono">'+esc(x.c)+'</td><td class="num mono">'+money(x.v)+'</td><td class="num mono">'+money(x.i)+'</td></tr>';}).join("")+'</tbody></table></div>'+
+      '<div style="display:grid;grid-template-columns:auto auto;justify-content:end;gap:4px 18px;font-size:14px"><span>Subtotal</span><b class="mono" style="text-align:right">'+money(c.subtotal)+'</b>'+(c.descuento?'<span>Descuento</span><b class="mono" style="text-align:right">−'+money(c.descuento)+'</b>':"")+'<span>IVA</span><b class="mono" style="text-align:right">'+money(c.iva)+'</b>'+(c.retenidos?'<span>Retenciones</span><b class="mono" style="text-align:right">−'+money(c.retenidos)+'</b>':"")+'<span>Total'+(c.moneda&&c.moneda!=="MXN"?" ("+esc(c.moneda)+")":"")+'</span><b class="mono" style="text-align:right;color:var(--red)">'+money(c.total)+'</b></div>':"")+
+    (c.tipo==="P"?'<b>Facturas que paga</b><div class="tbl-wrap"><table><thead><tr><th>FACTURA</th><th>PARC.</th><th class="num">PAGADO</th><th class="num">SALDO</th><th>EN EL SISTEMA</th></tr></thead><tbody>'+rel+'</tbody></table></div><span class="hint">Pagado el '+esc((c.pagos||[]).map(function(x){return fmtDate(x.fecha);}).join(", "))+'.</span>':"")+
+    (c.estado==="registrado"?'<div class="notice">Registrada '+(c.forma==="credito"?"a crédito (se sumó a lo que se le debe al proveedor)":c.forma==="nota"?"como nota de crédito (se restó de lo que se le debe)":c.forma==="pago"?"como pago al proveedor":"como egreso pagado")+(c.categoria?" · "+esc(c.categoria):"")+'.</div>':"")+
+    '<div style="display:flex;gap:8px;flex-wrap:wrap">'+(S.readOnly?"":c.estado==="nuevo"?'<button type="button" class="btn sm" data-act="fxReg" data-id="'+esc(c.id)+'">Registrar</button><button type="button" class="btn ghost sm" data-act="fxIgn" data-id="'+esc(c.id)+'">No registrar</button>':c.estado==="ignorado"?'<button type="button" class="btn ghost sm" data-act="fxNuevo" data-id="'+esc(c.id)+'">Regresar a por registrar</button>':"")+(c.xml?'<button type="button" class="btn ghost sm" data-act="fxXml" data-id="'+esc(c.id)+'">Descargar XML</button>':"")+'</div></div></div></div>';}
+function fxRegDrawer(c){var pv=fxProv(c),isP=c.tipo==="P",isE=c.tipo==="E",monto=isP?(c.pagos||[]).reduce(function(a,x){return a+(+x.monto||0);},0):fxMXN(c);
+  var relCat=isP?((c.pagados||[]).map(function(x){return byId("cfdis",x.uuid);}).filter(Boolean)[0]||{}).categoria:"";
+  var desc=isP?"Pago de factura"+((c.pagados||[]).length>1?"s ":" ")+(c.pagados||[]).map(function(x){var f=byId("cfdis",x.uuid);return f?fxFolio(f):x.uuid.slice(0,8);}).join(", "):((c.conceptos||[])[0]||{}).d||"Compra";
+  if(!isP&&(c.conceptos||[]).length>1)desc=desc.slice(0,60)+" y "+(c.conceptos.length-1)+" más";
+  var formas=isP?[["pago","Pago a proveedor: crear egreso y restar de lo que se le debe"]]:isE?[["nota","Restar de lo que le debemos al proveedor"]]:[["pagada","Ya se pagó: crear el egreso"],["credito","A crédito: sumar a lo que le debemos al proveedor"]];
+  var def=isP?"pago":isE?"nota":(c.metodoPago==="PPD"?"credito":"pagada");
+  document.getElementById("drawerRoot").innerHTML='<div class="overlay" data-act="closeDrawer"><div class="drawer" role="dialog" aria-modal="true" aria-label="Registrar factura"><div class="box-h"><h2>Registrar '+esc(fxFolio(c))+'</h2><button type="button" class="btn ghost sm" data-act="closeDrawer">Cerrar</button></div><div class="plan">'+
+    '<span>'+esc(c.emisorNombre)+' · <span class="mono">'+esc(c.emisorRfc)+'</span> · <b>'+money(monto)+'</b>'+(c.moneda&&c.moneda!=="MXN"&&c.moneda!=="XXX"?" (convertido de "+esc(c.moneda)+" al tipo de cambio "+esc(c.tipoCambio)+")":"")+'</span>'+
+    '<div class="field"><label for="frProv">Proveedor</label><select class="inp" id="frProv">'+(pv?"":'<option value="__nuevo" selected>Nuevo proveedor: '+esc(c.emisorNombre||c.emisorRfc)+'</option>')+S.data.proveedores.slice().sort(function(a,b){return String(a.nombre).localeCompare(String(b.nombre),"es");}).map(function(p){return '<option value="'+esc(p.id)+'"'+(pv&&pv.id===p.id?" selected":"")+'>'+esc(p.nombre)+(p.rfc?" · "+esc(p.rfc):"")+'</option>';}).join("")+(pv?'<option value="__nuevo">Nuevo proveedor: '+esc(c.emisorNombre||c.emisorRfc)+'</option>':"")+'</select></div>'+
+    '<div class="field"><label>Cómo se registra</label>'+formas.map(function(f){return '<label style="display:flex;gap:8px;align-items:flex-start;font-size:15px;margin:4px 0"><input type="radio" name="frForma" value="'+f[0]+'"'+(f[0]===def?" checked":"")+'> '+esc(f[1])+'</label>';}).join("")+(c.metodoPago==="PPD"&&!isP?'<small>La factura dice PPD: el proveedor espera el pago después y mandará un complemento de pago.</small>':"")+'</div>'+
+    '<div class="f2"><div class="field"><label for="frCat">Categoría</label><select class="inp" id="frCat">'+CAT_EGR.map(function(x){return '<option'+(x===(relCat||"Insumos")?" selected":"")+'>'+esc(x)+'</option>';}).join("")+'</select></div><div class="field"><label for="frFecha">Fecha del egreso</label><input class="inp" type="date" id="frFecha" value="'+esc(isP?((c.pagos||[])[0]||{}).fecha||c.fecha:c.fecha)+'"></div></div>'+
+    '<div class="field"><label for="frCon">Concepto</label><input class="inp" id="frCon" value="'+esc(desc+(isP?" · Complemento ":" · Factura ")+fxFolio(c))+'"></div>'+
+    '<div><button type="button" class="btn" data-act="fxRegDo" data-id="'+esc(c.id)+'">Registrar</button></div><span class="hint" id="frMsg"></span></div></div></div>';}
+function fxRegDo(c){var pid=document.getElementById("frProv").value,forma=(document.querySelector('input[name="frForma"]:checked')||{}).value,cat=document.getElementById("frCat").value,fecha=document.getElementById("frFecha").value||c.fecha,con=document.getElementById("frCon").value.trim()||("Factura "+fxFolio(c));
+  var isP=c.tipo==="P",monto=isP?(c.pagos||[]).reduce(function(a,x){return a+(+x.monto||0);},0):fxMXN(c),yo=String(S.user&&S.user.email||"").toLowerCase();
+  var provP=pid==="__nuevo"?write("proveedores",null,{nombre:c.emisorNombre||c.emisorRfc,rfc:c.emisorRfc||"",contacto:"",tel:"",ciudad:"",surte:"",saldo:0}).then(function(id){return {id:id,nombre:c.emisorNombre||c.emisorRfc,saldo:0};}):Promise.resolve(byId("proveedores",pid));
+  provP.then(function(pv){if(!pv)throw new Error("prov");
+    var ch=Promise.resolve(),cambio={estado:"registrado",forma:forma,categoria:cat,proveedor:pv.id,registradoPor:yo,registradoEn:new Date().toISOString()};
+    if(pid!=="__nuevo"&&c.emisorRfc&&!pv.rfc)ch=ch.then(function(){return patch("proveedores",pv.id,{rfc:c.emisorRfc});});
+    if(forma==="pagada"||forma==="pago")ch=ch.then(function(){return write("movs",null,{tipo:"egreso",fecha:fecha,concepto:con,quien:pv.nombre,categoria:cat,monto:monto,cfdi:c.uuid,proveedor:pv.id});}).then(function(mid){cambio.mov=mid;});
+    if(forma==="credito")ch=ch.then(function(){cambio.porPagar=monto;return patch("proveedores",pv.id,{saldo:Math.round(((+pv.saldo||0)+monto)*100)/100});});
+    if(forma==="nota"||forma==="pago")ch=ch.then(function(){var cur=byId("proveedores",pv.id)||pv;return patch("proveedores",pv.id,{saldo:Math.max(0,Math.round(((+cur.saldo||0)-monto)*100)/100)});});
+    if(forma==="pago")(c.pagados||[]).forEach(function(x){var f=byId("cfdis",x.uuid);if(f&&f.forma==="credito")ch=ch.then(function(){return patch("cfdis",f.id,{porPagar:Math.max(0,Math.round(((f.porPagar!=null?+f.porPagar:fxMXN(f))-(+x.pagado||0))*100)/100),pagadaCon:c.uuid});});});
+    return ch.then(function(){return patch("cfdis",c.id,cambio);});
+  }).then(function(){document.getElementById("drawerRoot").innerHTML="";toast("Factura "+fxFolio(c)+" registrada");render();},function(){var m=document.getElementById("frMsg");if(m)m.textContent="No se pudo registrar. Revisa tu conexión e inténtalo otra vez.";});}
+function fxSubir(files){var arr=[].slice.call(files||[]),xmls=[],ch=Promise.resolve();if(!arr.length)return;toast("Leyendo "+arr.length+(arr.length===1?" archivo…":" archivos…"));
+  arr.forEach(function(f){ch=ch.then(function(){if(/\.zip$/i.test(f.name))return (window.JSZip?Promise.resolve():loadScript("https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js")).then(function(){return f.arrayBuffer();}).then(function(b){return window.JSZip.loadAsync(b);}).then(function(z){var ps=[];z.forEach(function(path,e){if(/\.xml$/i.test(path))ps.push(e.async("string").then(function(t){xmls.push(t);}));});return Promise.all(ps);});
+    return f.text().then(function(t){xmls.push(t);});});});
+  ch.then(function(){var rfcJ=String(JASA_EMPRESA.rfc||"").toUpperCase(),nuevos=[],ya=0,otros=0,malos=0;
+    xmls.forEach(function(x){var c=jasaCfdiLeer(x);if(!c||!c.uuid){malos++;return;}if(rfcJ&&c.receptorRfc&&c.receptorRfc!==rfcJ){otros++;return;}if(byId("cfdis",c.uuid)||nuevos.some(function(n){return n.uuid===c.uuid;})){ya++;return;}nuevos.push(Object.assign(c,{origen:"manual",recibido:new Date().toISOString(),estado:"nuevo"},x.length<60000?{xml:x}:{}));});
+    var w=Promise.resolve();nuevos.forEach(function(c){w=w.then(function(){return write("cfdis",c.uuid,c);});});
+    return w.then(function(){S.fxEst="nuevo";render();toast(nuevos.length+" facturas nuevas"+(ya?" · "+ya+" ya estaban":"")+(otros?" · "+otros+" no son para JASA ("+rfcJ+")":"")+(malos?" · "+malos+" archivos no son CFDI timbrados":""));});
+  }).catch(function(){toast("No se pudieron leer los archivos. Deben ser XML de facturas o el ZIP que baja el SAT.");});}
+function fxEfirma(){var cf=document.getElementById("fxCer").files[0],kf=document.getElementById("fxKey").files[0],msg=document.getElementById("fxEfMsg");
+  if(!cf||!kf){msg.textContent="Elige los dos archivos: el .cer y el .key de tu e.firma.";return;}
+  if(!/\.cer$/i.test(cf.name)||!/\.key$/i.test(kf.name)){msg.textContent="El certificado termina en .cer y la llave en .key.";return;}
+  var b64=function(f){return f.arrayBuffer().then(function(b){var u=new Uint8Array(b),s2="";for(var i=0;i<u.length;i++)s2+=String.fromCharCode(u[i]);return btoa(s2);});};
+  msg.textContent="Guardando…";Promise.all([b64(cf),b64(kf)]).then(function(r){return SB.rpc("sat_guardar_efirma",{cer:r[0],llave:r[1]});}).then(function(r){
+    if(r.error){msg.textContent=/sat_guardar_efirma|PGRST202|404/.test(String(r.error.message)+r.error.code)?"Falta correr 11_facturas_sat.sql en Supabase.":"No se pudo guardar: "+r.error.message;return;}
+    if(r.data&&r.data.ok===false){msg.textContent="Esos archivos no parecen una e.firma. Revisa que sean el .cer y el .key.";return;}
+    msg.textContent="Listo. En la siguiente hora el sistema se conecta al SAT. Si no pusiste la contraseña en Netlify (SAT_EFIRMA_PASS), aquí te aparecerá el aviso.";db.reload().then(render);});}
+
 function vInvStock(){
   var CORD=["Extintores","Agentes y polvo","Refacciones","Señalamientos","Otros"];var list=S.data.inventario.filter(match).sort(function(a,b){var ca=CORD.indexOf(a.categoria||"Otros"),cb=CORD.indexOf(b.categoria||"Otros");return (ca<0?9:ca)-(cb<0?9:cb)||String(a.nombre).localeCompare(String(b.nombre),"es");});
   var shop=S.data.inventario.filter(function(i){return (+i.stock||0)<(+i.min||0);}).map(function(i){return {n:i.nombre,u:i.unidad,q:Math.max(0,(+i.optimo||0)-(+i.stock||0))};});
@@ -1447,6 +1540,7 @@ function render(){
   else if(S.screen==="costos")html+=vCostos();
   else if(S.screen==="personal")html+=vPersonal();
   else if(S.screen==="asistencia")html+=vAsist();
+  else if(S.screen==="facturas")html+=vFacturas();
   else if(S.screen==="reportes")html+=vReportes();
   else if(S.screen==="monitor")html+=vMonitor();
   else html+=vInv();
@@ -1563,6 +1657,17 @@ document.addEventListener("click",function(e){
   if(a==="pcDo"){precargaDo();return;}
   if(a==="extImp"){extImpOpen(b.hasAttribute("data-v")?v:(S.extCli||""));return;}
   if(a==="eiTpl"){eiTpl();return;}
+  if(a==="fxEst"){S.fxEst=v;render();return;}
+  if(a==="fxMes"){var fm=(S.fxMes||today().slice(0,7)).split("-").map(Number),fd=new Date(fm[0],fm[1]-1+(+v),1);S.fxMes=fd.getFullYear()+"-"+pad(fd.getMonth()+1);render();return;}
+  if(a==="fxVer"){var fc=byId("cfdis",id);if(fc)fxVer(fc);return;}
+  if(a==="fxReg"){var fr=byId("cfdis",id);if(fr)fxRegDrawer(fr);return;}
+  if(a==="fxRegDo"){var fg=byId("cfdis",id);if(fg)fxRegDo(fg);return;}
+  if(a==="fxIgn"){patch("cfdis",id,{estado:"ignorado"}).then(function(){document.getElementById("drawerRoot").innerHTML="";toast("Marcada para no registrar");});return;}
+  if(a==="fxNuevo"){patch("cfdis",id,{estado:"nuevo"}).then(function(){document.getElementById("drawerRoot").innerHTML="";toast("Regresó a por registrar");});return;}
+  if(a==="fxXml"){var fx=byId("cfdis",id);if(fx&&fx.xml)saveBlob((fx.emisorRfc||"CFDI")+"-"+fxFolio(fx)+".xml",new Blob([fx.xml],{type:"application/xml"}));return;}
+  if(a==="fxEfirma"){fxEfirma();return;}
+  if(a==="fxQuitar"){if(confirm("¿Quitar la e.firma? El sistema dejará de traer facturas del SAT hasta que la vuelvas a subir."))SB.rpc("sat_quitar_efirma").then(function(){toast("e.firma quitada");db.reload().then(render);});return;}
+  if(a==="fxDesdeGo"){var dv=document.getElementById("fxDesde").value,sa=Object.assign({},byId("ajustes","sat")||{});delete sa.id;if(!dv){toast("Elige la fecha inicial.");return;}sa.desde=dv;sa.hasta=null;sa.ultimaSolicitud=null;write("ajustes","sat",sa).then(function(){toast("Listo: en la siguiente hora se piden al SAT las facturas desde el "+fmtDate(dv));});return;}
   if(a==="asMark"){asMark(v,b);return;}
   if(a==="asWk"){var lw=S.asWk||jasaLunes(today());if(v==="0")S.asWk=null;else{var dw=new Date(lw+"T12:00:00");dw.setDate(dw.getDate()+7*(+v));S.asWk=jasaIso(dw);}render();return;}
   if(a==="asSel"){S.asSel=S.asSel===v?null:v;render();return;}
@@ -1620,6 +1725,7 @@ document.addEventListener("input",function(e){
 });
 document.addEventListener("change",function(e){
   var t=e.target;
+  if(t.id==="fxFile"){fxSubir(t.files);t.value="";return;}
   if(t.id==="eiInsp"&&S.extImp){S.extImp.insp=t.checked;extImportDrawer();return;}
   if(t.id==="eiFecha"&&S.extImp){S.extImp.fecha=t.value;extImportDrawer();return;}
   if(t.id==="eiFile"&&t.files&&t.files[0]){var ef=t.files[0],em=document.getElementById("eiMsg");em.textContent="Leyendo "+ef.name+"…";loadXLSX().then(function(X){return ef.arrayBuffer().then(function(buf){var wb=X.read(buf,{type:"array",cellDates:true}),ws=wb.Sheets[wb.SheetNames[0]];extImpLoad(X.utils.sheet_to_json(ws,{header:1,raw:true,defval:""}).map(function(r){return r.map(function(v){if(v instanceof Date){var t=new Date(v.getTime()+43200000);return t.getUTCFullYear()+"-"+pad(t.getUTCMonth()+1)+"-"+pad(t.getUTCDate());}return v==null?"":String(v);});}));});}).catch(function(){em.textContent="No se pudo leer el archivo. Guárdalo como .xlsx o .csv e inténtalo otra vez.";});return;}
@@ -1904,6 +2010,39 @@ function jasaMarcar(sb, tipo) {
     }, function () { return { ok: false, msg: "Sin conexión. Vuelve a intentar cuando tengas señal." }; });
   });
 }
+
+/* ---------- CFDI (facturas recibidas): lee el XML timbrado (3.3 y 4.0) ---------- */
+// Misma lógica que netlify/functions/sat-recibidos.mjs (copia).
+function jasaCfdiLeer(xml) {
+  xml = String(xml || "").replace(/^\uFEFF/, "");
+  function dec(v) { return String(v).replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&#x([0-9a-f]+);/gi, function (m, h) { return String.fromCharCode(parseInt(h, 16)); }).replace(/&#(\d+);/g, function (m, d) { return String.fromCharCode(+d); }).replace(/&amp;/g, "&"); }
+  function tags(n) { var re = new RegExp("<(?:[A-Za-z0-9_]+:)?" + n + "(?=[\\s/>])([^>]*)>", "g"), out = [], m; while ((m = re.exec(xml))) out.push(m[1]); return out; }
+  function at(s, a) { if (!s) return ""; var m = s.match(new RegExp("(?:^|\\s)" + a + "\\s*=\\s*\"([^\"]*)\"")) || s.match(new RegExp("(?:^|\\s)" + a + "\\s*=\\s*'([^']*)'")); return m ? dec(m[1]).trim() : ""; }
+  function num(v) { var n = parseFloat(v); return isFinite(n) ? n : 0; }
+  var c = tags("Comprobante")[0], t = tags("TimbreFiscalDigital")[0];
+  if (!c || !t) return null;
+  var em = tags("Emisor")[0], re = tags("Receptor")[0], imps = tags("Impuestos").filter(function (s) { return /TotalImpuestos/.test(s); });
+  var imp = imps[imps.length - 1] || "", tipo = at(c, "TipoDeComprobante");
+  var iva = 0, gi = imp ? xml.lastIndexOf(imp) : -1;
+  if (gi >= 0) { var fin = xml.indexOf("Impuestos>", gi + imp.length), sec = xml.slice(gi, fin < 0 ? undefined : fin), rt = /<(?:[A-Za-z0-9_]+:)?Traslado(?=[\s/>])([^>]*)>/g, mt;
+    while ((mt = rt.exec(sec))) if (at(mt[1], "Impuesto") === "002") iva += num(at(mt[1], "Importe")); }
+  var pagos = tipo === "P" ? tags("Pago").map(function (s) { return { fecha: at(s, "FechaPago").slice(0, 10), monto: num(at(s, "Monto")), forma: at(s, "FormaDePagoP") }; }) : [];
+  var docs = tipo === "P" ? tags("DoctoRelacionado").map(function (s) { return { uuid: at(s, "IdDocumento").toUpperCase(), pagado: num(at(s, "ImpPagado")), saldo: num(at(s, "ImpSaldoInsoluto")), parcialidad: at(s, "NumParcialidad") }; }) : [];
+  return {
+    uuid: at(t, "UUID").toUpperCase(), version: at(c, "Version"), tipo: tipo, serie: at(c, "Serie"), folio: at(c, "Folio"),
+    fecha: at(c, "Fecha").slice(0, 10), hora: at(c, "Fecha").slice(11, 16), timbrado: at(t, "FechaTimbrado"),
+    emisorRfc: at(em, "Rfc").toUpperCase(), emisorNombre: at(em, "Nombre"), emisorRegimen: at(em, "RegimenFiscal"),
+    receptorRfc: at(re, "Rfc").toUpperCase(), receptorNombre: at(re, "Nombre"), uso: at(re, "UsoCFDI"),
+    moneda: at(c, "Moneda") || "MXN", tipoCambio: num(at(c, "TipoCambio")) || 1,
+    subtotal: num(at(c, "SubTotal")), descuento: num(at(c, "Descuento")), total: num(at(c, "Total")),
+    iva: Math.round(iva * 100) / 100, trasladados: num(at(imp, "TotalImpuestosTrasladados")), retenidos: num(at(imp, "TotalImpuestosRetenidos")),
+    metodoPago: at(c, "MetodoPago"), formaPago: at(c, "FormaPago"),
+    conceptos: tags("Concepto").slice(0, 60).map(function (s) { return { clave: at(s, "ClaveProdServ"), d: at(s, "Descripcion"), c: num(at(s, "Cantidad")), u: at(s, "ClaveUnidad") || at(s, "Unidad"), v: num(at(s, "ValorUnitario")), i: num(at(s, "Importe")) }; }),
+    relacion: at(tags("CfdiRelacionados")[0], "TipoRelacion"), relacionados: tags("CfdiRelacionado").map(function (s) { return at(s, "UUID").toUpperCase(); }),
+    pagos: pagos, pagados: docs
+  };
+}
+var JASA_CFDI_TIPO = { I: "Ingreso", E: "Egreso (nota de crédito)", P: "Pago", N: "Nómina", T: "Traslado" };
 /*@/reporte*/
 
 /* ---------- modo Supabase (jasaextintores.com/admin) ---------- */
@@ -2000,7 +2139,7 @@ function doImport(){
 }
 
 /* ---------- enlaces directos ---------- */
-var HASH={asistencia:"asistencia",reportes:"reportes",dashboard:"reportes",monitor:"monitor",personal:"personal",permisos:"personal",compras:"inventario",conteo:"inventario",costos:"costos",recetas:"costos",extintores:"extintores",inspecciones:"inspecciones",panel:"panel",cotizaciones:"quotes",quotes:"quotes",clientes:"clientes",proveedores:"proveedores",finanzas:"finanzas",taller:"taller",inventario:"inventario",pendientes:"pendientes",agenda:"pendientes"};
+var HASH={asistencia:"asistencia",facturas:"facturas",sat:"facturas",reportes:"reportes",dashboard:"reportes",monitor:"monitor",personal:"personal",permisos:"personal",compras:"inventario",conteo:"inventario",costos:"costos",recetas:"costos",extintores:"extintores",inspecciones:"inspecciones",panel:"panel",cotizaciones:"quotes",quotes:"quotes",clientes:"clientes",proveedores:"proveedores",finanzas:"finanzas",taller:"taller",inventario:"inventario",pendientes:"pendientes",agenda:"pendientes"};
 function fromHash(){var hq=(location.hash||"").match(/^#cotizacion-(.+)$/i);if(hq){S.goFolio=decodeURIComponent(hq[1]).toUpperCase();S.screen="quotes";render();return;}var h=(location.hash||"").replace("#","").toLowerCase();if(HASH[h]&&S.screen!==HASH[h]){S.screen=HASH[h];S.otSel=null;render();}}
 window.addEventListener("hashchange",fromHash);fromHash();
 

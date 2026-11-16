@@ -346,6 +346,39 @@ function jasaMarcar(sb, tipo) {
     }, function () { return { ok: false, msg: "Sin conexión. Vuelve a intentar cuando tengas señal." }; });
   });
 }
+
+/* ---------- CFDI (facturas recibidas): lee el XML timbrado (3.3 y 4.0) ---------- */
+// Misma lógica que netlify/functions/sat-recibidos.mjs (copia).
+function jasaCfdiLeer(xml) {
+  xml = String(xml || "").replace(/^\uFEFF/, "");
+  function dec(v) { return String(v).replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&#x([0-9a-f]+);/gi, function (m, h) { return String.fromCharCode(parseInt(h, 16)); }).replace(/&#(\d+);/g, function (m, d) { return String.fromCharCode(+d); }).replace(/&amp;/g, "&"); }
+  function tags(n) { var re = new RegExp("<(?:[A-Za-z0-9_]+:)?" + n + "(?=[\\s/>])([^>]*)>", "g"), out = [], m; while ((m = re.exec(xml))) out.push(m[1]); return out; }
+  function at(s, a) { if (!s) return ""; var m = s.match(new RegExp("(?:^|\\s)" + a + "\\s*=\\s*\"([^\"]*)\"")) || s.match(new RegExp("(?:^|\\s)" + a + "\\s*=\\s*'([^']*)'")); return m ? dec(m[1]).trim() : ""; }
+  function num(v) { var n = parseFloat(v); return isFinite(n) ? n : 0; }
+  var c = tags("Comprobante")[0], t = tags("TimbreFiscalDigital")[0];
+  if (!c || !t) return null;
+  var em = tags("Emisor")[0], re = tags("Receptor")[0], imps = tags("Impuestos").filter(function (s) { return /TotalImpuestos/.test(s); });
+  var imp = imps[imps.length - 1] || "", tipo = at(c, "TipoDeComprobante");
+  var iva = 0, gi = imp ? xml.lastIndexOf(imp) : -1;
+  if (gi >= 0) { var fin = xml.indexOf("Impuestos>", gi + imp.length), sec = xml.slice(gi, fin < 0 ? undefined : fin), rt = /<(?:[A-Za-z0-9_]+:)?Traslado(?=[\s/>])([^>]*)>/g, mt;
+    while ((mt = rt.exec(sec))) if (at(mt[1], "Impuesto") === "002") iva += num(at(mt[1], "Importe")); }
+  var pagos = tipo === "P" ? tags("Pago").map(function (s) { return { fecha: at(s, "FechaPago").slice(0, 10), monto: num(at(s, "Monto")), forma: at(s, "FormaDePagoP") }; }) : [];
+  var docs = tipo === "P" ? tags("DoctoRelacionado").map(function (s) { return { uuid: at(s, "IdDocumento").toUpperCase(), pagado: num(at(s, "ImpPagado")), saldo: num(at(s, "ImpSaldoInsoluto")), parcialidad: at(s, "NumParcialidad") }; }) : [];
+  return {
+    uuid: at(t, "UUID").toUpperCase(), version: at(c, "Version"), tipo: tipo, serie: at(c, "Serie"), folio: at(c, "Folio"),
+    fecha: at(c, "Fecha").slice(0, 10), hora: at(c, "Fecha").slice(11, 16), timbrado: at(t, "FechaTimbrado"),
+    emisorRfc: at(em, "Rfc").toUpperCase(), emisorNombre: at(em, "Nombre"), emisorRegimen: at(em, "RegimenFiscal"),
+    receptorRfc: at(re, "Rfc").toUpperCase(), receptorNombre: at(re, "Nombre"), uso: at(re, "UsoCFDI"),
+    moneda: at(c, "Moneda") || "MXN", tipoCambio: num(at(c, "TipoCambio")) || 1,
+    subtotal: num(at(c, "SubTotal")), descuento: num(at(c, "Descuento")), total: num(at(c, "Total")),
+    iva: Math.round(iva * 100) / 100, trasladados: num(at(imp, "TotalImpuestosTrasladados")), retenidos: num(at(imp, "TotalImpuestosRetenidos")),
+    metodoPago: at(c, "MetodoPago"), formaPago: at(c, "FormaPago"),
+    conceptos: tags("Concepto").slice(0, 60).map(function (s) { return { clave: at(s, "ClaveProdServ"), d: at(s, "Descripcion"), c: num(at(s, "Cantidad")), u: at(s, "ClaveUnidad") || at(s, "Unidad"), v: num(at(s, "ValorUnitario")), i: num(at(s, "Importe")) }; }),
+    relacion: at(tags("CfdiRelacionados")[0], "TipoRelacion"), relacionados: tags("CfdiRelacionado").map(function (s) { return at(s, "UUID").toUpperCase(); }),
+    pagos: pagos, pagados: docs
+  };
+}
+var JASA_CFDI_TIPO = { I: "Ingreso", E: "Egreso (nota de crédito)", P: "Pago", N: "Nómina", T: "Traslado" };
 /*@/reporte*/
 
 (function(){var st=document.createElement("style");st.textContent=JASA_SHEET_CSS;document.head.appendChild(st);})();

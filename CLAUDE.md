@@ -17,6 +17,7 @@ barras y encabezados de tabla, franja roja, Saira Condensed / Barlow / IBM Plex 
 | Reportes PDF y puntos de inspección | — | `src/reporte.js` (lo inserta el build en panel, portal, app y ficha) | — |
 | Reporte semanal de asistencia | — | `netlify/functions/asistencia-semanal.mjs` (lunes 13:15 UTC) | Netlify Functions |
 | Avisos con diseño (formularios) | — | `netlify/functions/submission-created.mjs` (Resend; sin `RESEND_API_KEY` no hace nada) | Netlify Functions |
+| Facturas recibidas del SAT | — | `netlify/functions/sat-recibidos.mjs` (cada hora; npm `@nodecfdi/sat-ws-descarga-masiva`, `package.json`, `netlify.toml`) | Netlify Functions |
 | Base de datos | Supabase `psggoagcdokwrkykgufr` | `supabase/*.sql` (se pegan en SQL Editor) | Supabase |
 | Panel viejo (solo lectura) | claude.ai artifact BHJcxnzgNkVbLfyVe49MNu | `admin.html` en modo claude.ai | Artifact |
 
@@ -78,6 +79,13 @@ generados.
   sin permiso `campo` entra solo a Mi cuenta). Horas: `jasaAsistCalc()` en `src/reporte.js` (copia en la función de Netlify).
   Reporte del lunes: función programada lee `public.reporte_asistencia(clave,…)` con `JASA_CLAVE_ASISTENCIA` (env de Netlify;
   la clave vive en `public.claves_privadas`) y manda por Resend si hay `RESEND_API_KEY`, si no por Netlify Forms `reporte-asistencia`.
+- Facturas recibidas (`supabase/11_facturas_sat.sql`): colección `cfdis` (id = UUID; `jasaCfdiLeer()` en `src/reporte.js`,
+  copia en la función) con `estado` nuevo|registrado|ignorado y `forma` pagada|credito|nota|pago (`mov`, `proveedor`, `porPagar`).
+  Permiso finanzas. La e.firma: .cer/.key en `public.claves_privadas` (`sat_guardar_efirma`, solo admin; nunca se leen desde
+  la app), contraseña solo en Netlify `SAT_EFIRMA_PASS`. La función usa `sat_estado`/`sat_guardar` con `JASA_CLAVE_ASISTENCIA`
+  y guarda su avance en `docs('ajustes','sat')` {desde, hasta, pendientes, rfc, error, log}. Pide recibidos vigentes (XML).
+  Panel `#facturas`: registrar como egreso, a crédito (suma `saldo` del proveedor) o pago (complemento P resta saldo);
+  también se suben XML/ZIP a mano. Proveedores ahora tienen `rfc`.
 - Llave publicable en el código (es pública por diseño). Nunca poner la Secret key ni contraseñas en el repo.
 - Registro de usuarios cerrado: el personal se da de alta en Authentication › Users y en `public.staff`.
 

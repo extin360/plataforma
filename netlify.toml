@@ -1,0 +1,4 @@
+# Las páginas se publican tal cual (no hay build). Solo las funciones usan dependencias de npm.
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
