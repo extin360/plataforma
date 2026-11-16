@@ -16,6 +16,7 @@ barras y encabezados de tabla, franja roja, Saira Condensed / Barlow / IBM Plex 
 | Ficha pública del QR | https://jasaextintores.com/e/JX-000245 | `src/ficha.html` → `e/index.html` (`_redirects` manda `/e/*` ahí) | Netlify |
 | Reportes PDF y puntos de inspección | — | `src/reporte.js` (lo inserta el build en panel, portal, app y ficha) | — |
 | Reporte semanal de asistencia | — | `netlify/functions/asistencia-semanal.mjs` (lunes 13:15 UTC) | Netlify Functions |
+| Avisos con diseño (formularios) | — | `netlify/functions/submission-created.mjs` (Resend; sin `RESEND_API_KEY` no hace nada) | Netlify Functions |
 | Base de datos | Supabase `psggoagcdokwrkykgufr` | `supabase/*.sql` (se pegan en SQL Editor) | Supabase |
 | Panel viejo (solo lectura) | claude.ai artifact BHJcxnzgNkVbLfyVe49MNu | `admin.html` en modo claude.ai | Artifact |
 
@@ -61,6 +62,8 @@ generados.
   (`enRuta`, ruta en Google Maps) y marca "Ya lo recogí" (etapa 0 → 1). `supabase/07_cotizacion_en_linea.sql`.
 - Avisos por correo: Netlify Forms `solicitud-cotizacion` y `cotizacion-autorizada`; el enlace del aviso abre
   `/admin/#cotizacion-<folio>`.
+  Con Resend (`RESEND_API_KEY`, `JASA_CORREO_AVISOS`, `JASA_CORREO_REMITENTE` en Netlify) los avisos salen con el marco de
+  `tools/correos.py`; entonces se apagan las notificaciones simples de Netlify Forms para no duplicar.
 - Ficha del QR: función `public.ficha_extintor(folio)` (sin cliente ni serie).
 - Etiquetas: impresora Zebra ZD420, se imprimen desde el panel (Extintores › Generar etiquetas) con QR a `/e/<folio>`.
 - Inspección: los puntos están en `JASA_PUNTOS` (formato en papel de JASA + manómetro, válvula y soporte; `na` = no aplica,

@@ -16,6 +16,35 @@ const iso = (d) => d.toISOString().slice(0, 10);
 const fmtD = (f) => { const p = f.split("-"); return +p[2] + "/" + p[1]; };
 const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
+const LOGO = "https://jasaextintores.com/img/logo-correo.png";
+const DISPLAY = "'Saira Condensed','Arial Narrow','Helvetica Neue',Arial,sans-serif";
+const BODY = "Barlow,'Helvetica Neue',Arial,sans-serif";
+const MONO = "'IBM Plex Mono',Consolas,'Courier New',monospace";
+
+// Mismo marco que supabase/correos (tools/correos.py)
+function marco({ eyebrow, titulo, intro = "", filas = [], bloque = "", boton = null, nota = "" }) {
+  const tabla = filas.filter((f) => f[1]).map(([k, v, html]) =>
+    `<tr><td style="padding:9px 12px 9px 0;border-bottom:1px solid #e3ded9;font-family:${MONO};font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#6b6460;vertical-align:top;white-space:nowrap">${esc(k)}</td>` +
+    `<td style="padding:9px 0;border-bottom:1px solid #e3ded9;font-family:${BODY};font-size:16px;line-height:1.45;color:#1a1716">${html ? v : esc(v)}</td></tr>`).join("");
+  const btn = boton ? `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:22px 0 6px"><tr><td bgcolor="#E10F0F" style="border-radius:3px"><a href="${esc(boton[1])}" style="display:inline-block;padding:14px 26px;font-family:${DISPLAY};font-weight:900;font-size:18px;letter-spacing:.04em;text-transform:uppercase;color:#ffffff;text-decoration:none;border-radius:3px">${esc(boton[0])}</a></td></tr></table>` : "";
+  return `<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><title>${esc(titulo)}</title></head>
+<body style="margin:0;padding:0;background:#f3f1ee"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#f3f1ee" style="background:#f3f1ee"><tr><td align="center" style="padding:24px 12px">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%">
+<tr><td bgcolor="#0d0d0d" style="background:#0d0d0d;padding:22px 28px;border-radius:6px 6px 0 0"><img src="${LOGO}" width="190" alt="Extintores JASA" style="display:block;width:190px;max-width:60%;height:auto;border:0"></td></tr>
+<tr><td bgcolor="#E10F0F" style="background:#E10F0F;height:5px;line-height:5px;font-size:0">&nbsp;</td></tr>
+<tr><td bgcolor="#ffffff" style="background:#ffffff;padding:30px 28px 26px;border:1px solid #e3ded9;border-top:0;border-radius:0 0 6px 6px">
+<p style="margin:0 0 8px;font-family:${MONO};font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#6b6460">${esc(eyebrow)}</p>
+<h1 style="margin:0 0 16px;font-family:${DISPLAY};font-weight:900;font-size:32px;line-height:1;text-transform:uppercase;color:#1a1716">${esc(titulo)}</h1>
+${intro ? `<p style="margin:0 0 14px;font-family:${BODY};font-size:16px;line-height:1.55;color:#1a1716">${intro}</p>` : ""}
+${tabla ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-top:3px solid #1a1716">${tabla}</table>` : ""}
+${bloque}${btn}
+${nota ? `<p style="margin:18px 0 0;padding-top:16px;border-top:1px solid #e3ded9;font-family:${BODY};font-size:13px;line-height:1.5;color:#6b6460">${nota}</p>` : ""}
+</td></tr>
+<tr><td style="padding:18px 8px 0;text-align:center"><p style="margin:0 0 6px;font-family:${BODY};font-size:12px;line-height:1.5;color:#6b6460">JASA Extintores SA de CV · Mutualista 412, Col. Buena Vista Sur, Piedras Negras, Coahuila<br>Tel. 878 783 3216 · WhatsApp 878 117 4728</p>
+<p style="margin:0;font-family:${MONO};font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#a8a09b">Seguridad confiable</p></td></tr>
+</table></td></tr></table></body></html>`;
+}
+
 function semanaAnterior(ahora = new Date()) {
   const hoy = new Intl.DateTimeFormat("en-CA", { timeZone: TZ, year: "numeric", month: "2-digit", day: "2-digit" }).format(ahora);
   const d = new Date(hoy + "T12:00:00Z");
@@ -62,15 +91,21 @@ function armarCorreo(datos, dias) {
   const titulo = "Asistencia JASA · semana del " + fmtD(dias[0]) + " al " + fmtD(dias[6]);
   const ver = SITE + "/admin/#asistencia";
   const texto = titulo + "\n\nHoras trabajadas (sin comida)\n\n" + lista.map((p) => p.nombre + ": " + hm(p.total) + " h" + (p.comida ? " (comida " + hm(p.comida) + " h)" : "") + "\n  " + dias.map((f, i) => DIAS[i] + " " + (p.dias[f] && p.dias[f].min ? hm(p.dias[f].min) : "—")).join(" · ") + (p.alertas.length ? "\n  Avisos: " + p.alertas.join("; ") : "")).join("\n\n") + "\n\nTotal: " + hm(total) + " h\nDetalle: " + ver;
-  const th = 'style="background:#1a1716;color:#fff;font:600 11px Arial,sans-serif;letter-spacing:.06em;padding:8px 10px;text-align:right"';
-  const html = '<div style="font-family:Arial,Helvetica,sans-serif;color:#1a1716;max-width:760px">' +
-    '<div style="background:#0d0d0d;border-bottom:4px solid #e10f0f;padding:14px 18px"><b style="color:#e10f0f;font:italic 900 26px Arial,sans-serif">JASA</b> <span style="color:#fff;font:12px Arial;letter-spacing:.12em">ASISTENCIA</span></div>' +
-    '<h2 style="margin:18px 0 6px">Semana del ' + fmtD(dias[0]) + ' al ' + fmtD(dias[6]) + '</h2><p style="margin:0 0 14px;color:#6f6864">Horas trabajadas sin contar la comida. Total del equipo: <b>' + hm(total) + ' h</b></p>' +
-    '<table style="border-collapse:collapse;width:100%;font-size:14px"><tr><th ' + th.replace("right", "left") + '>PERSONA</th>' + dias.map((f, i) => '<th ' + th + '>' + DIAS[i].toUpperCase() + '<br>' + fmtD(f) + '</th>').join("") + '<th ' + th + '>TOTAL</th></tr>' +
-    lista.map((p) => '<tr><td style="padding:8px 10px;border-bottom:1px solid #e4dfdc"><b>' + esc(p.nombre) + '</b>' + (p.alertas.length ? '<div style="color:#8f6100;font-size:12px">' + p.alertas.map(esc).join("<br>") + '</div>' : "") + '</td>' +
-      dias.map((f) => '<td style="padding:8px 10px;border-bottom:1px solid #e4dfdc;text-align:right;font-family:monospace">' + (p.dias[f] && p.dias[f].min ? hm(p.dias[f].min) : '<span style="color:#b5aeaa">—</span>') + '</td>').join("") +
-      '<td style="padding:8px 10px;border-bottom:1px solid #e4dfdc;text-align:right;font-family:monospace"><b>' + hm(p.total) + '</b>' + (p.comida ? '<div style="color:#6f6864;font-size:11px">comida ' + hm(p.comida) + '</div>' : '') + '</td></tr>').join("") + '</table>' +
-    '<p style="margin:18px 0"><a href="' + ver + '" style="background:#e10f0f;color:#fff;text-decoration:none;padding:10px 16px;border-radius:3px;font-weight:700">Ver detalle en el panel</a></p></div>';
+  const th = (al) => `style="background:#1a1716;color:#ffffff;font-family:${MONO};font-size:10px;letter-spacing:.08em;padding:8px 6px;text-align:${al}"`;
+  const td = (al) => `style="padding:9px 6px;border-bottom:1px solid #e3ded9;font-family:${BODY};font-size:14px;color:#1a1716;text-align:${al};vertical-align:top"`;
+  const tabla = '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;margin:6px 0 4px">' +
+    '<tr><th ' + th("left") + '>PERSONA</th>' + dias.map((f, i) => '<th ' + th("center") + '>' + DIAS[i].toUpperCase() + '<br>' + fmtD(f) + '</th>').join("") + '<th ' + th("right") + '>TOTAL</th></tr>' +
+    lista.map((p) => '<tr><td ' + td("left") + '><b>' + esc(p.nombre) + '</b>' + (p.alertas.length ? '<div style="margin-top:3px;font-size:12px;line-height:1.35;color:#8f6100">' + p.alertas.map(esc).join("<br>") + '</div>' : "") + '</td>' +
+      dias.map((f) => '<td ' + td("center") + '><span style="font-family:' + MONO + ';font-size:13px">' + (p.dias[f] && p.dias[f].min ? hm(p.dias[f].min) : '<span style="color:#b5aeaa">—</span>') + '</span></td>').join("") +
+      '<td ' + td("right") + '><b style="font-family:' + MONO + '">' + hm(p.total) + '</b>' + (p.comida ? '<div style="font-size:11px;color:#6b6460">comida ' + hm(p.comida) + '</div>' : "") + '</td></tr>').join("") +
+    '<tr><td ' + td("left") + '><b>Total del equipo</b></td>' + dias.map(() => '<td ' + td("center") + '></td>').join("") + '<td ' + td("right") + '><b style="font-family:' + MONO + ';color:#E10F0F">' + hm(total) + '</b></td></tr></table>';
+  const conAvisos = lista.filter((p) => p.alertas.length).length;
+  const html = marco({
+    eyebrow: "Asistencia · reporte semanal", titulo: "Semana del " + fmtD(dias[0]) + " al " + fmtD(dias[6]),
+    intro: "Horas trabajadas por persona, <b>sin contar la comida</b>." + (conAvisos ? " Hay " + conAvisos + (conAvisos === 1 ? " persona" : " personas") + " con avisos (marcas incompletas); revísalas en el panel y agrega la marca manual si hace falta." : ""),
+    bloque: tabla, boton: ["Ver detalle en el panel", ver],
+    nota: "Llega cada lunes con la semana anterior. Se marca en jasaextintores.com/admin › Asistencia o en la app › Mi cuenta.",
+  });
   return { titulo, texto, html, ver };
 }
 
@@ -85,7 +120,7 @@ export default async () => {
   const datos = await r.json();
   if (!r.ok || !datos) { console.log("Supabase no devolvió el reporte", r.status, JSON.stringify(datos).slice(0, 300)); return new Response("Sin datos", { status: 500 }); }
   const c = armarCorreo(datos, dias);
-  const para = (datos.ajustes && datos.ajustes.correo) || "";
+  const para = (datos.ajustes && datos.ajustes.correo) || process.env.JASA_CORREO_AVISOS || "";
   if (process.env.RESEND_API_KEY && para) {
     const s = await fetch("https://api.resend.com/emails", {
       method: "POST", headers: { Authorization: "Bearer " + process.env.RESEND_API_KEY, "Content-Type": "application/json" },
@@ -96,7 +131,7 @@ export default async () => {
   }
   const f = await fetch(SITE + "/", {
     method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({ "form-name": "reporte-asistencia", subject: c.titulo, semana: fmtD(dias[0]) + " al " + fmtD(dias[6]), para, resumen: c.texto, ver_detalle: c.ver }).toString(),
+    body: new URLSearchParams({ "form-name": "reporte-asistencia", subject: c.titulo, semana: fmtD(dias[0]) + " al " + fmtD(dias[6]), resumen: c.texto, ver_detalle: c.ver }).toString(),
   });
   console.log("Netlify Forms", f.status);
   return new Response("Enviado por Netlify Forms (" + f.status + ")");
