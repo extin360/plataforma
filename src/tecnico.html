@@ -166,7 +166,7 @@ var flushing=false;
 function flush(){
   var q=queue();updSync();if(flushing||!q.length||!S.user)return;flushing=true;
   var op=q[0];
-  sb.from("docs").upsert({col:op.col,id:op.id,data:op.data,updated_at:new Date().toISOString()}).then(function(r){
+  (op.del?sb.from("docs").delete().eq("col",op.col).eq("id",op.id):sb.from("docs").upsert({col:op.col,id:op.id,data:op.data,updated_at:new Date().toISOString()})).then(function(r){
     flushing=false;if(r.error){updSync(true);return;}
     save(KQ,queue().filter(function(x){return !(x.col===op.col&&x.id===op.id&&x.t===op.t);}));flush();
   },function(){flushing=false;updSync(true);});
@@ -187,7 +187,7 @@ function loadData(){
     save("jasaCache",{clientes:S.clientes,ext:S.ext,visitas:S.visitas,ordenes:S.ordenes});
   },function(){var c=load("jasaCache",null);if(c){S.clientes=c.clientes;S.ext=c.ext;S.visitas=c.visitas||[];S.ordenes=c.ordenes||[];toast("Sin señal: usando la última copia guardada.");}});
 }
-function extOf(cli){var n=String(cli||"").trim().toLowerCase();return Object.keys(S.ext).map(function(k){return S.ext[k];}).filter(function(x){return String(x.cliente||"").trim().toLowerCase()===n&&x.estado!=="baja"&&x.estado!=="sin asignar";}).sort(function(a,b){return String(a.ubicacion||"").localeCompare(String(b.ubicacion||""),"es");});}
+function extOf(cli){var n=String(cli||"").trim().toLowerCase();return Object.keys(S.ext).map(function(k){return S.ext[k];}).filter(function(x){return String(x.cliente||"").trim().toLowerCase()===n&&x.estado!=="baja"&&x.estado!=="sin asignar";}).sort(function(a,b){return ((+a.numero||9999)-(+b.numero||9999))||String(a.ubicacion||"").localeCompare(String(b.ubicacion||""),"es")||String(a.folio).localeCompare(String(b.folio));});}
 function findCli(n){n=String(n||"").trim().toLowerCase();return S.clientes.find(function(x){return String(x.nombre).trim().toLowerCase()===n;});}
 function nextFolio(cli){var c=findCli(cli)||{},p=c.prefijo||jasaPrefijo(cli),re=new RegExp("^"+p+"-(\\d+)$"),n=Object.keys(S.ext).reduce(function(a,k){var m=k.match(re);return m?Math.max(a,+m[1]):a;},0);return p+"-"+String(n+1).padStart(3,"0");}
 var PRIO={urgente:["Urgente","var(--red-2)"],normal:["Normal","var(--muted)"],programada:["Programada","var(--blue)"]};
@@ -284,12 +284,24 @@ function vVisit(){
   var v=visit(),list=extOf(v.cliente),done=v.items,n=Object.keys(done).length,tot=Math.max(list.length,n),pct=tot?Math.round(n/tot*100):0;
   var extra=Object.keys(done).filter(function(f){return !list.some(function(x){return x.folio===f;});}).map(function(f){return S.ext[f]||{folio:f,ubicacion:done[f].ubicacion};});
   dock('<button type="button" class="btn" data-act="scan">Escanear QR</button><button type="button" class="btn ghost" style="width:auto" data-act="finishAsk">Terminar</button>');
-  return '<div><span class="eyebrow">Inspección · '+esc(v.fecha.split("-").reverse().join("/"))+'</span><h1>'+esc(v.cliente)+'</h1></div>'+
+  var eq=((findCli(v.cliente)||{}).equiposDet||[]).filter(function(e){return (+e.qty||0)>0;}),eqN=eq.reduce(function(a,e){return a+(+e.qty||0);},0);
+  return '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px"><div><span class="eyebrow">Inspección · '+esc(v.fecha.split("-").reverse().join("/"))+'</span><h1>'+esc(v.cliente)+'</h1></div><button type="button" class="btn ghost sm" style="width:auto;flex:none" data-act="visExit">‹ Salir</button></div>'+
+    (!list.length&&eqN?'<div class="card" style="border-left:4px solid var(--red)"><span class="eyebrow">Lista precargada</span><h2 style="margin:0">'+eqN+(eqN===1?" extintor registrado":" extintores registrados")+'</h2><span class="hint">'+esc(eq.map(function(e){return e.qty+" × "+tl(e.tipo)+" "+String(e.cap||"").toLowerCase();}).join(" · "))+'. Crea su lista y solo escribes la ubicación de cada uno; la siguiente visita ya sale completa.</span><button type="button" class="btn" data-act="precargar">Crear lista de '+eqN+' extintores</button></div>':"")+
     '<div class="card"><div class="prog"><span class="hint">Revisados</span><b>'+n+' <span style="font-size:22px;color:var(--muted)">de '+tot+'</span></b></div><div class="bar"><i style="width:'+pct+'%"></i></div></div>'+
     '<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><h2>Extintores</h2><span style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end"><button type="button" class="btn ghost sm" data-act="manual">Escribir folio</button><button type="button" class="btn ghost sm" data-act="altaNueva">Alta sin etiqueta</button></span></div><div class="list">'+
-    (list.concat(extra).length?list.concat(extra).map(function(x){var it=done[x.folio];return '<button type="button" class="row" data-act="open" data-f="'+esc(x.folio)+'"><span><b style="font-weight:600">'+esc(x.ubicacion||"Sin ubicación")+'</b><div class="s">'+esc(x.folio)+' · '+esc(tl(x.tipo)+" "+String(x.cap||"").toLowerCase())+'</div></span>'+(it?'<span class="pill" style="color:'+(it.resultado==="Conforme"?"var(--green)":"var(--amber)")+'">'+(it.resultado==="Conforme"?"Conforme":"Revisar")+'</span>':'<span class="pill" style="color:var(--muted)">Pendiente</span>')+'</button>';}).join(""):'<p class="hint">Este cliente todavía no tiene extintores con QR. Escanea cada etiqueta nueva y dalo de alta ahí mismo.</p>')+
-    '</div></div>';
+    (list.concat(extra).length?list.concat(extra).map(function(x){var it=done[x.folio];return '<button type="button" class="row" data-act="open" data-f="'+esc(x.folio)+'"><span><b style="font-weight:600">'+(x.numero?"No. "+esc(x.numero)+" · ":"")+(x.ubicacion?esc(x.ubicacion):'<span style="color:var(--amber)">falta ubicación</span>')+'</b><div class="s">'+esc(x.folio)+' · '+esc(tl(x.tipo)+" "+String(x.cap||"").toLowerCase())+'</div></span>'+(it?'<span class="pill" style="color:'+(it.resultado==="Conforme"?"var(--green)":"var(--amber)")+'">'+(it.resultado==="Conforme"?"Conforme":"Revisar")+'</span>':'<span class="pill" style="color:var(--muted)">Pendiente</span>')+'</button>';}).join(""):'<p class="hint">Este cliente todavía no tiene extintores con QR. Escanea cada etiqueta nueva y dalo de alta ahí mismo.</p>')+
+    '</div></div>'+
+    '<button type="button" class="link" style="align-self:center;color:var(--red-2);padding:8px" data-act="visCancel">Cancelar esta inspección</button>';
 }
+function precargar(){var v=visit(),c=findCli(v.cliente)||{},eq=(c.equiposDet||[]).filter(function(e){return (+e.qty||0)>0;}),n=0,t=Date.now();
+  if(extOf(v.cliente).length)return;
+  eq.forEach(function(e){for(var i=0;i<(+e.qty||0)&&n<300;i++){var f=nextFolio(v.cliente);n++;var ex={folio:f,cliente:c.nombre||v.cliente,numero:String(n),ubicacion:"",tipo:e.tipo||"PQS",cap:jasaCap(e.cap),serie:"",recarga:"",vence:"",ph:"",estado:"servicio",etiquetaPendiente:true,precargado:true};S.ext[f]=ex;enqueue({col:"extintores",id:f,t:t+n,data:ex});}});
+  save("jasaCache",{clientes:S.clientes,ext:S.ext,visitas:S.visitas,ordenes:S.ordenes});toast(n+" extintores en la lista. Toca cada uno para revisarlo.");render();}
+function visCancel(){var v=visit();if(!v)return;var n=Object.keys(v.items||{}).length;
+  if(!window.confirm(n?"Ya revisaste "+n+(n===1?" extintor":" extintores")+". Si cancelas se borra esta inspección (los extintores dados de alta se quedan). ¿Cancelar?":"¿Cancelar la inspección de "+v.cliente+"?"))return;
+  enqueue({col:"inspecciones",id:v.id,t:Date.now(),del:true});
+  if(v.visita)saveVisita(v.visita,{estado:"programada",inspeccion:""});
+  S.cur=null;save(KV,null);S.view="home";S.tab="insp";toast("Inspección cancelada");render();}
 function vScan(){dock('<button type="button" class="btn ghost" data-act="back">Cancelar</button>');
   return (S.manual?'<h1>Escribir folio</h1><span class="hint">Úsalo cuando la etiqueta está dañada o el extintor todavía no tiene QR.</span><button type="button" class="btn ghost sm" data-act="scan">Mejor escanear</button>':'<h1>Escanear</h1><div class="scanbox"><video id="vid" playsinline muted></video></div><canvas id="cv" hidden></canvas><span class="hint" id="scanMsg">Apunta al código QR de la etiqueta.</span>')+
     '<form class="card" id="folioForm"><div class="field"><label for="ffFolio">'+(S.manual?'Folio de la etiqueta':'¿No lee? Escribe el folio')+'</label><input class="inp" id="ffFolio" placeholder="EAP1-007" autocapitalize="characters" autocomplete="off"></div><button class="btn ghost" type="submit">Buscar folio</button></form>';
@@ -305,8 +317,8 @@ function fixNA(d){JASA_PUNTOS.forEach(function(p){if(jasaNA(p,d.tipo))d.puntos[p
 function faltan(d){return qList(d).filter(function(p){return !d.puntos[p.k];});}
 function vForm(){
   var d=S.draft,x=S.ext[d.folio]||{},nuevo=!x.estado||x.estado==="sin asignar",cm=today().slice(0,7);fixNA(d);
-  var qs=qList(d),n=qs.length;if(d.step==null)d.step=nuevo&&!d.datosOk?-1:0;if(d.step>n)d.step=n;
-  var head='<div class="q-head"><div style="min-width:0"><span class="eyebrow">'+esc(d.folio)+(x.numero?" · No. "+esc(x.numero):"")+'</span><b>'+esc(d.ubicacion||x.ubicacion||"Extintor nuevo")+'</b><span class="hint">'+esc(tl(d.tipo)+" "+String(d.cap||"").toLowerCase())+(d.vence?' · vence <span style="color:'+(d.vence<cm?"var(--rose)":"inherit")+'">'+fm(d.vence)+'</span>':"")+'</span></div>'+(d.step>=0?'<button type="button" class="link" data-act="qDatos">Corregir datos</button>':"")+'</div>';
+  var qs=qList(d),n=qs.length;if(d.step==null)d.step=(nuevo||!d.ubicacion)&&!d.datosOk?-1:0;if(d.step>n)d.step=n;
+  var head='<div class="q-head"><div style="min-width:0"><span class="eyebrow">'+esc(d.folio)+(x.numero?" · No. "+esc(x.numero):"")+'</span><b>'+esc(d.ubicacion||x.ubicacion||"Extintor nuevo")+'</b><span class="hint">'+esc(tl(d.tipo)+" "+String(d.cap||"").toLowerCase())+(d.vence?' · vence <span style="color:'+(d.vence<cm?"var(--rose)":"inherit")+'">'+fm(d.vence)+'</span>':"")+'</span></div>'+(d.step>=0?'<button type="button" class="link" data-act="qDatos">Corregir datos</button>':"")+'<button type="button" class="link" data-act="back" style="margin-left:auto">‹ Lista</button></div>';
   if(d.step===-1){
     dock('<button type="button" class="btn" data-act="qDatosOk">Empezar revisión</button><button type="button" class="btn ghost" style="width:auto" data-act="back">Cancelar</button>');
     var tipoSel='<select class="inp" id="fTipo">'+TIPOS.map(function(t){return '<option value="'+t[0]+'"'+(d.tipo===t[0]?" selected":"")+'>'+t[1]+'</option>';}).join("")+'</select>';
@@ -319,7 +331,7 @@ function vForm(){
   }
   if(d.step<n){
     var p=qs[d.step],v=d.puntos[p.k],q=PREG[p.k]||[p.l+"?",""],pct=Math.round(d.step/n*100);
-    dock('<button type="button" class="btn ghost" style="width:auto" data-act="qPrev"'+(d.step===0&&!nuevo?" disabled":"")+'>← Anterior</button><button type="button" class="btn ghost" data-act="allOk">Todo lo demás está bien</button>');
+    dock('<button type="button" class="btn ghost" style="width:auto" data-act="qPrev">← Anterior</button><button type="button" class="btn ghost" data-act="allOk">Todo lo demás está bien</button>');
     return head+'<div class="q-prog"><span>Pregunta '+(d.step+1)+' de '+n+'</span><span>'+esc(p.l)+'</span></div><div class="bar"><i style="width:'+pct+'%"></i></div>'+
       '<div class="q-card"><h2 class="q-title">'+esc(q[0])+'</h2>'+(q[1]?'<p class="hint">'+esc(q[1])+'</p>':"")+
       '<div class="q-btns"><button type="button" class="q-btn good" data-act="ans" data-k="'+p.k+'" data-v="'+p.o[0]+'" aria-pressed="'+(v===p.o[0])+'"><span aria-hidden="true">✓</span>'+OPT_TXT[p.o[0]]+'</button><button type="button" class="q-btn bad" data-act="ans" data-k="'+p.k+'" data-v="'+p.o[1]+'" aria-pressed="'+(v===p.o[1])+'"><span aria-hidden="true">✗</span>'+OPT_TXT[p.o[1]]+'</button></div></div>'+
@@ -439,6 +451,9 @@ document.addEventListener("click",function(e){var b=e.target.closest("[data-act]
   if(a==="startVis"){var vx=S.visitas.find(function(y){return y.id===b.getAttribute("data-id");});if(!vx)return;var cl=findCli(vx.cliente)||{};
     S.cur={id:vx.inspeccion||rid(),cliente:cl.nombre||vx.cliente,fecha:today(),reviso:load(KR,"")||S.nombre||String(S.user.email).split("@")[0],responsable:cl.contacto||"",items:{},estado:"en curso",visita:vx.id,creado:Date.now()};
     saveVisit();saveVisita(vx.id,{estado:"en curso",inspeccion:S.cur.id});S.view="visit";render();return;}
+  if(a==="visExit"){S.view="home";S.tab="insp";try{sessionStorage.setItem("jasaTab","insp");}catch(e){}toast("La inspección sigue abierta: la retomas con Continuar.");render();return;}
+  if(a==="visCancel"){visCancel();return;}
+  if(a==="precargar"){precargar();return;}
   if(a==="altaNueva"){var f=nextFolio(visit().cliente);if(!openItem(f))return;S.draft.nueva=true;toast("Folio "+f+" asignado. La etiqueta se imprime en la oficina.");return;}
   if(a==="manual"){S.manual=true;S.view="scan";render();setTimeout(function(){var f=$("ffFolio");if(f)f.focus();},50);return;}
   if(a==="back"){S.view=visit()?"visit":"home";render();return;}

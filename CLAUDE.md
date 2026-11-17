@@ -86,6 +86,11 @@ generados.
   y guarda su avance en `docs('ajustes','sat')` {desde, hasta, pendientes, rfc, error, log}. Pide recibidos vigentes (XML).
   Panel `#facturas`: registrar como egreso, a crédito (suma `saldo` del proveedor) o pago (complemento P resta saldo);
   también se suben XML/ZIP a mano. Proveedores ahora tienen `rfc`.
+- Lista precargada para inspección: `extListaDesdeEquipos(cliente)` (panel) y `precargar()` (app) crean los extintores
+  `PREFIJO-001…` con `numero`, tipo y capacidad desde `equiposDet` cuando el cliente no tiene ninguno (`precargado: true`,
+  ubicación vacía; el técnico la escribe en la primera visita). Se hace sola al guardar un cliente con equipos; en Extintores
+  hay botón por cliente y para todos. En la app la visita tiene "‹ Salir" (sigue en curso) y "Cancelar esta inspección"
+  (borra la inspección con `enqueue({del:true})`); la lista se ordena por No.
 - Llave publicable en el código (es pública por diseño). Nunca poner la Secret key ni contraseñas en el repo.
 - Registro de usuarios cerrado: el personal se da de alta en Authentication › Users y en `public.staff`.
 

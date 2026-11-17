@@ -253,7 +253,7 @@ body.monitor-mode aside,body.monitor-mode header.top,body.monitor-mode .mtabs{di
     <nav id="nav" aria-label="Secciones"></nav>
     <div class="side-foot">
       <span id="syncNote">Conectando…</span>
-      <span id="verNote" style="font-family:var(--mono);font-size:10px;color:var(--faint)">Versión 16/11/2026 15:42</span>
+      <span id="verNote" style="font-family:var(--mono);font-size:10px;color:var(--faint)">Versión 16/11/2026 23:49</span>
       <button type="button" class="link" data-act="backup" id="backupBtn" hidden style="text-align:left;padding:0">Descargar respaldo</button>
       <button type="button" class="link" data-act="importAsk" id="importBtn" hidden style="text-align:left;padding:0">Importar respaldo</button>
       <input type="file" id="importFile" accept=".json,application/json" hidden>
@@ -489,7 +489,9 @@ function submitDrawer(form){
   }
   if(d.kind==="movs"&&body.articulo&&body.cant>0){var inv=byId("inventario",body.articulo),prevM=d.id?byId("movs",d.id):null;
     if(inv)p=p.then(function(){var ch={costo:Math.round(body.monto/body.cant*100)/100,costoFecha:body.fecha};if(!prevM)ch.stock=(+inv.stock||0)+body.cant;return patch("inventario",inv.id,ch);});}
-  p.then(function(){S.drawer=null;renderDrawer();toast(d.id?"Cambios guardados":"Agregado");render();},function(){});
+  var listaN=0;
+  if(d.kind==="clientes"&&eqTotal(body)>0&&!extDeCliente(body.nombre||(d.id&&(byId("clientes",d.id)||{}).nombre)).length){var cliL=Object.assign({},byId("clientes",d.id)||{},body);p=p.then(function(){return extListaDesdeEquipos(cliL);}).then(function(k){listaN=k;});}
+  p.then(function(){S.drawer=null;renderDrawer();toast((d.id?"Cambios guardados":"Agregado")+(listaN?" · se creó su lista de "+listaN+" extintores para la inspección":""));render();},function(){});
 }
 function migrateStages(){
   if(S.migrating)return;var old=S.data.ordenes.filter(function(o){return o._old;});if(!old.length)return;S.migrating=true;
@@ -741,6 +743,13 @@ function precargaDo(){
   rows.forEach(function(r,i){ch=ch.then(function(){return write("extintores",folios[i],{folio:folios[i],cliente:S.extCli,numero:r.numero,ubicacion:r.ubicacion,tipo:r.tipo,cap:r.cap,recarga:r.recarga,vence:r.vence,ph:"",estado:"servicio",creado:Date.now()});});});
   ch.then(function(){S.drawer=null;renderDrawer();toast(rows.length+" extintores creados: "+folios[0]+" a "+folios[folios.length-1]);render();},function(){msg.textContent="Se detuvo. Revisa tu conexión e inténtalo otra vez.";});
 }
+function extDeCliente(n){return S.data.extintores.filter(function(x){return x.cliente===n&&x.estado!=="baja"&&x.estado!=="sin asignar";});}
+function eqTotal(c){return ((c&&c.equiposDet)||[]).reduce(function(a,e){return a+(+e.qty||0);},0);}
+function sinLista(){return S.data.clientes.filter(function(c){return eqTotal(c)>0&&!extDeCliente(c.nombre).length;});}
+// Crea la lista de extintores de un cliente a partir de sus equipos registrados (para que la inspección ya salga precargada)
+function extListaDesdeEquipos(c){if(!c||extDeCliente(c.nombre).length)return Promise.resolve(0);var n=0,ch=Promise.resolve(),t=Date.now();
+  (c.equiposDet||[]).forEach(function(e){for(var i=0;i<(+e.qty||0)&&n<300;i++){var f=nextFolioFor(c.nombre,n);n++;(function(f,num){ch=ch.then(function(){return write("extintores",f,{folio:f,cliente:c.nombre,numero:String(num),ubicacion:"",tipo:e.tipo||"PQS",cap:jasaCap(e.cap),serie:"",recarga:"",vence:c.proximaRecarga||"",ph:"",estado:"servicio",etiquetaPendiente:true,precargado:true,creado:t});});})(f,n);}});
+  return ch.then(function(){return n;});}
 function lblDone(list){if(S.readOnly)return;list.forEach(function(x){if(x&&x.etiquetaPendiente)patch("extintores",x.id,{etiquetaPendiente:false}).catch(function(){});});}
 function extVencidos(){var cm=today().slice(0,7);return S.data.extintores.filter(function(x){return x.estado!=="sin asignar"&&x.estado!=="baja"&&x.vence&&x.vence<cm;});}
 var QRLIB=null;function getQR(){QRLIB=QRLIB||loadScript("https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js");return QRLIB;}
@@ -773,7 +782,7 @@ function vExt(){
   var k=[["Extintores",String(act.length),"registrados con QR","var(--red)"],["Vencidos",String(extVencidos().length),"recarga vencida","var(--rose)"],["Por vencer",String(act.filter(function(x){return x.vence&&x.vence>=cm&&x.vence<=soon;}).length),"próximos 2 meses","var(--amber)"],["Etiquetas listas",String(all.filter(function(x){return x.estado==="sin asignar";}).length),"impresas sin asignar","var(--muted)"],["Reserva y préstamo",String(act.filter(function(x){return x.estado==="reserva"||x.estado==="prestamo";}).length),"fuera de servicio normal","var(--blue)"]];
   var out='<div class="kpis sm">'+k.map(function(x){return '<div class="kpi" style="--k:'+x[3]+'"><span class="eyebrow">'+x[0]+'</span><span class="v">'+x[1]+'</span><span class="n">'+x[2]+'</span></div>';}).join("")+'</div>';
   out+='<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><label class="eyebrow" for="extCli">Cliente</label><select id="extCli" class="inp" style="width:auto;max-width:100%"><option value="">Todos</option>'+clis.map(function(c){return '<option'+(c===S.extCli?" selected":"")+'>'+esc(c)+'</option>';}).join("")+'</select>'+
-    (ro?"":'<span style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap">'+'<button type="button" class="btn sm" data-act="extImp">Importar desde Excel</button>'+(S.extCli?'<button type="button" class="btn ghost sm" data-act="pcAsk">Precargar extintores</button>':"")+(S.data.extintores.some(function(x){return x.etiquetaPendiente&&(!S.extCli||x.cliente===S.extCli);})?'<button type="button" class="btn ghost sm" data-act="extPrintPend">Imprimir etiquetas pendientes</button>':"")+'<button type="button" class="btn ghost sm" data-act="extPrintList">Imprimir etiquetas de la lista</button><button type="button" class="btn ghost sm" data-act="extGenAsk">Generar etiquetas nuevas</button><button type="button" class="btn sm" data-act="new:extintores">+ Alta de extintor</button></span>')+'</div>';
+    (ro?"":'<span style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap">'+'<button type="button" class="btn sm" data-act="extImp">Importar desde Excel</button>'+(S.extCli?'<button type="button" class="btn ghost sm" data-act="pcAsk">Precargar extintores</button>'+(!extDeCliente(S.extCli).length&&eqTotal(findClient(S.extCli))?'<button type="button" class="btn sm" data-act="extLista" data-v="'+esc(S.extCli)+'">Crear lista desde sus equipos ('+eqTotal(findClient(S.extCli))+')</button>':""):(sinLista().length?'<button type="button" class="btn ghost sm" data-act="extListaTodos">Crear listas de '+sinLista().length+(sinLista().length===1?" cliente":" clientes")+' sin extintores</button>':""))+(S.data.extintores.some(function(x){return x.etiquetaPendiente&&(!S.extCli||x.cliente===S.extCli);})?'<button type="button" class="btn ghost sm" data-act="extPrintPend">Imprimir etiquetas pendientes</button>':"")+'<button type="button" class="btn ghost sm" data-act="extPrintList">Imprimir etiquetas de la lista</button><button type="button" class="btn ghost sm" data-act="extGenAsk">Generar etiquetas nuevas</button><button type="button" class="btn sm" data-act="new:extintores">+ Alta de extintor</button></span>')+'</div>';
   out+='<div class="box"><div class="box-h"><h2>'+(S.extCli?esc(S.extCli):"Expedientes")+'</h2><span class="mono" style="color:var(--muted)">'+list.length+'</span></div>'+
     (list.length?'<div class="tbl-wrap"><table><thead><tr><th>FOLIO</th><th>CLIENTE · UBICACIÓN</th><th>EQUIPO</th><th>RECARGA · VENCE</th><th>P.H.</th><th>ÚLTIMA REVISIÓN</th><th>ESTADO</th><th></th></tr></thead><tbody>'+list.map(function(x){
       var st=EXT_EST[x.estado]||EXT_EST.servicio,venc=x.vence&&x.vence<cm,por=x.vence&&!venc&&x.vence<=soon,u=x.ultima||{};
@@ -1657,6 +1666,9 @@ document.addEventListener("click",function(e){
   if(a==="pcDo"){precargaDo();return;}
   if(a==="extImp"){extImpOpen(b.hasAttribute("data-v")?v:(S.extCli||""));return;}
   if(a==="eiTpl"){eiTpl();return;}
+  if(a==="extLista"){b.disabled=true;extListaDesdeEquipos(findClient(v)).then(function(n){toast(n?n+" extintores creados para "+v+". Su inspección ya sale con la lista; las etiquetas quedan en Imprimir etiquetas pendientes.":"Ese cliente ya tiene lista.");render();});return;}
+  if(a==="extListaTodos"){var sl=sinLista(),tot=sl.reduce(function(x,c){return x+eqTotal(c);},0);if(!confirm("Se crean "+tot+" extintores para "+sl.length+" clientes, con folio, tipo y capacidad según sus equipos registrados. La ubicación la escribe el técnico en la primera inspección. ¿Continuar?"))return;
+    b.disabled=true;var chL=Promise.resolve(),nn=0;sl.forEach(function(c){chL=chL.then(function(){return extListaDesdeEquipos(c);}).then(function(k){nn+=k;});});chL.then(function(){toast(nn+" extintores creados para "+sl.length+" clientes");render();});return;}
   if(a==="fxEst"){S.fxEst=v;render();return;}
   if(a==="fxMes"){var fm=(S.fxMes||today().slice(0,7)).split("-").map(Number),fd=new Date(fm[0],fm[1]-1+(+v),1);S.fxMes=fd.getFullYear()+"-"+pad(fd.getMonth()+1);render();return;}
   if(a==="fxVer"){var fc=byId("cfdis",id);if(fc)fxVer(fc);return;}
