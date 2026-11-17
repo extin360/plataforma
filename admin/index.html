@@ -253,7 +253,7 @@ body.monitor-mode aside,body.monitor-mode header.top,body.monitor-mode .mtabs{di
     <nav id="nav" aria-label="Secciones"></nav>
     <div class="side-foot">
       <span id="syncNote">Conectando…</span>
-      <span id="verNote" style="font-family:var(--mono);font-size:10px;color:var(--faint)">Versión 17/11/2026 15:44</span>
+      <span id="verNote" style="font-family:var(--mono);font-size:10px;color:var(--faint)">Versión 17/11/2026 16:00</span>
       <button type="button" class="link" data-act="backup" id="backupBtn" hidden style="text-align:left;padding:0">Descargar respaldo</button>
       <button type="button" class="link" data-act="importAsk" id="importBtn" hidden style="text-align:left;padding:0">Importar respaldo</button>
       <input type="file" id="importFile" accept=".json,application/json" hidden>
@@ -1562,10 +1562,12 @@ function vFacturas(){
 function fxSatBox(){
   if(!(isAdmin()&&S.me))return '<p class="hint">La conexión con el SAT la configura un administrador.</p>';
   var a=byId("ajustes","sat")||{},ef=a.efirma,pend=a.pendientes||[],lg=(a.log||[]).slice(-5).reverse();
-  var est=!ef?["Sin e.firma","var(--muted)"]:a.error?["Con error","var(--rose)"]:pend.length?["Descargando","var(--amber)"]:a.ultimaRevision?["Conectado","var(--green)"]:["Esperando la primera corrida","var(--amber)"];
+  var nueva=ef&&ef.cargada&&(!a.ultimaRevision||String(ef.cargada)>String(a.ultimaRevision)),hoyD=today();
+  var est=!ef?["Sin e.firma","var(--muted)"]:a.error?["Con error","var(--rose)"]:nueva?["Esperando la siguiente corrida","var(--amber)"]:pend.length?["Descargando","var(--amber)"]:a.rfc?["Conectado","var(--green)"]:["Esperando la primera corrida","var(--amber)"];
   return '<div class="box"><div class="box-h"><h2>Conexión con el SAT</h2><span class="pill" style="color:'+est[1]+'">'+est[0]+'</span></div><div class="plan">'+
     '<span class="hint">Cada hora el sistema pide al SAT (Descarga Masiva) las facturas vigentes que le hicieron a JASA y las trae aquí. Las nuevas tardan de unos minutos a unas horas, según el SAT.</span>'+
     (a.error?'<div class="notice"><b>Último error:</b> '+esc(a.error)+'</div>':"")+
+    (a.desde&&a.desde>=hoyD.slice(0,8)+"01"&&!a.hasta?'<div class="notice"><b>La fecha inicial es '+fmtDate(a.desde)+'.</b> Así solo se traen facturas desde ese día. Para traer las anteriores, pon la fecha desde la que quieres (ej. 01/01/2024) y toca Guardar fecha.</div>':"")+
     '<div class="f2" style="font-size:14px"><div><span class="eyebrow">e.firma</span><div>'+(ef?"Cargada el "+esc(String(ef.cargada||"").slice(0,10).split("-").reverse().join("/"))+(a.rfc?" · RFC <b class=\"mono\">"+esc(a.rfc)+"</b>":""):"No se ha subido")+'</div></div><div><span class="eyebrow">Descargado hasta</span><div>'+(a.hasta?fmtDate(a.hasta):"—")+(a.ultimaRevision?' · revisado '+esc(new Date(a.ultimaRevision).toLocaleString("es-MX",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})):"")+'</div></div></div>'+
     (pend.length?'<span class="hint">En proceso en el SAT: '+pend.map(function(x){return fmtDate(x.desde)+" a "+fmtDate(x.hasta)+(x.total!=null?" ("+x.total+" facturas)":"");}).join(" · ")+'</span>':"")+
     (lg.length?'<details><summary class="hint" style="cursor:pointer">Últimos movimientos</summary><ul style="margin:6px 0 0;padding-left:18px;font-size:13px;color:var(--muted)">'+lg.map(function(x){return '<li>'+esc(new Date(x.t).toLocaleString("es-MX",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}))+' · '+esc(x.txt)+'</li>';}).join("")+'</ul></details>':"")+
