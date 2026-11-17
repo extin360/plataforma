@@ -65,13 +65,14 @@ export default async () => {
   const nota = (txt) => { console.log(txt); log.push({ t: new Date().toISOString(), txt }); };
   const guardar = (cambios, cfdis) => rpc("sat_guardar", { clave, ajustes: { ...cambios, log: log.slice(-15), ultimaRevision: new Date().toISOString() }, cfdis: cfdis || [] });
   if (!st.cer || !st.key) { console.log("Sin e.firma cargada"); return new Response("Sin e.firma"); }
-  if (!pass) { await guardar({ error: "Falta la variable SAT_EFIRMA_PASS en Netlify." }); return new Response("Falta SAT_EFIRMA_PASS"); }
+  if (!pass) { console.log("Falta la variable SAT_EFIRMA_PASS en Netlify (o falta volver a publicar después de crearla)."); await guardar({ error: "Falta la variable SAT_EFIRMA_PASS en Netlify." }); return new Response("Falta SAT_EFIRMA_PASS"); }
 
   let fiel;
   try { fiel = Fiel.create(Buffer.from(st.cer, "base64").toString("binary"), Buffer.from(st.key, "base64").toString("binary"), pass); }
-  catch (e) { await guardar({ error: "No se pudo abrir la e.firma: la contraseña (SAT_EFIRMA_PASS) no corresponde al archivo .key, o los archivos no son de la misma e.firma." }); return new Response("e.firma no abre"); }
-  if (!fiel.isValid()) { await guardar({ error: "La e.firma no es válida: está vencida o es un sello digital (CSD). Se necesita la e.firma (FIEL) vigente." }); return new Response("e.firma no válida"); }
+  catch (e) { console.log("No se pudo abrir la e.firma: la contraseña no corresponde al .key"); await guardar({ error: "No se pudo abrir la e.firma: la contraseña (SAT_EFIRMA_PASS) no corresponde al archivo .key, o los archivos no son de la misma e.firma." }); return new Response("e.firma no abre"); }
+  if (!fiel.isValid()) { console.log("La e.firma no es válida (vencida o es CSD)"); await guardar({ error: "La e.firma no es válida: está vencida o es un sello digital (CSD). Se necesita la e.firma (FIEL) vigente." }); return new Response("e.firma no válida"); }
   const rfc = fiel.getRfc();
+  console.log("e.firma abierta · RFC " + rfc + " · descargado hasta " + (aj.hasta || "—") + " · pendientes en el SAT: " + (Array.isArray(aj.pendientes) ? aj.pendientes.length : 0));
   const service = new Service(new FielRequestBuilder(fiel), new HttpsWebClient());
   const pendientes = Array.isArray(aj.pendientes) ? aj.pendientes.slice() : [];
   let hasta = aj.hasta || "", cambios = { rfc, error: null };
@@ -110,6 +111,8 @@ export default async () => {
     } else {
       const ayer = masDias(hoyMx(), -1), desde = hasta ? masDias(hasta, 1) : (aj.desde || inicioMesPasado());
       const reciente = aj.ultimaSolicitud && Date.now() - new Date(aj.ultimaSolicitud).getTime() < 6 * 3600e3;
+      if (desde > ayer) console.log("Al día: ya se pidió hasta " + (hasta || "—") + ". La siguiente solicitud será mañana.");
+      else if (reciente) console.log("Ya se hizo una solicitud hace menos de 6 horas; se espera para no saturar al SAT.");
       if (desde <= ayer && !reciente) {
         const q = QueryParameters.create()
           .withPeriod(DateTimePeriod.createFromValues(desde + " 00:00:00", ayer + " 23:59:59"))
@@ -125,6 +128,7 @@ export default async () => {
       }
     }
     await guardar({ ...cambios, pendientes, hasta });
+    console.log("Listo. Pendientes en el SAT: " + pendientes.length + (pendientes.length ? " (" + pendientes.map((x) => x.desde + " a " + x.hasta + (x.paquetes ? ", " + x.paquetes.length + " paquete(s) por bajar" : ", el SAT aún lo prepara")).join("; ") + ")" : ""));
     return new Response("OK");
   } catch (e) {
     let msg = String(e && e.message || e).slice(0, 300);
