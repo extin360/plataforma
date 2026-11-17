@@ -101,9 +101,11 @@ generados.
   gráficas de una sola serie (Carbón = entradas, Rojo JASA = salidas) en SVG con tooltip y tabla.
 - Monitor de taller (`#monitor`, permiso taller): pantalla completa tipo comandero para una TV.
 - Importar clientes desde Excel (SheetJS 0.18.5 de cdnjs): plantilla descargable; los existentes solo se completan.
-- Importar inspección desde Excel (`extImpOpen`, `eiHoja`/`eiParse`, `eiResolver`, `eiDo`): solo acepta el formato de
-  inspección de JASA (encabezado planta/MES DE/REVISÓ/RESPONSABLE, EXT, UBICACIÓN…, X en BIEN/MAL, FOLIO opcional), una hoja
-  por planta con su cliente; cualquier fila con error bloquea toda la importación. Casa por folio o cliente + No.; filas sin
+- Importar inspección desde Excel (`extImpOpen`, `eiHoja`/`eiParse`, `eiParseSimple`, `eiResolver`, `eiDo`), solo para la
+  migración inicial. Plantilla sencilla (`eiTpl`): títulos en la fila 1 (FOLIO, EXT, UBICACIÓN, TIPO, CAP., FECHA REC.,
+  FECHA VENC., P.H., un título por punto, COMENTARIOS) con OK / X / NA. También acepta el Excel de siempre de JASA
+  (encabezado planta/MES DE/REVISÓ/RESPONSABLE y X en BIEN/MAL). Títulos desconocidos rechazan la hoja; una hoja por planta,
+  con cliente, fecha, revisó y responsable elegidos al subir; cualquier fila con error bloquea toda la importación. Casa por folio o cliente + No.; filas sin
   tipo ni capacidad (STOCK) se omiten. `eiTpl` descarga el formato con los extintores del cliente. Extintores tiene selección
   múltiple (modificar, imprimir, eliminar) y una inspección se puede eliminar (`inspDel`, solo admin).
 - En celular el panel usa barra inferior (Panel, Cotizar, Taller, Clientes, Más) y el menú como hoja.

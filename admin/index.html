@@ -253,7 +253,7 @@ body.monitor-mode aside,body.monitor-mode header.top,body.monitor-mode .mtabs{di
     <nav id="nav" aria-label="Secciones"></nav>
     <div class="side-foot">
       <span id="syncNote">Conectando…</span>
-      <span id="verNote" style="font-family:var(--mono);font-size:10px;color:var(--faint)">Versión 17/11/2026 14:43</span>
+      <span id="verNote" style="font-family:var(--mono);font-size:10px;color:var(--faint)">Versión 17/11/2026 14:55</span>
       <button type="button" class="link" data-act="backup" id="backupBtn" hidden style="text-align:left;padding:0">Descargar respaldo</button>
       <button type="button" class="link" data-act="importAsk" id="importBtn" hidden style="text-align:left;padding:0">Importar respaldo</button>
       <input type="file" id="importFile" accept=".json,application/json" hidden>
@@ -1344,13 +1344,13 @@ function eiHoja(X,ws,nombre){var aoa=X.utils.sheet_to_json(ws,{header:1,raw:true
   (ws["!merges"]||[]).forEach(function(m){var v=(aoa[m.s.r]||[])[m.s.c];for(var r=m.s.r;r<=m.e.r;r++)for(var c=m.s.c;c<=m.e.c;c++){aoa[r]=aoa[r]||[];if(!aoa[r][c])aoa[r][c]=v;}});
   return eiParse(aoa,nombre);}
 function eiParse(aoa,nombre){
-  var H=-1;for(var r=0;r<Math.min(aoa.length,25);r++){var hs=(aoa[r]||[]).map(normH);if(hs.indexOf("ext")>=0&&hs.some(function(h){return h.indexOf("ubicacion")===0;})){H=r;break;}}
-  if(H<0)return {nombre:nombre,error:"No tiene el encabezado del formato de inspección de JASA (columnas EXT y UBICACIÓN)."};
+  var H=-1;for(var r=0;r<Math.min(aoa.length,25);r++){var hs=(aoa[r]||[]).map(normH);if(hs.some(function(h){return h.indexOf("ubicacion")===0;})){H=r;break;}}
+  if(H<0)return {nombre:nombre,error:"No tiene la fila de títulos de la plantilla de JASA (falta la columna UBICACIÓN)."};
   var O=-1;for(var r2=H;r2<=Math.min(H+3,aoa.length-1);r2++){var cnt=(aoa[r2]||[]).filter(function(v){return EI_OPT[normH(v).replace(/\.$/,"")];}).length;if(cnt>=6){O=r2;break;}}
-  if(O<0)return {nombre:nombre,error:"Falta la fila de BIEN / MAL debajo de los puntos de inspección."};
+  if(O<0)return eiParseSimple(aoa,H,nombre);
   var col={},pc={},hdr=aoa[H].map(normH),width=Math.max.apply(null,aoa.slice(H,O+1).map(function(r){return r.length;}));
   function busca(re){for(var c=0;c<width;c++){for(var r=H;r<=O;r++){if(re.test(normH((aoa[r]||[])[c])))return c;}}return -1;}
-  col.numero=hdr.indexOf("ext");col.ubicacion=busca(/^ubicacion/);col.tipo=busca(/^tipo$/);col.cap=busca(/^cap/);col.recarga=busca(/^fecha rec|^recarga|^rec\.?$/);col.vence=busca(/^fecha venc|^vence|^vencimiento/);col.ph=busca(/^p\.?h\.?$|^prueba hidro/);col.comentario=busca(/^comentario|^observacion/);col.folio=busca(/^folio/);
+  col.numero=hdr.indexOf("ext");if(col.numero<0)return {nombre:nombre,error:"Falta la columna EXT."};col.ubicacion=busca(/^ubicacion/);col.tipo=busca(/^tipo$/);col.cap=busca(/^cap/);col.recarga=busca(/^fecha rec|^recarga|^rec\.?$/);col.vence=busca(/^fecha venc|^vence|^vencimiento/);col.ph=busca(/^p\.?h\.?$|^prueba hidro/);col.comentario=busca(/^comentario|^observacion/);col.folio=busca(/^folio/);
   var faltan=["tipo","cap"].filter(function(k){return col[k]<0;});if(faltan.length)return {nombre:nombre,error:"Faltan las columnas "+faltan.map(function(k){return k==="cap"?"CAP.":"TIPO";}).join(" y ")+"."};
   var raros=[];
   for(var c=0;c<width;c++){var op=EI_OPT[normH((aoa[O]||[])[c]).replace(/\.$/,"")];if(!op)continue;var pt=null;for(var r3=O-1;r3>=H&&!pt;r3--)pt=eiPunto((aoa[r3]||[])[c]);
@@ -1367,6 +1367,10 @@ function eiParse(aoa,nombre){
     JASA_PUNTOS.forEach(function(p){var a=String(R[pc[p.k][p.o[0]]]||"").trim(),b=String(R[pc[p.k][p.o[1]]]||"").trim();if(a)marcas++;if(b)marcas++;
       if(a&&b)errs.push(p.l+" marcado "+JASA_OPT_COL[p.o[0]]+" y "+JASA_OPT_COL[p.o[1]]);else if(a)puntos[p.k]=p.o[0];else if(b)puntos[p.k]=p.o[1];});
     if(!tipoT&&!capT&&!marcas){if(ubi||num)rows.push({skip:true,d:{numero:num,ubicacion:ubi},nota:"Sin extintor (stock o lugar vacío): se omite"});continue;}
+    rows.push(eiFila(g,{tipoT:tipoT,capT:capT,ubi:ubi,num:num,errs:errs,puntos:puntos,marcas:marcas}));}
+  if(!rows.filter(function(r){return !r.skip;}).length)return {nombre:nombre,error:"La hoja no tiene extintores debajo del encabezado."};
+  return {nombre:nombre,meta:meta,rows:rows};}
+function eiFila(g,o){var tipoT=o.tipoT,capT=o.capT,ubi=o.ubi,num=o.num,errs=o.errs,puntos=o.puntos,marcas=o.marcas;
     var tipo=eiTipo(tipoT),cap=eiCap(capT),rec=parseMesX(g("recarga")),ven=parseMesX(g("vence")),ph=parseMesX(g("ph"));
     if(!ubi)errs.push("Falta la ubicación");if(tipo===null)errs.push("Tipo no reconocido: “"+tipoT+"”");else if(!tipo)errs.push("Falta el tipo");
     if(cap===null)errs.push("Capacidad no válida: “"+capT+"”");else if(!cap)errs.push("Falta la capacidad");
@@ -1374,9 +1378,23 @@ function eiParse(aoa,nombre){
     if(rec&&!ven){var dv=new Date(rec+"-15T12:00:00");dv.setMonth(dv.getMonth()+12);ven=dv.getFullYear()+"-"+pad(dv.getMonth()+1);}
     var com=g("comentario"),forz=/retir|fuera de servicio|baja/i.test(com)?"Retirar de servicio":"",cm=today().slice(0,7);
     var res=forz||(JASA_PUNTOS.some(function(q){return jasaPuntoMalo(q.k,puntos[q.k]);})||jasaVencido(ven,cm)||(ph&&ph<cm)?"Requiere servicio":"Conforme");
-    rows.push({err:errs.join(" · "),d:{numero:num,ubicacion:ubi,tipo:tipo||"",cap:cap||"",recarga:rec||"",vence:ven||"",ph:ph||"",puntos:puntos,conPuntos:marcas>0,comentario:com,forzar:forz,resultado:res,folioXls:g("folio")?jasaFolio(g("folio"))||g("folio").toUpperCase():""}});}
-  if(!rows.filter(function(r){return !r.skip;}).length)return {nombre:nombre,error:"La hoja no tiene extintores debajo del encabezado."};
-  return {nombre:nombre,meta:meta,rows:rows};}
+    return {err:errs.join(" · "),d:{numero:num,ubicacion:ubi,tipo:tipo||"",cap:cap||"",recarga:rec||"",vence:ven||"",ph:ph||"",puntos:puntos,conPuntos:marcas>0,comentario:com,forzar:forz,resultado:res,folioXls:g("folio")?jasaFolio(g("folio"))||g("folio").toUpperCase():""}};}
+// Plantilla sencilla: títulos en la fila 1 y una columna por punto con OK (bien) / X (mal) / NA (no aplica)
+var EI_SIMPLE_COLS=[["folio",/^folio( qr)?$/],["numero",/^(ext|no\.?|num|numero|#)$/],["ubicacion",/^ubicacion/],["tipo",/^tipo$/],["cap",/^cap(acidad)?\.?( kgs?)?$/],["recarga",/^(fecha )?rec(arga)?\.?$|^ultima recarga/],["vence",/^(fecha )?venc?(e|imiento)?\.?$/],["ph",/^p\.?h\.?$|^prueba hidro/],["comentario",/^comentarios?$|^observaciones?$/]];
+function eiValor(p,v){var n=normH(v).replace(/[.\s]+$/,"");if(!n)return "";if(/^(ok|bien|b|si|libre|l|✓|✔|√)$/.test(n))return p.o[0];if(/^(x|mal|m|no|obst|obstruido|o|✗|✘)$/.test(n))return p.o[1];if(/^(na|n\/a|no aplica|-|—)$/.test(n))return "na";return null;}
+function eiParseSimple(aoa,H,nombre){var hdr=(aoa[H]||[]).map(function(v){return normH(v).replace(/\s+/g," ").trim();}),col={},pc={},raros=[];
+  hdr.forEach(function(h,c){if(!h)return;var hit=EI_SIMPLE_COLS.find(function(x){return x[1].test(h)&&col[x[0]]==null;});if(hit){col[hit[0]]=c;return;}var pt=eiPunto(h);if(pt&&pc[pt.k]==null){pc[pt.k]=c;return;}raros.push(String(aoa[H][c]).trim());});
+  if(raros.length)return {nombre:nombre,error:"Columnas que no son de la plantilla: "+raros.join(", ")+". Descarga la plantilla y no cambies los títulos."};
+  var faltan=["ubicacion","tipo","cap"].filter(function(k){return col[k]==null;}).map(function(k){return {ubicacion:"UBICACIÓN",tipo:"TIPO",cap:"CAP."}[k];}).concat(JASA_PUNTOS.filter(function(p){return pc[p.k]==null;}).map(function(p){return p.l.toUpperCase();}));
+  if(faltan.length)return {nombre:nombre,error:"Faltan las columnas: "+faltan.join(", ")+"."};
+  var rows=[];
+  for(var i=H+1;i<aoa.length;i++){var R0=aoa[i]||[],g=function(k){return col[k]!=null?String(R0[col[k]]==null?"":R0[col[k]]).trim():"";};
+    var tipoT=g("tipo"),capT=g("cap"),ubi=g("ubicacion").toUpperCase().replace(/\s+/g," "),num=g("numero").replace(/\.0$/,""),errs=[],puntos={},marcas=0;
+    JASA_PUNTOS.forEach(function(p){var raw=String(R0[pc[p.k]]==null?"":R0[pc[p.k]]).trim(),v=eiValor(p,raw);if(raw)marcas++;if(v===null)errs.push(p.l+": “"+raw+"” no vale (usa OK, X o NA)");else if(v)puntos[p.k]=v;});
+    if(!tipoT&&!capT&&!marcas){if(ubi||num)rows.push({skip:true,d:{numero:num,ubicacion:ubi},nota:"Sin extintor (stock o lugar vacío): se omite"});continue;}
+    rows.push(eiFila(g,{tipoT:tipoT,capT:capT,ubi:ubi,num:num,errs:errs,puntos:puntos,marcas:marcas}));}
+  if(!rows.filter(function(r){return !r.skip;}).length)return {nombre:nombre,error:"La hoja no tiene extintores debajo de los títulos."};
+  return {nombre:nombre,meta:{cliente:"",mes:"",reviso:"",resp:""},rows:rows,simple:true};}
 function eiAdivina(txt){var t=normH(txt).replace(/planta|pta|#|no\.?/g," ").split(/\s+/).filter(function(w){return w.length>1||/\d/.test(w);});if(!t.length)return "";var best="",sc=0;
   S.data.clientes.forEach(function(c){var w=normH(c.nombre).replace(/planta|pta|#|no\.?/g," ").split(/\s+/),k=t.filter(function(x){return w.indexOf(x)>=0;}).length/Math.max(t.length,w.filter(Boolean).length);if(k>sc){sc=k;best=c.nombre;}});return sc>=0.5?best:"";}
 function eiFechaDe(mes){var t=today();if(!mes||mes===t.slice(0,7))return t;var d=new Date(+mes.slice(0,4),+mes.slice(5,7),0);return mes+"-"+pad(d.getDate());}
@@ -1400,12 +1418,13 @@ function extImportDrawer(){var I=S.extImp,rows=I.rows||[],ok=rows.filter(functio
   var puede=ok.length&&!mal.length&&(!I.insp||gr.length);
   document.getElementById("drawerRoot").innerHTML='<div class="overlay" data-act="closeDrawer"><div class="drawer" role="dialog" aria-modal="true" aria-label="Importar inspección" style="width:min(940px,100%)"><div class="box-h"><h2>Importar inspección de extintores</h2><button type="button" class="btn ghost sm" data-act="closeDrawer">Cerrar</button></div><div class="plan">'+
     (I.cli?'<span>Cliente: <b>'+esc(I.cli)+'</b></span>':'<span>Sube el Excel de inspección de JASA. Puede traer <b>una hoja por planta</b>; a cada hoja le eliges su cliente.</span>')+
-    '<b>1. Formato</b><span class="hint">Solo se acepta el formato de inspección de JASA: encabezado con planta, mes, revisó y responsable; columnas EXT, UBICACIÓN, TIPO, CAP., FECHA REC., FECHA VENC., P.H.; los puntos con su X en BIEN/MAL (Acceso LIBRE/OBST.; Letrero y Presión SI/NO) y COMENTARIOS. '+(I.cli?"La plantilla ya trae los extintores de este cliente.":"")+'</span><div><button type="button" class="btn ghost sm" data-act="eiTpl">Descargar formato'+(I.cli?" de "+esc(I.cli):"")+'</button></div>'+
+    '<b>1. Plantilla</b><span class="hint">Títulos en la fila 1 y un extintor por fila. En cada punto escribe <b>OK</b> si está bien, <b>X</b> si está mal o <b>NA</b> si no aplica (vacío = no revisado). '+(I.cli?"La plantilla ya trae los extintores de este cliente: solo llena los puntos.":"")+' También se acepta tu Excel de inspección de siempre (con X en BIEN/MAL).</span><div><button type="button" class="btn ghost sm" data-act="eiTpl">Descargar plantilla'+(I.cli?" de "+esc(I.cli):"")+'</button></div>'+
     '<b>2. Sube el archivo</b><input type="file" id="eiFile" accept=".xlsx,.xls" class="inp"><span class="hint" id="eiMsg">'+(I.archivo?"Archivo: "+esc(I.archivo):"")+'</span>'+
     (hojasMal.length?'<div class="notice" style="border-color:var(--rose)"><b>'+(hojasMal.length===hojas.length?"Este archivo no se puede importar.":"Algunas hojas no se importan.")+'</b><br>'+hojasMal.map(function(h){return "Hoja “"+esc(h.nombre)+"”: "+esc(h.error);}).join("<br>")+'</div>':"")+
     hojas.filter(function(h){return !h.error;}).map(function(h){var hi=hojas.indexOf(h);return '<div class="f2" style="align-items:end;border-left:3px solid var(--line-2);padding-left:10px"><div><span class="eyebrow">Hoja</span><div><b>'+esc(h.nombre)+'</b>'+(h.meta.cliente?' · '+esc(h.meta.cliente):"")+(h.meta.mes?' · '+esc(monthName(h.meta.mes)):"")+'</div><div class="hint">'+h.rows.filter(function(r){return !r.skip;}).length+' extintores'+(h.meta.reviso?' · revisó '+esc(h.meta.reviso):"")+'</div></div>'+
       (I.cli?"":'<div class="field" style="margin:0"><label for="eiCli'+hi+'">Cliente de esta hoja</label><select class="inp" id="eiCli'+hi+'" data-hoja="'+hi+'"><option value="">Elige el cliente…</option>'+S.data.clientes.slice().sort(function(a,b){return String(a.nombre).localeCompare(String(b.nombre),"es");}).map(function(c){return '<option'+(c.nombre===h.cli?" selected":"")+'>'+esc(c.nombre)+'</option>';}).join("")+'</select></div>')+
-      '<div class="field" style="margin:0"><label for="eiF'+hi+'">Fecha de la inspección</label><input class="inp" type="date" id="eiF'+hi+'" data-hoja="'+hi+'" value="'+esc(h.fecha||"")+'"></div></div>';}).join("")+
+      '<div class="field" style="margin:0"><label for="eiF'+hi+'">Fecha de la inspección</label><input class="inp" type="date" id="eiF'+hi+'" data-hoja="'+hi+'" value="'+esc(h.fecha||"")+'"></div>'+
+      '<div class="field" style="margin:0"><label for="eiRv'+hi+'">Revisó</label><input class="inp" id="eiRv'+hi+'" data-hoja="'+hi+'" value="'+esc(h.reviso||"")+'"></div><div class="field" style="margin:0"><label for="eiRs'+hi+'">Responsable del cliente</label><input class="inp" id="eiRs'+hi+'" data-hoja="'+hi+'" value="'+esc(h.resp||"")+'"></div></div>';}).join("")+
     (rows.length?'<b>3. Reporte de inspección</b><label style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="eiInsp"'+(I.insp?" checked":"")+'> Crear también el reporte de inspección (queda revisado y el cliente lo ve en su portal)</label>'+
       (I.insp?'<span class="hint">'+(gr.length?"Se crean "+gr.length+(gr.length===1?" reporte":" reportes")+": "+gr.map(function(x){return esc(x.cliente)+" ("+fmtDate(x.fecha)+", "+x.rows.length+")";}).join(" · "):"Falta la fecha o el cliente de la hoja.")+'</span>':"")+
       '<b>4. Revisa y confirma</b><span class="hint">'+nuevos+' nuevos · '+act+' ya existen (se actualizan)'+(om?' · '+om+' filas sin extintor (se omiten)':"")+(mal.length?' · <b style="color:var(--rose)">'+mal.length+' con error</b>':"")+'</span>'+
@@ -1416,27 +1435,20 @@ function extImportDrawer(){var I=S.extImp,rows=I.rows||[],ok=rows.filter(functio
           '<td style="color:'+(r.err?"var(--rose)":r.skip?"var(--muted)":r.ex?"var(--blue)":"var(--green)")+'">'+(r.err?esc(r.err):r.skip?esc(r.nota):r.ex?"Actualizar":"Nuevo")+'</td></tr>';}).join("")+'</tbody></table></div>'+
       '<div><button type="button" class="btn" data-act="eiDo"'+(puede?"":" disabled")+'>Importar '+ok.length+' extintores'+(I.insp&&gr.length?" y "+gr.length+(gr.length===1?" reporte":" reportes"):"")+'</button></div>':"")+'</div></div></div>';}
 function extImpOpen(cli){var c=cli?findClient(cli):null;S.extImp={cli:cli||"",hojas:[],rows:[],insp:true,reviso:(S.me&&S.me.nombre)||"",resp:c&&c.contacto||""};extImportDrawer();}
-function extImpLoad(hojas,archivo){var I=S.extImp;I.archivo=archivo;I.hojas=hojas.map(function(h){if(!h.error){h.cli=I.cli||eiAdivina(h.meta.cliente||h.nombre);h.fecha=eiFechaDe(h.meta.mes);h.reviso=h.meta.reviso||I.reviso;h.resp=h.meta.resp||I.resp;}return h;});
+function extImpLoad(hojas,archivo){var I=S.extImp;I.archivo=archivo;I.hojas=hojas.map(function(h){if(!h.error){h.cli=I.cli||eiAdivina(h.meta.cliente||h.nombre)||(S.data.clientes.find(function(c){return c.prefijo&&String(c.prefijo).toUpperCase()===String(h.nombre).trim().toUpperCase();})||{}).nombre||"";h.fecha=eiFechaDe(h.meta.mes);h.reviso=h.meta.reviso||I.reviso;h.resp=h.meta.resp||(h.cli&&(findClient(h.cli)||{}).contacto)||I.resp;}return h;});
   I.insp=I.hojas.some(function(h){return !h.error&&h.rows.some(function(r){return r.d&&r.d.conPuntos;});});eiResolver();extImportDrawer();}
 // Formato descargable: el mismo de JASA, con los extintores del cliente ya llenos
 function eiTpl(){var cli=S.extImp&&S.extImp.cli,c=cli?findClient(cli):null;loadXLSX().then(function(X){
   var exs=cli?extDeCliente(cli).slice().sort(function(a,b){return ((+a.numero||9999)-(+b.numero||9999))||String(a.id).localeCompare(String(b.id));}):[];
-  var est=JASA_PUNTOS.slice(0,7),ot=JASA_PUNTOS.slice(7),pc=7,NC=7+JASA_PUNTOS.length*2+2,blank=function(){return new Array(NC).fill("");};
-  var mes=today().slice(0,7),r1=blank(),r2=blank(),r3=blank(),r4=blank(),h1=blank(),h2=blank(),h3=blank();
-  r1[0]=(cli||"NOMBRE DE LA PLANTA").toUpperCase();r2[0]="INSPECCION DE EXTINTORES";r3[0]="MES DE "+monthName(mes).toUpperCase();r4[0]="REVISÓ: "+String((S.me&&S.me.nombre)||"").toUpperCase();r4[5]="RESPONSABLE: "+String(c&&c.contacto||"").toUpperCase();
-  ["EXT","UBICACIÓN","TIPO","CAP. (KGS)","FECHA REC.","FECHA VENC.","P.H."].forEach(function(t,i){h1[i]=t;});h1[pc]="ESTADO";
-  est.forEach(function(p,i){h2[pc+i*2]=p.l.toUpperCase();});ot.forEach(function(p,i){h1[pc+est.length*2+i*2]=p.l.toUpperCase();});
-  JASA_PUNTOS.forEach(function(p,i){h3[pc+i*2]=JASA_OPT_COL[p.o[0]];h3[pc+i*2+1]=JASA_OPT_COL[p.o[1]];});h1[NC-2]="COMENTARIOS";h1[NC-1]="FOLIO";
-  var fm=function(k){return k?k.slice(5,7)+"/"+k.slice(0,4):"";};
-  var data=exs.length?exs.map(function(x){var r=blank();r[0]=x.numero||"";r[1]=x.ubicacion||"";r[2]=x.tipo==="TIPO K"?"K":x.tipo==="TIPO D"?"D":x.tipo==="AGENTE LIMPIO"?"LIMPIO":x.tipo||"";r[3]=parseFloat(x.cap)||"";r[4]=fm(x.recarga);r[5]=fm(x.vence);r[6]=fm(x.ph);r[NC-1]=x.id;return r;}):[1,2].map(function(n){var r=blank();r[0]=n;r[1]=n===1?"RECEPCION":"PASILLO";r[2]=n===1?"CO2":"PQS";r[3]=n===1?4.5:9;r[4]="11/2026";r[5]="11/2027";return r;});
-  var ws=X.utils.aoa_to_sheet([r1,r2,r3,r4,blank(),h1,h2,h3].concat(data)),M=[];
-  [0,1,2,3,4,5,6].forEach(function(cc){M.push({s:{r:5,c:cc},e:{r:7,c:cc}});});M.push({s:{r:5,c:pc},e:{r:5,c:pc+est.length*2-1}});
-  est.forEach(function(p,i){M.push({s:{r:6,c:pc+i*2},e:{r:6,c:pc+i*2+1}});});ot.forEach(function(p,i){var c0=pc+est.length*2+i*2;M.push({s:{r:5,c:c0},e:{r:6,c:c0+1}});});
-  M.push({s:{r:5,c:NC-2},e:{r:7,c:NC-2}});M.push({s:{r:5,c:NC-1},e:{r:7,c:NC-1}});ws["!merges"]=M;
-  ws["!cols"]=[{wch:5},{wch:28},{wch:8},{wch:9},{wch:10},{wch:11},{wch:9}].concat(JASA_PUNTOS.map(function(){return [{wch:6},{wch:6}];}).reduce(function(a,b){return a.concat(b);},[]),[{wch:28},{wch:12}]);
-  var wb=X.utils.book_new();X.utils.book_append_sheet(wb,ws,(c&&c.prefijo)||"PLANTA");
-  var ins=X.utils.aoa_to_sheet([["Cómo llenar el formato de inspección de JASA"],[""],["• Una hoja por planta. Arriba: nombre de la planta, MES DE <mes> <año>, REVISÓ: y RESPONSABLE:."],["• Una fila por extintor. EXT = número; UBICACIÓN, TIPO (PQS, CO2, K, AFFF, AGUA, D, LIMPIO) y CAP. en kg."],["• FECHA REC., FECHA VENC. y P.H. como MM/AAAA. Si dejas FECHA VENC. vacía se calcula: recarga + 12 meses."],["• En cada punto pon una X en BIEN o en MAL (Acceso: LIBRE u OBST.; Letrero y Presión: SI o NO). Nunca en las dos."],["• Filas de STOCK o lugares sin extintor: deja TIPO y CAP. vacíos y se omiten."],["• No cambies el orden de las columnas ni borres la columna FOLIO: con ella el sistema reconoce cada extintor."],["• Si una fila tiene un error, el sistema no importa nada y te dice qué corregir."]]);ins["!cols"]=[{wch:110}];X.utils.book_append_sheet(wb,ins,"Instrucciones");
-  X.writeFile(wb,"Inspeccion-JASA-"+((c&&c.prefijo)||"formato")+"-"+mes+".xlsx");},function(){toast("No se pudo preparar el formato. Revisa tu conexión.");});}
+  var hd=["FOLIO","EXT","UBICACIÓN","TIPO","CAP. (KG)","FECHA REC.","FECHA VENC.","P.H."].concat(JASA_PUNTOS.map(function(p){return p.l.toUpperCase();}),["COMENTARIOS"]);
+  var fm=function(k){return k?k.slice(5,7)+"/"+k.slice(0,4):"";},vac=JASA_PUNTOS.map(function(){return "";});
+  var data=exs.length?exs.map(function(x){return [x.id,x.numero||"",x.ubicacion||"",x.tipo==="TIPO K"?"K":x.tipo==="TIPO D"?"D":x.tipo==="AGENTE LIMPIO"?"LIMPIO":x.tipo||"",parseFloat(x.cap)||"",fm(x.recarga),fm(x.vence),fm(x.ph)].concat(vac,[""]);}):
+    [["",1,"RECEPCION","CO2",4.5,"11/2026","11/2027",""].concat(JASA_PUNTOS.map(function(p){return p.k==="sello"?"X":"OK";}),["Sello roto"]),["",2,"PASILLO","PQS",9,"06/2026","",""].concat(JASA_PUNTOS.map(function(){return "OK";}),[""])];
+  var ws=X.utils.aoa_to_sheet([hd].concat(data));ws["!cols"]=[{wch:11},{wch:5},{wch:28},{wch:7},{wch:9},{wch:10},{wch:11},{wch:8}].concat(JASA_PUNTOS.map(function(p){return {wch:Math.max(7,p.l.length+2)};}),[{wch:30}]);
+  ws["!autofilter"]={ref:"A1:"+X.utils.encode_col(hd.length-1)+"1"};
+  var wb=X.utils.book_new();var pref=cli?prefixOf(cli):"PLANTA";X.utils.book_append_sheet(wb,ws,String(pref).slice(0,31));
+  var ins=X.utils.aoa_to_sheet([["Plantilla de inspección de JASA (para cargar inspecciones anteriores)"],[""],["• Títulos en la fila 1; no los cambies ni los muevas. Un extintor por fila."],["• Puntos: OK = bien · X = mal · NA = no aplica · vacío = no revisado. (Acceso: X = obstruido. Letrero y Presión: X = no tiene.)"],["• TIPO: PQS, CO2, K, AFFF, AGUA, D o LIMPIO. CAP. en kg (4.5, 6, 9…). Fechas como MM/AAAA. Si dejas FECHA VENC. vacía: recarga + 12 meses."],["• FOLIO: déjalo como viene (así el sistema reconoce cada extintor). En extintores nuevos déjalo vacío y se asigna solo."],["• Filas de STOCK o lugares sin extintor: deja TIPO y CAP. vacíos y se omiten."],["• Una hoja por planta. Al subirlo eliges la planta, la fecha, quién revisó y el responsable."],["• Si una fila tiene un error, no se importa nada y el sistema te dice qué corregir."]]);ins["!cols"]=[{wch:120}];X.utils.book_append_sheet(wb,ins,"Instrucciones");
+  X.writeFile(wb,"Inspeccion-JASA-"+(cli?pref:"plantilla")+".xlsx");},function(){toast("No se pudo preparar la plantilla. Revisa tu conexión.");});}
 function eiDo(){var I=S.extImp,rows=I.rows.filter(function(r){return !r.err&&!r.skip;}),gr=extImpGroups(),ch=Promise.resolve(),n=0,ni=0,ult={},msg=document.getElementById("eiMsg");
   if(I.rows.some(function(r){return r.err;}))return;var btn=document.querySelector('[data-act="eiDo"]');if(btn)btn.disabled=true;
   gr.forEach(function(g){var c=findClient(g.cliente)||{},id="imp-"+Date.now().toString(36)+Math.random().toString(36).slice(2,6),cm=g.fecha.slice(0,7);
@@ -1836,6 +1848,7 @@ document.addEventListener("change",function(e){
     loadXLSX().then(function(X){return ef.arrayBuffer().then(function(buf){var wb=X.read(buf,{type:"array",cellDates:true}),hs=wb.SheetNames.filter(function(n){return !/^instrucc/i.test(n);}).map(function(n){return eiHoja(X,wb.Sheets[n],n);});
       var buenas=hs.filter(function(h){return !h.error;});extImpLoad(buenas.length?hs.filter(function(h){return !h.error||!/encabezado/.test(h.error);}):hs,ef.name);t.value="";});}).catch(function(){em.textContent="No se pudo leer el archivo. Guárdalo como .xlsx e inténtalo otra vez.";});return;}
   if(/^eiCli\d+$/.test(t.id)&&S.extImp){S.extImp.hojas[+t.getAttribute("data-hoja")].cli=t.value;eiResolver();extImportDrawer();return;}
+  if(/^eiR[vs]\d+$/.test(t.id)&&S.extImp){S.extImp.hojas[+t.getAttribute("data-hoja")][/^eiRv/.test(t.id)?"reviso":"resp"]=t.value.trim();eiResolver();extImportDrawer();return;}
   if(/^eiF\d+$/.test(t.id)&&S.extImp){S.extImp.hojas[+t.getAttribute("data-hoja")].fecha=t.value;eiResolver();extImportDrawer();return;}
   if(t.id==="f_fiscalDe"){document.querySelectorAll("#drawerForm .field.fis").forEach(function(el){el.hidden=!!t.value;});return;}
   if(t.id==="finMes"){S.finMes=t.value;render();return;}
