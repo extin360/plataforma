@@ -67,8 +67,9 @@ generados.
   `tools/correos.py`; entonces se apagan las notificaciones simples de Netlify Forms para no duplicar.
 - Ficha del QR: función `public.ficha_extintor(folio)` (sin cliente ni serie).
 - Etiquetas: impresora Zebra ZD420, se imprimen desde el panel (Extintores › Generar etiquetas) con QR a `/e/<folio>`.
-- Inspección: los puntos están en `JASA_PUNTOS` (formato en papel de JASA + manómetro, válvula y soporte; `na` = no aplica,
-  p. ej. manómetro en CO₂). Reporte PDF horizontal con datos de `JASA_EMPRESA`, cliente y firmas de técnico y responsable. Al terminar, la app
+- Inspección: los puntos están en `JASA_PUNTOS`, iguales al Excel de inspección de JASA: recipiente, pintura, seguro, sello,
+  manguera, portamanguera, corneta (BIEN/MAL), acceso (LIBRE/OBST.), letrero y presion (SI/NO). Inspecciones viejas con
+  `manometro` se leen con `jasaPuntosDe()` (manometro → presion). El PDF replica el Excel (columnas BIEN/MAL con X, resumen de vencidos). Reporte PDF horizontal con datos de `JASA_EMPRESA`, cliente y firmas de técnico y responsable. Al terminar, la app
   manda la inspección `por revisar`; en el panel se revisa, `jasaHallazgos()` agrupa lo encontrado por categoría y un
   botón crea la cotización `origen: inspeccion` (la inspección queda `revisada`). La app guarda sin señal en localStorage.
 - Asistencia (`supabase/09_asistencia.sql`): colección `asistencia` (id `<correo>-<ms>[-tipo]`: email, tipo entrada|comida|regreso|salida, t, fecha,
@@ -100,9 +101,11 @@ generados.
   gráficas de una sola serie (Carbón = entradas, Rojo JASA = salidas) en SVG con tooltip y tabla.
 - Monitor de taller (`#monitor`, permiso taller): pantalla completa tipo comandero para una TV.
 - Importar clientes desde Excel (SheetJS 0.18.5 de cdnjs): plantilla descargable; los existentes solo se completan.
-- Importar extintores e inspecciones desde Excel (`extImpOpen`, `extMapRows`, `eiDo`): desde Clientes, el formato del cliente
-  o Extintores. Columna `Cliente` para varios a la vez; casa por folio o por cliente + No.; folios nuevos `PREFIJO-001`;
-  puntos de `JASA_PUNTOS` (Bien/Mal…); crea `inspecciones` `revisada` con `origen: importado` por cliente + fecha.
+- Importar inspección desde Excel (`extImpOpen`, `eiHoja`/`eiParse`, `eiResolver`, `eiDo`): solo acepta el formato de
+  inspección de JASA (encabezado planta/MES DE/REVISÓ/RESPONSABLE, EXT, UBICACIÓN…, X en BIEN/MAL, FOLIO opcional), una hoja
+  por planta con su cliente; cualquier fila con error bloquea toda la importación. Casa por folio o cliente + No.; filas sin
+  tipo ni capacidad (STOCK) se omiten. `eiTpl` descarga el formato con los extintores del cliente. Extintores tiene selección
+  múltiple (modificar, imprimir, eliminar) y una inspección se puede eliminar (`inspDel`, solo admin).
 - En celular el panel usa barra inferior (Panel, Cotizar, Taller, Clientes, Más) y el menú como hoja.
 
 ## Taller
