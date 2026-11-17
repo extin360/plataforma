@@ -72,6 +72,14 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
 .pill{display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;border:1px solid currentColor;border-radius:999px;padding:2px 8px;white-space:nowrap;margin-left:8px;vertical-align:middle}
 .empty{padding:20px 18px;color:var(--muted)}
 .foot{color:var(--faint);font-size:13px;display:flex;flex-wrap:wrap;gap:6px 16px;justify-content:space-between}
+.acts{display:flex;gap:8px;flex-wrap:wrap}
+.modal{position:fixed;inset:0;z-index:50;background:rgba(13,13,13,.55);display:flex;justify-content:center;align-items:flex-end;padding:16px 0 0}
+.msheet{background:var(--panel);width:min(760px,100%);max-height:100%;overflow:auto;border-radius:10px 10px 0 0;box-shadow:0 -6px 24px rgba(0,0,0,.25);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (min-width:700px){.modal{align-items:center;padding:24px}.msheet{border-radius:10px;max-height:90vh}}
+.cal{display:grid;grid-template-columns:repeat(var(--n,12),minmax(0,1fr));gap:3px;padding:16px 14px 10px;align-items:end}
+.cm{display:flex;flex-direction:column;align-items:center;gap:4px;height:120px;justify-content:flex-end}
+.cm i{display:block;width:70%;min-height:3px;background:var(--carbon);border-radius:3px 3px 0 0}.cm.cero i{background:var(--line)}.cm.venc i{background:var(--rose)}
+.cm b{font-family:var(--mono);font-size:13px;min-height:1.2em}.cm span{order:3;font-family:var(--mono);font-size:9px;line-height:1.2;text-align:center;text-transform:uppercase;color:var(--muted);white-space:nowrap}.cm.venc span{color:var(--rose)}
 @media (max-width:540px){.ord{grid-template-columns:minmax(0,1fr)}.ord.ext{grid-template-columns:minmax(0,1fr) auto}.ord .btn{justify-self:start}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
@@ -152,24 +160,35 @@ function enter(code,silent){
     render();
   }).catch(function(){go.disabled=false;$("err").textContent="No pudimos conectarnos. Revisa tu internet e inténtalo otra vez.";});
 }
+function vigencia(v,cur){return !v?["Sin fecha","var(--muted)"]:v<cur?["Vencido","var(--rose)"]:v<=addM(cur,1)?["Por vencer","var(--amber)"]:["Vigente","var(--green)"];}
+function money(n){return "$"+(+n||0).toLocaleString("es-MX",{minimumFractionDigits:2,maximumFractionDigits:2});}
+var IVA=0.08,QST={Enviada:["Por autorizar","var(--amber)"],Autorizada:["Autorizada","var(--green)"],Aceptada:["En proceso","var(--blue)"]};
 function render(){
   var c=DATA.cliente||{},ords=DATA.ordenes||[],eq=(c.equiposDet||[]).filter(function(e){return (+e.qty||0)>0;});
-  var ext=DATA.extintores||[],insps=DATA.inspecciones||[],cur=today().slice(0,7);
-  var tot=ext.length||eq.reduce(function(a,e){return a+(+e.qty||0);},0),pr=c.proximaRecarga||"";
-  if(!pr)pr=ext.map(function(x){return x.vence||"";}).filter(Boolean).sort()[0]||"";
-  var venc=ext.filter(function(x){return x.vence&&x.vence<cur;}).length;
-  var open=ords.filter(function(o){return stg(o)<4;}).length;
-  var prCol=!pr?"var(--muted)":pr<cur?"var(--rose)":pr<=addM(cur,2)?"var(--amber)":"var(--green)";
-  var prNote=!pr?"Te avisamos cuando se registre":pr<cur?"Ya venció: agenda tu recarga":pr<=addM(cur,2)?"Se acerca: agenda tu recarga":"Al día";
+  var ext=DATA.extintores||[],insps=DATA.inspecciones||[],cots=DATA.cotizaciones||[],cur=today().slice(0,7);
+  var tot=ext.length||eq.reduce(function(a,e){return a+(+e.qty||0);},0);
+  var vencidos=ext.filter(function(x){return x.vence&&x.vence<cur;}),prox=ext.map(function(x){return x.vence||"";}).filter(function(v){return v&&v>=cur;}).sort()[0]||"";
+  if(!ext.length&&c.proximaRecarga)prox=c.proximaRecarga;
+  var proxN=prox?ext.filter(function(x){return x.vence===prox;}).length:0,abiertas=ords.filter(function(o){return stg(o)<4;});
+  var k2=vencidos.length?'<div class="kpi" style="--k:var(--rose)"><span class="eyebrow">Recarga vencida</span><span class="v" style="color:var(--rose)">'+vencidos.length+'</span><span class="n">'+(vencidos.length===1?"extintor ya venció":"extintores ya vencieron")+(prox?" · siguiente: "+esc(monthName(prox)):"")+'</span></div>':
+    '<div class="kpi" style="--k:'+(!prox?"var(--muted)":prox<=addM(cur,1)?"var(--amber)":"var(--green)")+'"><span class="eyebrow">Próxima recarga</span><span class="v" style="font-size:28px">'+esc(prox?monthName(prox):"Sin fecha")+'</span><span class="n">'+(prox?(proxN?proxN+(proxN===1?" extintor vence ese mes":" extintores vencen ese mes"):"Fecha registrada"):"Te avisamos cuando se registre")+'</span></div>';
   var h='<div><span class="eyebrow">Cliente</span><h1>'+esc(c.nombre)+'</h1></div>'+
-    '<div class="kpis"><div class="kpi" style="--k:var(--red)"><span class="eyebrow">Extintores registrados</span><span class="v">'+tot+'</span><span class="n">'+(venc?venc+(venc===1?" vencido":" vencidos"):ext.length?"Todos vigentes":eq.length?eq.length+(eq.length===1?" tipo de equipo":" tipos de equipo"):"Sin equipos registrados")+'</span></div>'+
-    '<div class="kpi" style="--k:'+prCol+'"><span class="eyebrow">Próxima recarga</span><span class="v" style="font-size:28px;color:'+prCol+'">'+esc(monthName(pr))+'</span><span class="n">'+prNote+'</span></div>'+
-    '<div class="kpi" style="--k:var(--amber)"><span class="eyebrow">En taller ahora</span><span class="v">'+open+'</span><span class="n">'+(open===1?"orden en servicio":"órdenes en servicio")+'</span></div></div>'+
-    '<div><a class="btn wa" target="_blank" rel="noopener" href="https://wa.me/528781174728?text='+encodeURIComponent("Hola, soy de "+(c.nombre||"")+" y quiero agendar la recarga de mis extintores.")+'">Agendar recarga por WhatsApp</a></div>';
-  h+='<div class="box"><div class="box-h"><h2>Reportes de inspección</h2><span class="eyebrow">'+insps.length+'</span></div>'+(insps.length?insps.map(function(it,i){var its=it.items||[],ok=its.filter(function(x){return x.resultado==="Conforme";}).length,mal=its.length-ok;
+    '<div class="kpis"><div class="kpi" style="--k:var(--red)"><span class="eyebrow">Extintores en esta planta</span><span class="v">'+tot+'</span><span class="n">'+(ext.length?(vencidos.length?(ext.length-vencidos.length)+(ext.length-vencidos.length===1?" vigente · ":" vigentes · ")+vencidos.length+(vencidos.length===1?" vencido":" vencidos"):"Todos vigentes"):eq.length?"Según tu último servicio":"Sin equipos registrados")+'</span></div>'+k2+
+    '<div class="kpi" style="--k:var(--amber)"><span class="eyebrow">Con nosotros en el taller</span><span class="v">'+abiertas.length+'</span><span class="n">'+(abiertas.length?abiertas.map(function(o){return (STAGES[stg(o)]||STAGES[0])[0].toLowerCase();}).filter(function(v,i,a){return a.indexOf(v)===i;}).join(", "):"Nada pendiente en el taller")+'</span></div></div>'+
+    '<div style="display:flex;gap:10px;flex-wrap:wrap"><a class="btn wa" target="_blank" rel="noopener" href="https://wa.me/528781174728?text='+encodeURIComponent("Hola, soy de "+(c.nombre||"")+" y quiero agendar la recarga de mis extintores.")+'">Agendar recarga por WhatsApp</a></div>';
+  // lo que encontramos en la última inspección
+  var ult=insps[0],hall=ult?jasaHallazgos(ult.items||[],String(ult.fecha||cur).slice(0,7)):[];
+  if(hall.length){var txt="Hola, soy de "+(c.nombre||"")+". Quiero cotizar lo que encontraron en la inspección de "+monthName(String(ult.fecha).slice(0,7))+":\n"+hall.map(function(x){return "• "+x.qty+" × "+x.art;}).join("\n");
+    h+='<div class="box" style="border-left:4px solid var(--amber)"><div class="box-h"><h2>Requiere atención</h2><span class="eyebrow">Inspección de '+esc(monthName(String(ult.fecha).slice(0,7)))+'</span></div><div class="tbl"><table><thead><tr><th class="num">CANT.</th><th>QUÉ HACE FALTA</th></tr></thead><tbody>'+hall.map(function(x){return '<tr><td class="num">'+x.qty+'</td><td>'+esc(x.art.charAt(0)+x.art.slice(1).toLowerCase())+'</td></tr>';}).join("")+'</tbody></table></div><div class="ord" style="border-top:1px solid var(--line)"><span class="s">Te mandamos la cotización por WhatsApp o correo.</span><a class="btn sm" target="_blank" rel="noopener" href="https://wa.me/528781174728?text='+encodeURIComponent(txt)+'">Pedir cotización</a></div></div>';}
+  h+='<div class="box"><div class="box-h"><h2>Reportes de inspección</h2><span class="eyebrow">'+insps.length+'</span></div>'+(insps.length?insps.map(function(it,i){var its=it.items||[],mal=its.filter(function(x){return x.resultado!=="Conforme";}).length;
       return '<div class="ord"><div><b style="font-weight:600">Inspección de '+esc(monthName(String(it.fecha||"").slice(0,7)))+'</b>'+(its.length?'<span class="pill" style="color:'+(mal?"var(--amber)":"var(--green)")+'">'+(mal?mal+" por atender":"Todo conforme")+'</span>':'')+'<div class="s">Revisada el '+fd(it.fecha)+' · '+its.length+(its.length===1?" extintor":" extintores")+(it.reviso?' · Técnico: '+esc(it.reviso):'')+'</div></div>'+
-        '<button type="button" class="btn sm" data-insp="'+i+'">Reporte PDF</button></div>';}).join(""):'<div class="empty">Aún no hay inspecciones registradas. Cuando hagamos tu inspección, el reporte aparece aquí.</div>')+'</div>';
-  if(ext.length){h+='<div class="box"><div class="box-h"><h2>Tus extintores</h2><span class="eyebrow">'+ext.length+'</span></div>'+ext.map(function(x){var st=!x.vence?["Sin fecha","var(--muted)"]:x.vence<cur?["Vencido","var(--rose)"]:x.vence<=addM(cur,1)?["Por vencer","var(--amber)"]:["Vigente","var(--green)"];
+        '<div class="acts"><button type="button" class="btn sm ghost" data-ver="'+i+'">Ver</button><button type="button" class="btn sm" data-insp="'+i+'">PDF</button></div></div>';}).join(""):'<div class="empty">Aún no hay inspecciones registradas. Cuando hagamos tu inspección, el reporte aparece aquí.</div>')+'</div>';
+  // calendario de recargas
+  if(ext.length){var meses=[];for(var m=0;m<12;m++)meses.push(addM(cur,m));var cnt={};ext.forEach(function(x){if(x.vence)cnt[x.vence<cur?"v":x.vence]=(cnt[x.vence<cur?"v":x.vence]||0)+1;});var mx=Math.max.apply(null,meses.map(function(k){return cnt[k]||0;}).concat([cnt.v||0,1]));
+    h+='<div class="box"><div class="box-h"><h2>Calendario de recargas</h2><span class="eyebrow">Próximos 12 meses</span></div><div class="cal" style="--n:'+(12+(cnt.v?1:0))+'">'+(cnt.v?'<div class="cm venc"><span>Venc.</span><i style="height:'+Math.round(cnt.v/mx*100)+'%"></i><b>'+cnt.v+'</b></div>':"")+meses.map(function(k){var n=cnt[k]||0,p=k.split("-");return '<div class="cm'+(n?"":" cero")+'"><span>'+MESES[+p[1]-1].slice(0,3)+'<br>'+(p[1]==="01"||k===cur?"’"+p[0].slice(2):"&nbsp;")+'</span><i style="height:'+Math.round(n/mx*100)+'%"></i><b>'+(n||"")+'</b></div>';}).join("")+'</div><p class="s" style="margin:0;padding:0 18px 14px">Cuántos extintores vencen cada mes. Agenda con tiempo y te los recogemos.</p></div>';}
+  if(cots.length)h+='<div class="box"><div class="box-h"><h2>Cotizaciones</h2><span class="eyebrow">'+cots.length+'</span></div>'+cots.map(function(q){var st=QST[q.status]||[q.status,"var(--muted)"],sub=(q.lines||[]).reduce(function(a,l){return a+(parseFloat(l.price)||0)*(+l.qty||0);},0);
+      return '<div class="ord"><div><b style="font-weight:600">Cotización '+esc(q.folio)+'</b><span class="pill" style="color:'+st[1]+'">'+esc(st[0])+'</span><div class="s">'+fd(q.fecha)+' · Total '+money(sub*(1+IVA))+'</div></div><a class="btn sm'+(q.status==="Enviada"?"":" ghost")+'" href="/q/'+encodeURIComponent(q.token)+'" target="_blank" rel="noopener">'+(q.status==="Enviada"?"Ver y autorizar":"Ver")+'</a></div>';}).join("")+'</div>';
+  if(ext.length){h+='<div class="box"><div class="box-h"><h2>Tus extintores</h2><span class="eyebrow">'+ext.length+'</span></div>'+ext.map(function(x){var st=vigencia(x.vence,cur);
       return '<div class="ord ext"><div><b style="font-weight:600">'+(x.numero?"No. "+esc(x.numero)+" · ":"")+'<span style="font-family:var(--mono);font-size:14px">'+esc(x.folio)+'</span></b><span class="pill" style="color:'+st[1]+'">'+st[0]+'</span><div class="s">'+[x.ubicacion?esc(x.ubicacion):"",esc(tl(x.tipo))+" "+esc(String(x.cap||"").toLowerCase()),x.vence?"Vence "+esc(monthName(x.vence)):""].filter(Boolean).join(" · ")+'</div></div>'+
         '<a class="btn sm ghost" href="/e/'+encodeURIComponent(x.folio)+'" target="_blank" rel="noopener">Ficha</a></div>';}).join("")+'</div>';}
   else h+='<div class="box"><div class="box-h"><h2>Tus extintores</h2></div>'+(eq.length?'<div class="tbl"><table><thead><tr><th>TIPO</th><th>CAPACIDAD</th><th class="num">CANTIDAD</th></tr></thead><tbody>'+eq.map(function(e){return '<tr><td>'+esc(tl(e.tipo))+'</td><td>'+esc(String(e.cap||"").toLowerCase())+'</td><td class="num">'+esc(e.qty)+'</td></tr>';}).join("")+'</tbody></table></div>':'<div class="empty">Aún no tenemos tus equipos registrados.</div>')+'</div>';
@@ -179,6 +198,17 @@ function render(){
     '<p class="err" id="pdfMsg" role="status" style="color:var(--muted)"></p>';
   $("view").innerHTML=h;$("view").hidden=false;$("login").hidden=true;$("logout").hidden=false;window.scrollTo(0,0);
 }
+function verInsp(it){var cur=String(it.fecha||today()).slice(0,7),its=(it.items||[]).slice().sort(function(a,b){return (+a.numero||9999)-(+b.numero||9999);}),mal=its.filter(function(x){return x.resultado!=="Conforme";}).length;
+  var m=document.createElement("div");m.className="modal";m.setAttribute("role","dialog");m.setAttribute("aria-modal","true");m.setAttribute("aria-label","Inspección");
+  m.innerHTML='<div class="msheet"><div class="box-h" style="position:sticky;top:0;background:var(--panel);z-index:1"><div><span class="eyebrow">Inspección de '+esc(monthName(cur))+'</span><h2>'+its.length+(its.length===1?" extintor":" extintores")+' · '+(its.length-mal)+((its.length-mal)===1?" conforme":" conformes")+'</h2></div><button type="button" class="btn sm ghost" data-cerrar="1">Cerrar</button></div>'+
+    '<div class="s" style="padding:10px 18px;border-bottom:1px solid var(--line)">Revisada el '+fd(it.fecha)+(it.reviso?' · Técnico: '+esc(it.reviso):"")+(it.responsable?' · Responsable: '+esc(it.responsable):"")+'</div>'+
+    its.map(function(x){var p=jasaPuntosDe(x.puntos),malos=JASA_PUNTOS.filter(function(q){return jasaPuntoMalo(q.k,p[q.k]);}).map(function(q){return q.l+": "+JASA_OPT_LABEL[p[q.k]];}),st=vigencia(x.vence,cur),ok=x.resultado==="Conforme";
+      if(x.vence&&x.vence<=cur)malos.unshift("Recarga vencida");
+      return '<div class="ord"><div><b style="font-weight:600">'+(x.numero?"No. "+esc(x.numero)+" · ":"")+esc(x.ubicacion||"")+'</b><span class="pill" style="color:'+(ok?"var(--green)":x.resultado==="Retirar de servicio"?"var(--rose)":"var(--amber)")+'">'+esc(x.resultado||"")+'</span><div class="s">'+esc(tl(x.tipo))+" "+esc(String(x.cap||"").toLowerCase())+(x.vence?' · <span style="color:'+st[1]+'">vence '+esc(monthName(x.vence))+'</span>':"")+(x.folio?' · '+esc(x.folio):"")+'</div>'+
+        (malos.length||x.comentario?'<div class="s" style="color:var(--ink)">'+esc(malos.join(" · "))+(x.comentario?(malos.length?" · ":"")+esc(x.comentario):"")+'</div>':"")+'</div></div>';}).join("")+
+    '<div class="ord" style="border:0"><span class="s">El reporte oficial con firmas está en PDF.</span><button type="button" class="btn sm" data-insp="'+DATA.inspecciones.indexOf(it)+'">Descargar PDF</button></div></div>';
+  document.body.appendChild(m);document.body.style.overflow="hidden";m.querySelector("[data-cerrar]").focus();}
+function cerrarModal(){var m=document.querySelector(".modal");if(m){m.remove();document.body.style.overflow="";}}
 function loadScript(src){return new Promise(function(ok,no){var t=document.createElement("script");t.src=src;t.onload=ok;t.onerror=no;document.head.appendChild(t);});}
 var libs=null;
 function pdf(o,btn){
@@ -209,7 +239,8 @@ function pdfInsp(it,btn){
 $("code").addEventListener("input",function(e){var v=norm(e.target.value);if(v!==e.target.value)e.target.value=v;});
 $("form").addEventListener("submit",function(e){e.preventDefault();var c=norm($("code").value);if(c.replace(/-/g,"").length<10){$("err").textContent="El código tiene 10 letras y números, por ejemplo ABCD-EFGH-JK.";return;}enter(c,false);});
 $("logout").addEventListener("click",function(){store(KEY,"");DATA=null;$("view").hidden=true;$("view").innerHTML="";$("login").hidden=false;$("logout").hidden=true;$("code").value="";$("code").focus();});
-document.addEventListener("click",function(e){var bi=e.target.closest("[data-insp]");if(bi&&DATA){pdfInsp(DATA.inspecciones[+bi.getAttribute("data-insp")],bi);return;}var b=e.target.closest("[data-i]");if(b&&DATA)pdf(DATA.ordenes[+b.getAttribute("data-i")],b);});
+document.addEventListener("keydown",function(e){if(e.key==="Escape")cerrarModal();});
+document.addEventListener("click",function(e){if(e.target.closest("[data-cerrar]")||e.target.classList.contains("modal")){cerrarModal();return;}var bv=e.target.closest("[data-ver]");if(bv&&DATA){verInsp(DATA.inspecciones[+bv.getAttribute("data-ver")]);return;}var bi=e.target.closest("[data-insp]");if(bi&&DATA){pdfInsp(DATA.inspecciones[+bi.getAttribute("data-insp")],bi);return;}var b=e.target.closest("[data-i]");if(b&&DATA)pdf(DATA.ordenes[+b.getAttribute("data-i")],b);});
 var hc=norm(decodeURIComponent(location.hash.slice(1)));if(hc.replace(/-/g,"").length===10){try{history.replaceState(null,"",location.pathname);}catch(e){}$("code").value=hc;enter(hc,false);}else{var saved=read(KEY);if(saved){$("code").value=saved;enter(saved,true);}}
 })();
 </script>

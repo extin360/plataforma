@@ -253,7 +253,7 @@ body.monitor-mode aside,body.monitor-mode header.top,body.monitor-mode .mtabs{di
     <nav id="nav" aria-label="Secciones"></nav>
     <div class="side-foot">
       <span id="syncNote">Conectando…</span>
-      <span id="verNote" style="font-family:var(--mono);font-size:10px;color:var(--faint)">Versión 17/11/2026 15:16</span>
+      <span id="verNote" style="font-family:var(--mono);font-size:10px;color:var(--faint)">Versión 17/11/2026 15:35</span>
       <button type="button" class="link" data-act="backup" id="backupBtn" hidden style="text-align:left;padding:0">Descargar respaldo</button>
       <button type="button" class="link" data-act="importAsk" id="importBtn" hidden style="text-align:left;padding:0">Importar respaldo</button>
       <input type="file" id="importFile" accept=".json,application/json" hidden>
@@ -1415,6 +1415,7 @@ function eiResolver(){var I=S.extImp,out=[],cuenta={};
   I.rows=out;}
 function extImpGroups(){var I=S.extImp,rows=(I.rows||[]).filter(function(r){return !r.err&&!r.skip;}),g={};if(!I.insp)return [];
   rows.forEach(function(r){var f=r.d.fechaInsp||I.fecha;if(!f)return;var k=r.d.cliente+"|"+f;(g[k]=g[k]||{cliente:r.d.cliente,fecha:f,reviso:r.d.reviso,resp:r.d.resp,rows:[]}).rows.push(r);});return Object.keys(g).map(function(k){return g[k];});}
+function eiPrevias(gr){var out=[];(gr||extImpGroups()).forEach(function(g){S.data.inspecciones.forEach(function(x){if(x.cliente===g.cliente&&String(x.fecha).slice(0,7)===String(g.fecha).slice(0,7)&&out.indexOf(x)<0)out.push(x);});});return out;}
 function extImportDrawer(){var I=S.extImp,rows=I.rows||[],ok=rows.filter(function(r){return !r.err&&!r.skip;}),nuevos=ok.filter(function(r){return !r.ex;}).length,act=ok.length-nuevos,mal=rows.filter(function(r){return r.err;}),om=rows.filter(function(r){return r.skip;}).length,gr=extImpGroups(),cm=today().slice(0,7),hojas=I.hojas||[],hojasMal=hojas.filter(function(h){return h.error;});
   var puede=ok.length&&!mal.length&&(!I.insp||gr.length);
   document.getElementById("drawerRoot").innerHTML='<div class="overlay" data-act="closeDrawer"><div class="drawer" role="dialog" aria-modal="true" aria-label="Importar inspección" style="width:min(940px,100%)"><div class="box-h"><h2>Importar inspección de extintores</h2><button type="button" class="btn ghost sm" data-act="closeDrawer">Cerrar</button></div><div class="plan">'+
@@ -1427,7 +1428,8 @@ function extImportDrawer(){var I=S.extImp,rows=I.rows||[],ok=rows.filter(functio
       '<div class="field" style="margin:0"><label for="eiF'+hi+'">Fecha de la inspección</label><input class="inp" type="date" id="eiF'+hi+'" data-hoja="'+hi+'" value="'+esc(h.fecha||"")+'"></div>'+
       '<div class="field" style="margin:0"><label for="eiRv'+hi+'">Revisó</label><input class="inp" id="eiRv'+hi+'" data-hoja="'+hi+'" value="'+esc(h.reviso||"")+'"></div><div class="field" style="margin:0"><label for="eiRs'+hi+'">Responsable del cliente</label><input class="inp" id="eiRs'+hi+'" data-hoja="'+hi+'" value="'+esc(h.resp||"")+'"></div></div>';}).join("")+
     (rows.length?'<b>3. Reporte de inspección</b><label style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="eiInsp"'+(I.insp?" checked":"")+'> Crear también el reporte de inspección (queda revisado y el cliente lo ve en su portal)</label>'+
-      (I.insp?'<span class="hint">'+(gr.length?"Se crean "+gr.length+(gr.length===1?" reporte":" reportes")+": "+gr.map(function(x){return esc(x.cliente)+" ("+fmtDate(x.fecha)+", "+x.rows.length+")";}).join(" · "):"Falta la fecha o el cliente de la hoja.")+'</span>':"")+
+      (I.insp?'<span class="hint">'+(gr.length?"Se crean "+gr.length+(gr.length===1?" reporte":" reportes")+": "+gr.map(function(x){return esc(x.cliente)+" ("+fmtDate(x.fecha)+", "+x.rows.length+")";}).join(" · "):"Falta la fecha o el cliente de la hoja.")+'</span>'+
+        (eiPrevias(gr).length?'<label style="display:flex;gap:8px;align-items:flex-start" class="notice"><input type="checkbox" id="eiRepl"'+(I.reemplazar!==false?" checked":"")+'> <span>Ya hay '+(eiPrevias(gr).length===1?"un reporte":eiPrevias(gr).length+" reportes")+' del mismo mes ('+eiPrevias(gr).map(function(x){return esc(x.cliente)+" "+fmtDate(x.fecha);}).join(", ")+'). <b>Reemplazarlo</b> para que el cliente no vea dos reportes.</span></label>':""):"")+
       '<b>4. Revisa y confirma</b><span class="hint">'+nuevos+' nuevos · '+act+' ya existen (se actualizan)'+(om?' · '+om+' filas sin extintor (se omiten)':"")+(mal.length?' · <b style="color:var(--rose)">'+mal.length+' con error</b>':"")+'</span>'+
       (mal.length?'<div class="notice" style="border-color:var(--rose)"><b>No se importa nada hasta que corrijas '+(mal.length===1?"esta fila":"estas "+mal.length+" filas")+' en tu Excel y lo vuelvas a subir.</b> Así no se cargan lecturas equivocadas.</div>':"")+
       '<div class="tbl-wrap" style="max-height:380px;overflow:auto"><table><thead><tr><th>EXT</th><th>FOLIO</th><th>UBICACIÓN</th><th>EQUIPO</th><th>VENCE</th>'+(I.insp?"<th>RESULTADO</th>":"")+'<th>QUÉ PASA</th></tr></thead><tbody>'+rows.map(function(r){var d=r.d,ex=r.ex||{},ve=d.vence||ex.vence;
@@ -1452,6 +1454,7 @@ function eiTpl(){var cli=S.extImp&&S.extImp.cli,c=cli?findClient(cli):null;loadX
   X.writeFile(wb,"Inspeccion-JASA-"+(cli?pref:"plantilla")+".xlsx");},function(){toast("No se pudo preparar la plantilla. Revisa tu conexión.");});}
 function eiDo(){var I=S.extImp,rows=I.rows.filter(function(r){return !r.err&&!r.skip;}),gr=extImpGroups(),ch=Promise.resolve(),n=0,ni=0,ult={},msg=document.getElementById("eiMsg");
   if(I.rows.some(function(r){return r.err;}))return;var btn=document.querySelector('[data-act="eiDo"]');if(btn)btn.disabled=true;
+  if(I.insp&&I.reemplazar!==false)eiPrevias(gr).forEach(function(x){S.data.extintores.forEach(function(e){if(e.ultima&&e.ultima.inspeccion===x.id)ch=ch.then(function(){return patch("extintores",e.id,{ultima:null});});});ch=ch.then(function(){return remove("inspecciones",x.id);});});
   gr.forEach(function(g){var c=findClient(g.cliente)||{},id="imp-"+Date.now().toString(36)+Math.random().toString(36).slice(2,6),cm=g.fecha.slice(0,7);
     var items=g.rows.map(function(r,i){var d=r.d,ex=r.ex||{};var it={folio:d.folio,numero:d.numero||ex.numero||"",n:i+1,ubicacion:d.ubicacion||ex.ubicacion||"",tipo:d.tipo||ex.tipo||"",cap:d.cap||ex.cap||"",recarga:d.recarga||ex.recarga||"",vence:d.vence||ex.vence||"",ph:d.ph||ex.ph||"",puntos:d.puntos,chips:[],nota:d.comentario,forzar:d.forzar,comentario:d.comentario,vencido:jasaVencido(d.vence||ex.vence,cm),resultado:d.resultado};
       ult[d.folio]={fecha:g.fecha,resultado:d.resultado,puntos:d.puntos,comentario:d.comentario,tecnico:g.reviso||"",inspeccion:id};return it;});
@@ -1850,6 +1853,7 @@ document.addEventListener("change",function(e){
       var buenas=hs.filter(function(h){return !h.error;});extImpLoad(buenas.length?hs.filter(function(h){return !h.error||!/encabezado/.test(h.error);}):hs,ef.name);t.value="";});}).catch(function(){em.textContent="No se pudo leer el archivo. Guárdalo como .xlsx e inténtalo otra vez.";});return;}
   if(/^eiCli\d+$/.test(t.id)&&S.extImp){S.extImp.hojas[+t.getAttribute("data-hoja")].cli=t.value;eiResolver();extImportDrawer();return;}
   if(/^eiR[vs]\d+$/.test(t.id)&&S.extImp){S.extImp.hojas[+t.getAttribute("data-hoja")][/^eiRv/.test(t.id)?"reviso":"resp"]=t.value.trim();eiResolver();extImportDrawer();return;}
+  if(t.id==="eiRepl"&&S.extImp){S.extImp.reemplazar=t.checked;return;}
   if(/^eiF\d+$/.test(t.id)&&S.extImp){S.extImp.hojas[+t.getAttribute("data-hoja")].fecha=t.value;eiResolver();extImportDrawer();return;}
   if(t.id==="f_fiscalDe"){document.querySelectorAll("#drawerForm .field.fis").forEach(function(el){el.hidden=!!t.value;});return;}
   if(t.id==="finMes"){S.finMes=t.value;render();return;}

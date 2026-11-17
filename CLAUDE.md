@@ -51,7 +51,11 @@ generados.
   quien no es admin solo ve sus `visitas`.
 - Acceso: RLS; solo correos en `public.staff` leen y escriben según sus permisos. `anon` no lee nada.
 - Clientes del portal: función `public.portal(codigo)` con el `codigoPortal` del cliente (XXXX-XXXX-XX); desde
-  `08_portal_inspecciones.sql` también devuelve `extintores` e `inspecciones` (menos las `en curso`) y el portal descarga el PDF de inspección.
+  `08_portal_inspecciones.sql` también devuelve `extintores` e `inspecciones` (menos las `en curso`) y el portal descarga el PDF de inspección;
+  desde `12_portal_cotizaciones.sql`, `cotizaciones` (Enviada/Autorizada/Aceptada con `token`). El portal calcula la próxima
+  recarga y los vencidos con los extintores (no con `proximaRecarga`), muestra "Requiere atención" (`jasaHallazgos` de la última
+  inspección), calendario de recargas a 12 meses, Ver inspección (ventana) y PDF. Al importar una inspección del mismo cliente
+  y mes se ofrece reemplazar la anterior.
 - Sitio público: función `public.solicitar_cotizacion(datos)` crea una cotización `Nueva` con `origen: web` (con `email`
   desde `06_cotizacion_correo.sql`) y manda copia a Netlify Forms (`solicitud-cotizacion`) para el aviso por correo.
   Al aceptarla en el panel se crea el cliente con los datos de la solicitud (o se llenan los que le falten).
