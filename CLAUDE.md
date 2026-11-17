@@ -66,7 +66,8 @@ generados.
   Con Resend (`RESEND_API_KEY`, `JASA_CORREO_AVISOS`, `JASA_CORREO_REMITENTE` en Netlify) los avisos salen con el marco de
   `tools/correos.py`; entonces se apagan las notificaciones simples de Netlify Forms para no duplicar.
 - Ficha del QR: función `public.ficha_extintor(folio)` (sin cliente ni serie).
-- Etiquetas: impresora Zebra ZD420, se imprimen desde el panel (Extintores › Generar etiquetas) con QR a `/e/<folio>`.
+- Etiquetas: impresora Zebra ZD420, etiqueta de 50 × 25 mm (predeterminada; `LABEL_SIZES`), se imprimen desde el panel
+  (Extintores › Generar etiquetas, Etiqueta, Imprimir pendientes o selección) con QR a `/e/<folio>`.
 - Inspección: los puntos están en `JASA_PUNTOS`, iguales al Excel de inspección de JASA: recipiente, pintura, seguro, sello,
   manguera, portamanguera, corneta (BIEN/MAL), acceso (LIBRE/OBST.), letrero y presion (SI/NO). Inspecciones viejas con
   `manometro` se leen con `jasaPuntosDe()` (manometro → presion). El PDF replica el Excel (columnas BIEN/MAL con X, resumen de vencidos). Reporte PDF horizontal con datos de `JASA_EMPRESA`, cliente y firmas de técnico y responsable. Al terminar, la app

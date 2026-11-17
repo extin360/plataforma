@@ -253,7 +253,7 @@ body.monitor-mode aside,body.monitor-mode header.top,body.monitor-mode .mtabs{di
     <nav id="nav" aria-label="Secciones"></nav>
     <div class="side-foot">
       <span id="syncNote">Conectando…</span>
-      <span id="verNote" style="font-family:var(--mono);font-size:10px;color:var(--faint)">Versión 17/11/2026 14:55</span>
+      <span id="verNote" style="font-family:var(--mono);font-size:10px;color:var(--faint)">Versión 17/11/2026 15:16</span>
       <button type="button" class="link" data-act="backup" id="backupBtn" hidden style="text-align:left;padding:0">Descargar respaldo</button>
       <button type="button" class="link" data-act="importAsk" id="importBtn" hidden style="text-align:left;padding:0">Importar respaldo</button>
       <input type="file" id="importFile" accept=".json,application/json" hidden>
@@ -755,11 +755,12 @@ function extVencidos(){var cm=today().slice(0,7);return S.data.extintores.filter
 var QRLIB=null;function getQR(){QRLIB=QRLIB||loadScript("https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js");return QRLIB;}
 function qrSvg(text){var q=window.qrcode(0,"M");q.addData(text);q.make();return q.createSvgTag({cellSize:4,margin:0,scalable:true});}
 S.lblSize=(function(){try{return localStorage.getItem("jasaLbl")||"";}catch(e){return "";}})();
-var LABEL_SIZES={"51x25":[51,25],"76x51":[76,51],"102x51":[102,51]};
+var LABEL_SIZES={"50x25":[50,25],"51x25":[51,25],"76x51":[76,51],"102x51":[102,51]};
+if(!S.lblSize||S.lblSize==="51x25")S.lblSize="50x25";
 function printLabels(list,size){
-  var dim=LABEL_SIZES[size]||LABEL_SIZES["51x25"],w=dim[0],h=dim[1],q=Math.min(h-4,w/2.3);
+  var dim=LABEL_SIZES[size]||LABEL_SIZES["50x25"],w=dim[0],h=dim[1],q=Math.min(h-4,w/2.3);
   var win=window.open("","_blank");if(!win){toast("Permite las ventanas emergentes para imprimir las etiquetas.");return;}
-  win.document.write("<!doctype html><html><head><meta charset='utf-8'><title>Etiquetas JASA</title><link rel='stylesheet' href='https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@900&family=IBM+Plex+Mono:wght@600&family=Barlow:wght@500&display=swap'><style>@page{size:"+w+"mm "+h+"mm;margin:0}*{box-sizing:border-box}body{margin:0;font-family:Barlow,Arial,sans-serif;color:#000}.l{width:"+w+"mm;height:"+h+"mm;display:flex;align-items:center;gap:2mm;padding:2mm;page-break-after:always;overflow:hidden}.q{width:"+q+"mm;height:"+q+"mm;flex:none}.q svg{width:100%;height:100%;display:block}.t{display:flex;flex-direction:column;justify-content:center;min-width:0;line-height:1}.e{font-size:"+(h<30?5.5:8)+"pt;letter-spacing:.18em}.j{font-family:'Saira Condensed',Impact,sans-serif;font-weight:900;font-style:italic;font-size:"+(h<30?17:28)+"pt;line-height:.9;border-bottom:1.2mm solid #000;padding-bottom:.6mm;margin-bottom:1mm}.f{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:"+(h<30?8:12)+"pt}.s{font-size:"+(h<30?5:7)+"pt;margin-top:.6mm}.u{font-size:"+(h<30?5.5:8)+"pt;margin-top:.5mm;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}</style></head><body><p style='font:14px Arial;padding:12px'>Preparando etiquetas…</p></body></html>");
+  win.document.write("<!doctype html><html><head><meta charset='utf-8'><title>Etiquetas JASA</title><link rel='stylesheet' href='https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@900&family=IBM+Plex+Mono:wght@600&family=Barlow:wght@500&display=swap'><style>@page{size:"+w+"mm "+h+"mm;margin:0}*{box-sizing:border-box}body{margin:0;font-family:Barlow,Arial,sans-serif;color:#000}.l{width:"+w+"mm;height:"+h+"mm;display:flex;align-items:center;gap:2mm;padding:2mm;page-break-after:always;overflow:hidden}.l:last-child{page-break-after:auto}.q{width:"+q+"mm;height:"+q+"mm;flex:none}.q svg{width:100%;height:100%;display:block}.t{display:flex;flex-direction:column;justify-content:center;min-width:0;line-height:1}.e{font-size:"+(h<30?5.5:8)+"pt;letter-spacing:.18em}.j{font-family:'Saira Condensed',Impact,sans-serif;font-weight:900;font-style:italic;font-size:"+(h<30?17:28)+"pt;line-height:.9;border-bottom:1.2mm solid #000;padding-bottom:.6mm;margin-bottom:1mm}.f{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:"+(h<30?8:12)+"pt}.s{font-size:"+(h<30?5:7)+"pt;margin-top:.6mm}.u{font-size:"+(h<30?5.5:8)+"pt;margin-top:.5mm;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}</style></head><body><p style='font:14px Arial;padding:12px'>Preparando etiquetas…</p></body></html>");
   win.document.close();
   getQR().then(function(){
     win.document.body.innerHTML=list.map(function(x){return "<div class='l'><div class='q'>"+qrSvg("https://jasaextintores.com/e/"+x.folio)+"</div><div class='t'><span class='e'>EXTINTORES</span><span class='j'>JASA</span><span class='f'>"+esc(x.folio)+"</span>"+(x.ubicacion||x.numero?"<span class='u'>"+esc((x.numero?"No. "+x.numero+" · ":"")+(x.ubicacion||""))+"</span>":"")+"<span class='s'>Escanea · 878 783 3216</span></div></div>";}).join("");
@@ -768,7 +769,7 @@ function printLabels(list,size){
   },function(){toast("No se pudo cargar el generador de QR. Revisa tu conexión.");});
 }
 function genLabels(){
-  var n=Math.max(1,Math.min(200,parseInt((document.getElementById("lbCant")||{}).value,10)||0)),size=(document.getElementById("lbSize")||{}).value||"51x25";S.lblSize=size;try{localStorage.setItem("jasaLbl",size);}catch(e){}
+  var n=Math.max(1,Math.min(200,parseInt((document.getElementById("lbCant")||{}).value,10)||0)),size=(document.getElementById("lbSize")||{}).value||"50x25";S.lblSize=size;try{localStorage.setItem("jasaLbl",size);}catch(e){}
   var start=S.data.extintores.reduce(function(a,x){return Math.max(a,folioNum(x.id));},0),list=[];
   for(var i=1;i<=n;i++)list.push({folio:"JX-"+String(start+i).padStart(6,"0")});
   var ch=Promise.resolve();list.forEach(function(x){ch=ch.then(function(){return write("extintores",x.folio,{folio:x.folio,estado:"sin asignar",creado:Date.now()});});});
@@ -818,7 +819,7 @@ function extGenDrawer(){
   var nx=nextFolio();
   document.getElementById("drawerRoot").innerHTML='<div class="overlay" data-act="closeDrawer"><div class="drawer" role="dialog" aria-modal="true" aria-label="Generar etiquetas"><div class="box-h"><h2>Generar etiquetas</h2><button type="button" class="btn ghost sm" data-act="closeDrawer">Cerrar</button></div><div class="plan">'+
     '<span>Se crean folios nuevos sin asignar, empezando en <b class="mono">'+nx+'</b>, y se abre la ventana para imprimir en la Zebra. Cada extintor se da de alta al escanear su etiqueta por primera vez con la app del técnico.</span>'+
-    '<div class="f2"><div class="field"><label for="lbCant">Cuántas etiquetas</label><input class="inp" id="lbCant" type="number" min="1" max="200" value="50"></div><div class="field"><label for="lbSize">Tamaño de etiqueta</label><select class="inp" id="lbSize"><option value="51x25">51 × 25 mm (2 × 1 in)</option><option value="76x51">76 × 51 mm (3 × 2 in)</option><option value="102x51">102 × 51 mm (4 × 2 in)</option></select></div></div>'+
+    '<div class="f2"><div class="field"><label for="lbCant">Cuántas etiquetas</label><input class="inp" id="lbCant" type="number" min="1" max="200" value="50"></div><div class="field"><label for="lbSize">Tamaño de etiqueta</label><select class="inp" id="lbSize"><option value="50x25"'+(S.lblSize==="50x25"?" selected":"")+'>50 × 25 mm</option><option value="51x25"'+(S.lblSize==="51x25"?" selected":"")+'>51 × 25 mm (2 × 1 in)</option><option value="76x51"'+(S.lblSize==="76x51"?" selected":"")+'>76 × 51 mm (3 × 2 in)</option><option value="102x51"'+(S.lblSize==="102x51"?" selected":"")+'>102 × 51 mm (4 × 2 in)</option></select></div></div>'+
     '<span class="hint">En la ventana de impresión elige la Zebra ZD420 y el mismo tamaño de etiqueta en sus preferencias, con márgenes en cero y escala al 100 %.</span>'+
     '<div><button type="button" class="btn" data-act="extGenDo">Crear e imprimir</button></div></div></div></div>';
 }
@@ -1712,9 +1713,9 @@ document.addEventListener("click",function(e){
   if(a==="delPrice"){remove("precios",id).then(function(){toast("Precio quitado de tu lista");});return;}
   if(a==="extGenAsk"){extGenDrawer();return;}
   if(a==="extGenDo"){genLabels();return;}
-  if(a==="extPrint"){var ex=byId("extintores",id);if(ex){printLabels([{folio:ex.id,ubicacion:ex.ubicacion,numero:ex.numero}],S.lblSize||"51x25");lblDone([ex]);}return;}
-  if(a==="extPrintList"){var pl=S.data.extintores.filter(function(x){return (!S.extCli||x.cliente===S.extCli)&&x.estado!=="baja"&&match(x);}).sort(function(a,b){return (+a.numero||0)-(+b.numero||0)||String(a.id).localeCompare(String(b.id));}).map(function(x){return {folio:x.id,ubicacion:x.ubicacion,numero:x.numero};});if(!pl.length){toast("No hay extintores en la lista.");return;}printLabels(pl,S.lblSize||"51x25");lblDone(pl.map(function(x){return byId("extintores",x.folio);}));return;}
-  if(a==="extPrintPend"){var pp=S.data.extintores.filter(function(x){return x.etiquetaPendiente&&(!S.extCli||x.cliente===S.extCli);});if(!pp.length)return;printLabels(pp.map(function(x){return {folio:x.id,ubicacion:x.ubicacion,numero:x.numero};}),S.lblSize||"51x25");lblDone(pp);return;}
+  if(a==="extPrint"){var ex=byId("extintores",id);if(ex){printLabels([{folio:ex.id,ubicacion:ex.ubicacion,numero:ex.numero}],S.lblSize||"50x25");lblDone([ex]);}return;}
+  if(a==="extPrintList"){var pl=S.data.extintores.filter(function(x){return (!S.extCli||x.cliente===S.extCli)&&x.estado!=="baja"&&match(x);}).sort(function(a,b){return (+a.numero||0)-(+b.numero||0)||String(a.id).localeCompare(String(b.id));}).map(function(x){return {folio:x.id,ubicacion:x.ubicacion,numero:x.numero};});if(!pl.length){toast("No hay extintores en la lista.");return;}printLabels(pl,S.lblSize||"50x25");lblDone(pl.map(function(x){return byId("extintores",x.folio);}));return;}
+  if(a==="extPrintPend"){var pp=S.data.extintores.filter(function(x){return x.etiquetaPendiente&&(!S.extCli||x.cliente===S.extCli);});if(!pp.length)return;printLabels(pp.map(function(x){return {folio:x.id,ubicacion:x.ubicacion,numero:x.numero};}),S.lblSize||"50x25");lblDone(pp);return;}
   if(a==="extBlank"){S.extShowBlank=true;render();return;}
   if(a==="extOfCli"){S.extCli=v;S.screen="extintores";render();window.scrollTo(0,0);return;}
   if(a==="inspOpen"){S.inspSel=id;S.hall=null;render();window.scrollTo(0,0);return;}
@@ -1762,7 +1763,7 @@ document.addEventListener("click",function(e){
   if(a==="extSelNone"){S.extSel={};render();return;}
   if(a==="extBulkEdit"){extBulkDrawer();return;}
   if(a==="extBulkDo"){extBulkDo();return;}
-  if(a==="extBulkPrint"){var bl=extSelIds().map(function(k){var x=byId("extintores",k);return {folio:x.id,ubicacion:x.ubicacion,numero:x.numero};});printLabels(bl,S.lblSize||"51x25");return;}
+  if(a==="extBulkPrint"){var bl=extSelIds().map(function(k){var x=byId("extintores",k);return {folio:x.id,ubicacion:x.ubicacion,numero:x.numero};});printLabels(bl,S.lblSize||"50x25");return;}
   if(a==="extBulkDel"){var bd=extSelIds();if(!bd.length)return;if(!confirm("¿Eliminar "+bd.length+(bd.length===1?" extintor":" extintores")+"? Se borran del sistema y de la lista del cliente. Los reportes de inspección que ya existen no cambian. No se puede deshacer."))return;
     b.disabled=true;var pd=Promise.resolve();bd.forEach(function(k){pd=pd.then(function(){return remove("extintores",k);});});pd.then(function(){S.extSel={};toast(bd.length+" extintores eliminados");render();});return;}
   if(a==="inspDel"){var idl=byId("inspecciones",S.inspSel);if(!idl)return;if(!confirm("¿Eliminar la inspección de "+idl.cliente+" del "+fmtDate(idl.fecha)+"? Se borra el reporte (también del portal del cliente). Los extintores se quedan. No se puede deshacer."))return;
