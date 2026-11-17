@@ -70,7 +70,16 @@ export default async () => {
   let fiel;
   try { fiel = Fiel.create(Buffer.from(st.cer, "base64").toString("binary"), Buffer.from(st.key, "base64").toString("binary"), pass); }
   catch (e) { console.log("No se pudo abrir la e.firma: la contraseña no corresponde al .key"); await guardar({ error: "No se pudo abrir la e.firma: la contraseña (SAT_EFIRMA_PASS) no corresponde al archivo .key, o los archivos no son de la misma e.firma." }); return new Response("e.firma no abre"); }
-  if (!fiel.isValid()) { console.log("La e.firma no es válida (vencida o es CSD)"); await guardar({ error: "La e.firma no es válida: está vencida o es un sello digital (CSD). Se necesita la e.firma (FIEL) vigente." }); return new Response("e.firma no válida"); }
+  if (!fiel.isValid()) {
+    let msg = "La e.firma no es válida: está vencida o es un sello digital (CSD). Se necesita la e.firma (FIEL) vigente.";
+    try {
+      const cert = fiel._credential.certificate(), hasta = new Date(cert.validTo()).toISOString().slice(0, 10);
+      const quien = (cert.legalName && cert.legalName()) || "", rfcC = (cert.rfc && cert.rfc()) || "";
+      if (!cert.satType().isFiel()) msg = "Los archivos que se subieron son el SELLO DIGITAL (CSD, el de facturar) de " + (quien || rfcC) + ", no la e.firma. Sube los .cer y .key de la e.firma (FIEL), los que usas para entrar al portal del SAT con e.firma. El CSD lo vamos a necesitar después para facturar con Factorum.";
+      else if (!cert.validOn()) msg = "La e.firma de " + (quien || rfcC) + " venció el " + hasta.split("-").reverse().join("/") + ". Renuévala en el SAT (SAT ID o en oficina) y sube los archivos nuevos.";
+    } catch (e) { /* se queda el mensaje general */ }
+    console.log(msg); await guardar({ error: msg }); return new Response("e.firma no válida");
+  }
   const rfc = fiel.getRfc();
   console.log("e.firma abierta · RFC " + rfc + " · descargado hasta " + (aj.hasta || "—") + " · pendientes en el SAT: " + (Array.isArray(aj.pendientes) ? aj.pendientes.length : 0));
   const service = new Service(new FielRequestBuilder(fiel), new HttpsWebClient());
