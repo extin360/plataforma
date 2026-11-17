@@ -97,6 +97,10 @@ generados.
   ubicación vacía; el técnico la escribe en la primera visita). Se hace sola al guardar un cliente con equipos; en Extintores
   hay botón por cliente y para todos. En la app la visita tiene "‹ Salir" (sigue en curso) y "Cancelar esta inspección"
   (borra la inspección con `enqueue({del:true})`); la lista se ordena por No.
+- Vencimiento de recarga: nunca se captura; `jasaVence(recarga, tipo)` (`JASA_VIGENCIA`, 12 meses todos los tipos, NOM-154) en
+  formulario del panel (campo de solo lectura), app, importación y edición masiva. `jasaRecargaFutura()` bloquea recargas en
+  meses futuros. Extintores avisa y corrige los que no cuadran (`extMalVence`).
+- Portal: "Ver" inspección muestra las hojas del PDF (`jasaInspeccionPages`) escaladas en pantalla (tocar = acercar), sin descargar.
 - Llave publicable en el código (es pública por diseño). Nunca poner la Secret key ni contraseñas en el repo.
 - Registro de usuarios cerrado: el personal se da de alta en Authentication › Users y en `public.staff`.
 

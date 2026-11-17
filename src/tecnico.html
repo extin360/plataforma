@@ -326,7 +326,7 @@ function vForm(){
       '<div class="field"><label for="fUbi">Ubicación</label><input class="inp" id="fUbi" value="'+esc(d.ubicacion||"")+'" placeholder="Ej. Recepción, pasillo 3" autocomplete="off"></div>'+
       '<div class="field"><label for="fTipo">Tipo</label>'+tipoSel+'</div>'+capChips(d)+
       (nuevo?'<div class="field"><label for="fSerie">No. de serie (opcional)</label><input class="inp" id="fSerie" value="'+esc(d.serie||"")+'" autocomplete="off"></div>':"")+
-      '<div class="two"><div class="field"><label for="fRec">Última recarga</label><input class="inp" id="fRec" type="month" value="'+esc(d.recarga||"")+'"></div><div class="field"><label for="fVen">Vence</label><input class="inp" id="fVen" type="month" value="'+esc(d.vence||"")+'"></div></div>'+
+      '<div class="two"><div class="field"><label for="fRec">Última recarga</label><input class="inp" id="fRec" type="month" value="'+esc(d.recarga||"")+'"></div><div class="field"><label for="fVen">Vence (automático)</label><input class="inp" id="fVen" type="month" readonly tabindex="-1" style="background:var(--panel-2)" value="'+esc(jasaVence(d.recarga,d.tipo)||d.vence||"")+'"></div></div>'+
       '<div class="field"><label for="fPh">Próxima prueba hidrostática</label><input class="inp" id="fPh" type="month" value="'+esc(d.ph||"")+'"></div><span class="hint">Copia las fechas de la etiqueta de servicio pegada en el extintor.</span></div>';
   }
   if(d.step<n){
@@ -374,10 +374,11 @@ function openItem(folio){
   S.view="form";render();return true;
 }
 function confirmBox(msg){return window.confirm(msg);}
-function readForm(){var d=S.draft;["fUbi:ubicacion","fCap:cap","fSerie:serie","fRec:recarga","fVen:vence","fPh:ph","fCom:nota"].forEach(function(p){var a=p.split(":"),el=$(a[0]);if(el)d[a[1]]=el.value.trim();});var t=$("fTipo");if(t)d.tipo=t.value;var r=$("fRet");d.forzar=r&&r.checked?"Retirar de servicio":"";d.cap=d.cap?jasaCap(d.cap):"";}
+function readForm(){var d=S.draft;["fUbi:ubicacion","fCap:cap","fSerie:serie","fRec:recarga","fVen:vence","fPh:ph","fCom:nota"].forEach(function(p){var a=p.split(":"),el=$(a[0]);if(el)d[a[1]]=el.value.trim();});var t=$("fTipo");if(t)d.tipo=t.value;var r=$("fRet");d.forzar=r&&r.checked?"Retirar de servicio":"";d.cap=d.cap?jasaCap(d.cap):"";if(d.recarga)d.vence=jasaVence(d.recarga,d.tipo);}
 function saveItem(){
   readForm();var d=S.draft,v=visit(),x=S.ext[d.folio]||{};
   if(!d.ubicacion){toast("Escribe la ubicación del extintor.");d.step=-1;render();return;}
+  if(jasaRecargaFutura(d.recarga)){toast("La última recarga no puede ser un mes futuro.");d.step=-1;render();return;}
   fixNA(d);var fl=faltan(d);if(fl.length){toast("Te falta contestar: "+fl[0].l);d.step=qList(d).indexOf(fl[0]);render();return;}
   if(!d.cap){toast("Escribe la capacidad.");d.step=-1;render();return;}
   var cm=today().slice(0,7);
@@ -461,7 +462,7 @@ document.addEventListener("click",function(e){var b=e.target.closest("[data-act]
   if(a==="ans"){var dd=S.draft;dd.puntos[b.getAttribute("data-k")]=b.getAttribute("data-v");if(navigator.vibrate)navigator.vibrate(15);var nq=qList(dd).length,nx=dd.step+1;while(nx<nq&&dd.puntos[qList(dd)[nx].k]&&dd.stepFwd)nx++;dd.step=nx;render();window.scrollTo(0,0);return;}
   if(a==="qPrev"){readForm();var dp=S.draft;dp.step=Math.max(dp.step>=qList(dp).length?qList(dp).length-1:dp.step-1,-1);if(dp.step===-1&&S.ext[dp.folio]&&S.ext[dp.folio].estado&&S.ext[dp.folio].estado!=="sin asignar"&&!dp.datosEdit)dp.step=0;render();window.scrollTo(0,0);return;}
   if(a==="qDatos"){readForm();S.draft.datosEdit=true;S.draft.backStep=S.draft.step;S.draft.step=-1;render();window.scrollTo(0,0);return;}
-  if(a==="qDatosOk"){readForm();var dk=S.draft;if(!dk.ubicacion){toast("Escribe la ubicación del extintor.");return;}if(!dk.cap){toast("Escribe la capacidad.");return;}dk.datosOk=true;dk.step=dk.datosEdit&&dk.backStep!=null?dk.backStep:0;dk.datosEdit=false;render();window.scrollTo(0,0);return;}
+  if(a==="qDatosOk"){readForm();var dk=S.draft;if(!dk.ubicacion){toast("Escribe la ubicación del extintor.");return;}if(!dk.cap){toast("Escribe la capacidad.");return;}if(jasaRecargaFutura(dk.recarga)){toast("La última recarga no puede ser un mes futuro.");return;}dk.datosOk=true;dk.step=dk.datosEdit&&dk.backStep!=null?dk.backStep:0;dk.datosEdit=false;render();window.scrollTo(0,0);return;}
   if(a==="allOk"){var da=S.draft;qList(da).forEach(function(z){if(!da.puntos[z.k])da.puntos[z.k]=z.o[0];});da.step=qList(da).length;render();window.scrollTo(0,0);return;}
   if(a==="goStep"){readForm();S.draft.step=+b.getAttribute("data-v");render();window.scrollTo(0,0);return;}
   if(a==="pt"){readForm();S.draft.puntos[b.getAttribute("data-k")]=b.getAttribute("data-v");var y=window.scrollY;render();window.scrollTo(0,y);return;}
@@ -473,7 +474,7 @@ document.addEventListener("click",function(e){var b=e.target.closest("[data-act]
   if(a==="home"){S.view="home";render();return;}
 });
 document.addEventListener("input",function(e){if(e.target.id==="cliQ"){S.cliQ=e.target.value;var l=$("cliList");if(l)l.innerHTML=cliRows(S.cliQ);}});
-document.addEventListener("change",function(e){if(e.target.id==="fTipo"){readForm();S.draft.capOtra=false;S.draft.cap="";var y0=window.scrollY;render();window.scrollTo(0,y0);return;}if(e.target.id==="fRet"){readForm();var y=window.scrollY;render();window.scrollTo(0,y);}});
+document.addEventListener("change",function(e){if(e.target.id==="fRec"){var fv=$("fVen");if(fv)fv.value=jasaVence(e.target.value,($("fTipo")||{}).value)||"";if(jasaRecargaFutura(e.target.value))toast("La última recarga no puede ser un mes futuro.");return;}if(e.target.id==="fTipo"){readForm();S.draft.capOtra=false;S.draft.cap="";var y0=window.scrollY;render();window.scrollTo(0,y0);return;}if(e.target.id==="fRet"){readForm();var y=window.scrollY;render();window.scrollTo(0,y);}});
 document.addEventListener("submit",function(e){e.preventDefault();var f=e.target;
   if(f.id==="loginForm"){$("lgErr").textContent="Entrando…";sb.auth.signInWithPassword({email:$("lgMail").value.trim(),password:$("lgPass").value}).then(function(r){if(r.error){$("lgErr").textContent=/invalid/i.test(r.error.message)?"Correo o contraseña incorrectos.":"No se pudo entrar: "+r.error.message;return;}boot();});return;}
   if(f.id==="newForm"){var cli=S.nfCli?S.nfCli.nombre:"";if(!cli){toast("Elige el cliente.");return;}S.nfCli=null;var rev=$("nfRev").value.trim();save(KR,rev);

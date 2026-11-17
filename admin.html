@@ -401,7 +401,7 @@ var FORMS={
   ordenes:{t:"orden de taller",f:[["cliente","Cliente","text",1],["contacto","Contacto","text"],["tel","Teléfono / WhatsApp","tel"],["recibido","Fecha de ingreso","date",1],["entrega","Entrega programada","date"],["equiposDet","Equipos recibidos","equipos"],["tecnico","Técnico asignado","select",0,function(){return [["","Sin asignar"]].concat((S.staff||[]).map(function(x){return [x.email,(x.nombre||x.email)+(x.rol==="tecnico"?" · técnico":"")];}));}],["prioridad","Prioridad","select",0,[["normal","Normal"],["urgente","Urgente: lo más pronto posible"],["programada","Programada para una fecha"]]],["fechaVisita","Fecha para recoger","date"],["recibio","Recibió en JASA","text",0,null,"Nombre de quien recibe los equipos"],["notas","Notas","textarea",0,null,"Estado del equipo, piezas a cambiar, planta…"],["etapa","Etapa","select",1,STAGES.map(function(s,i){return [String(i),s[0]];})]]},
   inventario:{t:"artículo",f:[["nombre","Artículo","text",1],["categoria","Categoría","select",0,[["Extintores","Extintores"],["Señalamientos","Señalamientos"],["Refacciones","Refacciones"],["Agentes y polvo","Agentes y polvo"],["Otros","Otros"]]],["unidad","Unidad","text",0,null,"kg, pza, rollos…"],["costo","Costo por unidad ($)","number",0,null,"Lo que te cuesta 1 unidad. Se actualiza solo cuando registras su compra en Finanzas."],["ubicacion","Ubicación","text",0,null,"Ej. Anaquel 2"],["stock","Existencia","number",1],["min","Mínimo","number",1],["optimo","Óptimo (para pedir)","number",1],["consumo","Se descuenta al entregar una orden","select",0,[["","No"],["PQS","Sí: polvo PQS (kg recargados)"],["CO2","Sí: CO₂ (kg recargados)"],["ETIQUETA","Sí: 1 etiqueta por extintor"]]]]},
   visitas:{t:"visita",f:[["cliente","Cliente","text",1],["fecha","Fecha","date",1],["tecnico","Técnico","select",1,function(){var o=(S.staff||[]).map(function(x){return [x.email,(x.nombre||x.email)+(x.rol==="tecnico"?" · técnico":"")];});return o.length?o:[["","Sin personal cargado"]];}],["tipo","Tipo de visita","select",1,[["Inspección","Inspección"],["Recolección","Recolección"],["Entrega","Entrega"],["Visita comercial","Visita comercial"]]],["notas","Notas para el técnico","textarea",0,null,"Ej. Preguntar por Leonardo en recepción"]]},
-  extintores:{t:"extintor",f:[["folio","Folio (se asigna solo)","text",0,null,"Déjalo vacío para asignar el siguiente"],["cliente","Cliente","text",1],["ubicacion","Ubicación","text",1,null,"Ej. Recepción, pasillo 3, almacén"],["tipo","Tipo","select",1,[["PQS","PQS"],["CO2","CO₂"],["TIPO K","Tipo K"],["AGUA","Agua"],["AFFF","Espuma AFFF"],["TIPO D","Tipo D"],["AGENTE LIMPIO","Agente limpio"]]],["cap","Capacidad","text",1,null,"Ej. 4.5 KG, 9 KG, 6 L"],["marca","Marca","text"],["serie","No. de serie","text"],["fab","Fabricación","month"],["recarga","Última recarga","month"],["vence","Vence la recarga","month"],["ph","Próxima prueba hidrostática","month"],["estado","Estado","select",1,[["servicio","En servicio"],["reserva","Reserva del cliente"],["prestamo","Préstamo de JASA"],["taller","En taller"],["baja","Dado de baja"],["sin asignar","Etiqueta sin asignar"]]],["notas","Notas","textarea"]]},
+  extintores:{t:"extintor",f:[["folio","Folio (se asigna solo)","text",0,null,"Déjalo vacío para asignar el siguiente"],["cliente","Cliente","text",1],["ubicacion","Ubicación","text",1,null,"Ej. Recepción, pasillo 3, almacén"],["tipo","Tipo","select",1,[["PQS","PQS"],["CO2","CO₂"],["TIPO K","Tipo K"],["AGUA","Agua"],["AFFF","Espuma AFFF"],["TIPO D","Tipo D"],["AGENTE LIMPIO","Agente limpio"]]],["cap","Capacidad","text",1,null,"Ej. 4.5 KG, 9 KG, 6 L"],["marca","Marca","text"],["serie","No. de serie","text"],["fab","Fabricación","month"],["recarga","Última recarga","month",0,null,"Mes en que se recargó. No puede ser un mes futuro."],["vence","Vence la recarga (automático)","month",0,null,"Se calcula solo: última recarga + 12 meses (NOM-154). No se captura a mano."],["ph","Próxima prueba hidrostática","month"],["estado","Estado","select",1,[["servicio","En servicio"],["reserva","Reserva del cliente"],["prestamo","Préstamo de JASA"],["taller","En taller"],["baja","Dado de baja"],["sin asignar","Etiqueta sin asignar"]]],["notas","Notas","textarea"]]},
   pendientes:{t:"pendiente",f:[["titulo","Actividad","text",1],["cat","Tipo","select",1,PN_CATS.map(function(c){return [c,c];})],["fecha","Fecha","date",1],["hora","Hora (opcional)","time"],["repite","Repetir","select",1,PN_REP],["hasta","Repetir hasta (opcional)","date",0,null,"Vacío = se repite siempre"],["notas","Notas","textarea",0,null,"Dirección, contacto, montos…"]]},
   quotes:{t:"cotización",f:[["cliente","Cliente","text",1],["dirigido","Dirigido a","text"],["tel","Teléfono (WhatsApp)","tel"],["direccion","Dirección","text"],["ciudad","Ciudad","text"],["rfc","RFC","text"],["email","Correo para enviarla","text"],["cond","Condiciones","text",0,null,"Ej. Servicio a domicilio"],["entregaTxt","Tiempo de entrega","text",0,null,"Ej. 2 días hábiles"],["vigencia","Vigencia de precios","text",0,null,"Ej. 15 días"]]}
 };
@@ -436,6 +436,7 @@ function renderDrawer(){
     if(type==="select")ctl='<select class="inp" id="'+id+'" name="'+k+'">'+opts.map(function(o){return '<option value="'+esc(o[0])+'"'+(String(val)===o[0]?" selected":"")+'>'+esc(o[1])+'</option>';}).join("")+'</select>';
     else if(type==="textarea")ctl='<textarea class="inp" id="'+id+'" name="'+k+'" style="font-family:var(--body);font-size:15px;min-height:80px">'+esc(val)+'</textarea>';
     else if((d.kind==="ordenes"||d.kind==="extintores"||d.kind==="visitas")&&k==="cliente")ctl='<input class="inp" id="'+id+'" name="'+k+'" type="text" list="cliList" autocomplete="off" required value="'+esc(val)+'"><datalist id="cliList">'+S.data.clientes.map(function(c){return '<option value="'+esc(c.nombre)+'">';}).join("")+'</datalist>';
+    else if(d.kind==="extintores"&&k==="vence")ctl='<input class="inp" id="'+id+'" name="'+k+'" type="month" readonly tabindex="-1" style="background:var(--panel-2)" value="'+esc(jasaVence(v.recarga,v.tipo)||val)+'">';
     else ctl='<input class="inp" autocomplete="off" id="'+id+'" name="'+k+'" type="'+type+'"'+(type==="number"?' step="any" inputmode="decimal"':"")+(req?" required":"")+' value="'+esc(val)+'">';
     return '<div class="field'+(fis?" fis":"")+'"'+(hideF?" hidden":"")+'><label for="'+id+'">'+esc(lab)+(req?" *":"")+'</label>'+ctl+(hint?'<small>'+esc(hint)+'</small>':"")+'</div>';
   }).join("");
@@ -467,7 +468,9 @@ function submitDrawer(form){
     if(body.mapa&&!/^https?:\/\//i.test(body.mapa))body.mapa="https://"+body.mapa;
     body.prefijo=String(body.prefijo||"").toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,6);if(!body.prefijo)body.prefijo=uniquePrefix(body.nombre,d.id);
     var clash=S.data.clientes.find(function(c){return c.id!==d.id&&String(c.prefijo||"").toUpperCase()===body.prefijo;});if(clash){toast("El prefijo "+body.prefijo+" ya es de "+clash.nombre+".");return;}}
-  if(d.kind==="extintores"){body.folio=String(body.folio||"").trim().toUpperCase();if(d.id)delete body.folio;}
+  if(d.kind==="extintores"){body.folio=String(body.folio||"").trim().toUpperCase();if(d.id)delete body.folio;
+    if(jasaRecargaFutura(body.recarga)){toast("La última recarga no puede ser un mes futuro. Revisa la fecha.");return;}
+    if(body.recarga)body.vence=jasaVence(body.recarga,body.tipo);}
   if(d.kind==="ordenes"){
     body.etapa=+body.etapa;body.etapaV=2;
     var prev=d.id?byId("ordenes",d.id):null;
@@ -783,6 +786,7 @@ function vExt(){
   var out='<div class="kpis sm">'+k.map(function(x){return '<div class="kpi" style="--k:'+x[3]+'"><span class="eyebrow">'+x[0]+'</span><span class="v">'+x[1]+'</span><span class="n">'+x[2]+'</span></div>';}).join("")+'</div>';
   out+='<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><label class="eyebrow" for="extCli">Cliente</label><select id="extCli" class="inp" style="width:auto;max-width:100%"><option value="">Todos</option>'+clis.map(function(c){return '<option'+(c===S.extCli?" selected":"")+'>'+esc(c)+'</option>';}).join("")+'</select>'+
     (ro?"":'<span style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap">'+'<button type="button" class="btn sm" data-act="extImp">Importar desde Excel</button>'+(S.extCli?'<button type="button" class="btn ghost sm" data-act="pcAsk">Precargar extintores</button>'+(!extDeCliente(S.extCli).length&&eqTotal(findClient(S.extCli))?'<button type="button" class="btn sm" data-act="extLista" data-v="'+esc(S.extCli)+'">Crear lista desde sus equipos ('+eqTotal(findClient(S.extCli))+')</button>':""):(sinLista().length?'<button type="button" class="btn ghost sm" data-act="extListaTodos">Crear listas de '+sinLista().length+(sinLista().length===1?" cliente":" clientes")+' sin extintores</button>':""))+(S.data.extintores.some(function(x){return x.etiquetaPendiente&&(!S.extCli||x.cliente===S.extCli);})?'<button type="button" class="btn ghost sm" data-act="extPrintPend">Imprimir etiquetas pendientes</button>':"")+'<button type="button" class="btn ghost sm" data-act="extPrintList">Imprimir etiquetas de la lista</button><button type="button" class="btn ghost sm" data-act="extGenAsk">Generar etiquetas nuevas</button><button type="button" class="btn sm" data-act="new:extintores">+ Alta de extintor</button></span>')+'</div>';
+  var mv=extMalVence();if(mv.length&&!ro)out+='<div class="notice" style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><span><b>'+mv.length+(mv.length===1?" extintor tiene":" extintores tienen")+' un vencimiento que no cuadra con su última recarga</b> (debe ser recarga + 12 meses, NOM-154). Ej.: '+esc(mv[0].id)+' recarga '+fmtMonth(mv[0].recarga)+', vence '+fmtMonth(mv[0].vence||"")+'.</span><button type="button" class="btn sm" data-act="extFixVence">Corregir '+mv.length+'</button></div>';
   out+='<div class="box"><div class="box-h"><h2>'+(S.extCli?esc(S.extCli):"Expedientes")+'</h2><span class="mono" style="color:var(--muted)">'+list.length+'</span></div>'+
     (list.length?(ro?"":extSelBar(list))+'<div class="tbl-wrap"><table><thead><tr>'+(ro?"":'<th style="width:34px"><input type="checkbox" id="extSelAll" aria-label="Seleccionar todos"'+(list.every(function(x){return S.extSel&&S.extSel[x.id];})?" checked":"")+'></th>')+'<th>FOLIO</th><th>CLIENTE · UBICACIÓN</th><th>EQUIPO</th><th>RECARGA · VENCE</th><th>P.H.</th><th>ÚLTIMA REVISIÓN</th><th>ESTADO</th><th></th></tr></thead><tbody>'+list.map(function(x){
       var st=EXT_EST[x.estado]||EXT_EST.servicio,venc=x.vence&&x.vence<cm,por=x.vence&&!venc&&x.vence<=soon,u=x.ultima||{};
@@ -794,6 +798,7 @@ function vExt(){
     (!S.extCli&&!S.extShowBlank&&all.some(function(x){return x.estado==="sin asignar";})?'<button type="button" class="link" data-act="extBlank">Mostrar también las etiquetas sin asignar</button>':"");
   return out;
 }
+function extMalVence(){return S.data.extintores.filter(function(x){return x.recarga&&x.estado!=="sin asignar"&&jasaVence(x.recarga,x.tipo)&&x.vence!==jasaVence(x.recarga,x.tipo);});}
 function extSelIds(){return Object.keys(S.extSel||{}).filter(function(k){return S.extSel[k]&&byId("extintores",k);});}
 function extSelBar(list){var n=extSelIds().length;if(!n)return '<div class="plan" style="padding-block:8px"><span class="hint">Marca las casillas para eliminar o corregir varios extintores a la vez.</span></div>';
   return '<div class="plan" style="padding-block:10px;flex-direction:row;flex-wrap:wrap;align-items:center;gap:8px;background:var(--panel-2)"><b>'+n+(n===1?" seleccionado":" seleccionados")+'</b><button type="button" class="btn sm ghost" data-act="extBulkEdit">Modificar</button><button type="button" class="btn sm ghost" data-act="extBulkPrint">Imprimir etiquetas</button><button type="button" class="btn sm" style="background:var(--rose)" data-act="extBulkDel">Eliminar</button><button type="button" class="link" data-act="extSelNone">Quitar selección</button></div>';}
@@ -805,14 +810,14 @@ function extBulkDrawer(){var ids=extSelIds(),clis={};ids.forEach(function(id){cl
     '<div class="field"><label for="ebTipo">Tipo</label><select class="inp" id="ebTipo">'+opt(["PQS","CO2","TIPO K","AGUA","AFFF","TIPO D","AGENTE LIMPIO"].map(function(t){return [t,tipoLabel(t)];}))+'</select></div>'+
     '<div class="field"><label for="ebCap">Capacidad</label><input class="inp" id="ebCap" placeholder="Ej. 9 kg"></div>'+
     '<div class="field"><label for="ebCli">Pasar al cliente</label><select class="inp" id="ebCli"><option value="">Sin cambio</option>'+S.data.clientes.slice().sort(function(a,b){return String(a.nombre).localeCompare(String(b.nombre),"es");}).map(function(c){return '<option>'+esc(c.nombre)+'</option>';}).join("")+'</select></div>'+
-    '<div class="field"><label for="ebRec">Última recarga</label><input class="inp" type="month" id="ebRec"></div><div class="field"><label for="ebVen">Vence</label><input class="inp" type="month" id="ebVen"><small>Si pones recarga y dejas esto vacío: recarga + 12 meses.</small></div>'+
+    '<div class="field"><label for="ebRec">Última recarga</label><input class="inp" type="month" id="ebRec"></div><div class="field"><label>Vence</label><small>Se calcula solo con la última recarga y el tipo (NOM-154).</small></div>'+
     '<div class="field"><label for="ebPh">Prueba hidrostática</label><input class="inp" type="month" id="ebPh"></div></div>'+
     '<div><button type="button" class="btn" data-act="extBulkDo">Aplicar a '+ids.length+' extintores</button></div><span class="hint" id="ebMsg"></span></div></div></div>';}
 function extBulkDo(){var ids=extSelIds(),ch={},g=function(i){return (document.getElementById(i)||{}).value||"";};
   if(g("ebEst"))ch.estado=g("ebEst");if(g("ebTipo"))ch.tipo=g("ebTipo");if(g("ebCap")){var cp=eiCap(g("ebCap"));if(!cp){document.getElementById("ebMsg").textContent="Capacidad no válida.";return;}ch.cap=cp;}
-  if(g("ebCli"))ch.cliente=g("ebCli");if(g("ebRec"))ch.recarga=g("ebRec");if(g("ebVen"))ch.vence=g("ebVen");else if(g("ebRec")){var d=new Date(g("ebRec")+"-15T12:00:00");d.setMonth(d.getMonth()+12);ch.vence=d.getFullYear()+"-"+pad(d.getMonth()+1);}if(g("ebPh"))ch.ph=g("ebPh");
+  if(g("ebCli"))ch.cliente=g("ebCli");if(g("ebRec")){if(jasaRecargaFutura(g("ebRec"))){document.getElementById("ebMsg").textContent="La última recarga no puede ser un mes futuro.";return;}ch.recarga=g("ebRec");}if(g("ebPh"))ch.ph=g("ebPh");
   if(!Object.keys(ch).length){document.getElementById("ebMsg").textContent="No escribiste ningún cambio.";return;}
-  var p=Promise.resolve();ids.forEach(function(id){p=p.then(function(){return patch("extintores",id,ch);});});
+  var p=Promise.resolve();ids.forEach(function(id){var x=byId("extintores",id)||{},c2=Object.assign({},ch),rr=c2.recarga||x.recarga;if(rr&&(c2.recarga||c2.tipo))c2.vence=jasaVence(rr,c2.tipo||x.tipo);p=p.then(function(){return patch("extintores",id,c2);});});
   p.then(function(){document.getElementById("drawerRoot").innerHTML="";S.extSel={};toast(ids.length+" extintores modificados");render();});}
 function extGenDrawer(){
   var nx=nextFolio();
@@ -1375,7 +1380,8 @@ function eiFila(g,o){var tipoT=o.tipoT,capT=o.capT,ubi=o.ubi,num=o.num,errs=o.er
     if(!ubi)errs.push("Falta la ubicación");if(tipo===null)errs.push("Tipo no reconocido: “"+tipoT+"”");else if(!tipo)errs.push("Falta el tipo");
     if(cap===null)errs.push("Capacidad no válida: “"+capT+"”");else if(!cap)errs.push("Falta la capacidad");
     if(rec===null)errs.push("Fecha de recarga no válida: “"+g("recarga")+"”");if(ven===null)errs.push("Fecha de vencimiento no válida: “"+g("vence")+"”");if(ph===null&&!/^(n\/?a|-|—)$/i.test(g("ph")))errs.push("P.H. no válida: “"+g("ph")+"”");
-    if(rec&&!ven){var dv=new Date(rec+"-15T12:00:00");dv.setMonth(dv.getMonth()+12);ven=dv.getFullYear()+"-"+pad(dv.getMonth()+1);}
+    if(rec&&jasaRecargaFutura(rec))errs.push("La recarga ("+fmtMonth(rec)+") es un mes futuro");
+    if(rec&&tipo)ven=jasaVence(rec,tipo);
     var com=g("comentario"),forz=/retir|fuera de servicio|baja/i.test(com)?"Retirar de servicio":"",cm=today().slice(0,7);
     var res=forz||(JASA_PUNTOS.some(function(q){return jasaPuntoMalo(q.k,puntos[q.k]);})||jasaVencido(ven,cm)||(ph&&ph<cm)?"Requiere servicio":"Conforme");
     return {err:errs.join(" · "),d:{numero:num,ubicacion:ubi,tipo:tipo||"",cap:cap||"",recarga:rec||"",vence:ven||"",ph:ph||"",puntos:puntos,conPuntos:marcas>0,comentario:com,forzar:forz,resultado:res,folioXls:g("folio")?jasaFolio(g("folio"))||g("folio").toUpperCase():""}};}
@@ -1449,7 +1455,7 @@ function eiTpl(){var cli=S.extImp&&S.extImp.cli,c=cli?findClient(cli):null;loadX
   var ws=X.utils.aoa_to_sheet([hd].concat(data));ws["!cols"]=[{wch:11},{wch:5},{wch:28},{wch:7},{wch:9},{wch:10},{wch:11},{wch:8}].concat(JASA_PUNTOS.map(function(p){return {wch:Math.max(7,p.l.length+2)};}),[{wch:30}]);
   ws["!autofilter"]={ref:"A1:"+X.utils.encode_col(hd.length-1)+"1"};
   var wb=X.utils.book_new();var pref=cli?prefixOf(cli):"PLANTA";X.utils.book_append_sheet(wb,ws,String(pref).slice(0,31));
-  var ins=X.utils.aoa_to_sheet([["Plantilla de inspección de JASA (para cargar inspecciones anteriores)"],[""],["• Títulos en la fila 1; no los cambies ni los muevas. Un extintor por fila."],["• Puntos: OK = bien · X = mal · NA = no aplica · vacío = no revisado. (Acceso: X = obstruido. Letrero y Presión: X = no tiene.)"],["• TIPO: PQS, CO2, K, AFFF, AGUA, D o LIMPIO. CAP. en kg (4.5, 6, 9…). Fechas como MM/AAAA. Si dejas FECHA VENC. vacía: recarga + 12 meses."],["• FOLIO: déjalo como viene (así el sistema reconoce cada extintor). En extintores nuevos déjalo vacío y se asigna solo."],["• Filas de STOCK o lugares sin extintor: deja TIPO y CAP. vacíos y se omiten."],["• Una hoja por planta. Al subirlo eliges la planta, la fecha, quién revisó y el responsable."],["• Si una fila tiene un error, no se importa nada y el sistema te dice qué corregir."]]);ins["!cols"]=[{wch:120}];X.utils.book_append_sheet(wb,ins,"Instrucciones");
+  var ins=X.utils.aoa_to_sheet([["Plantilla de inspección de JASA (para cargar inspecciones anteriores)"],[""],["• Títulos en la fila 1; no los cambies ni los muevas. Un extintor por fila."],["• Puntos: OK = bien · X = mal · NA = no aplica · vacío = no revisado. (Acceso: X = obstruido. Letrero y Presión: X = no tiene.)"],["• TIPO: PQS, CO2, K, AFFF, AGUA, D o LIMPIO. CAP. en kg (4.5, 6, 9…). Fechas como MM/AAAA. FECHA VENC. se calcula sola: FECHA REC. + 12 meses (NOM-154); la recarga no puede ser un mes futuro."],["• FOLIO: déjalo como viene (así el sistema reconoce cada extintor). En extintores nuevos déjalo vacío y se asigna solo."],["• Filas de STOCK o lugares sin extintor: deja TIPO y CAP. vacíos y se omiten."],["• Una hoja por planta. Al subirlo eliges la planta, la fecha, quién revisó y el responsable."],["• Si una fila tiene un error, no se importa nada y el sistema te dice qué corregir."]]);ins["!cols"]=[{wch:120}];X.utils.book_append_sheet(wb,ins,"Instrucciones");
   X.writeFile(wb,"Inspeccion-JASA-"+(cli?pref:"plantilla")+".xlsx");},function(){toast("No se pudo preparar la plantilla. Revisa tu conexión.");});}
 function eiDo(){var I=S.extImp,rows=I.rows.filter(function(r){return !r.err&&!r.skip;}),gr=extImpGroups(),ch=Promise.resolve(),n=0,ni=0,ult={},msg=document.getElementById("eiMsg");
   if(I.rows.some(function(r){return r.err;}))return;var btn=document.querySelector('[data-act="eiDo"]');if(btn)btn.disabled=true;
@@ -1762,6 +1768,7 @@ document.addEventListener("click",function(e){
   if(a==="pcDo"){precargaDo();return;}
   if(a==="extImp"){extImpOpen(b.hasAttribute("data-v")?v:(S.extCli||""));return;}
   if(a==="eiTpl"){eiTpl();return;}
+  if(a==="extFixVence"){var fv=extMalVence();b.disabled=true;var pf=Promise.resolve();fv.forEach(function(x){pf=pf.then(function(){return patch("extintores",x.id,{vence:jasaVence(x.recarga,x.tipo)});});});pf.then(function(){toast(fv.length+" vencimientos corregidos");render();});return;}
   if(a==="extSelNone"){S.extSel={};render();return;}
   if(a==="extBulkEdit"){extBulkDrawer();return;}
   if(a==="extBulkDo"){extBulkDo();return;}
@@ -1841,6 +1848,7 @@ document.addEventListener("input",function(e){
 });
 document.addEventListener("change",function(e){
   var t=e.target;
+  if((t.id==="f_recarga"||t.id==="f_tipo")&&document.getElementById("f_vence")){var rv=(document.getElementById("f_recarga")||{}).value;if(rv)document.getElementById("f_vence").value=jasaVence(rv,(document.getElementById("f_tipo")||{}).value);if(t.id==="f_recarga"&&jasaRecargaFutura(rv))toast("La última recarga no puede ser un mes futuro.");}
   if(t.classList&&t.classList.contains("extSel")){S.extSel=S.extSel||{};S.extSel[t.getAttribute("data-id")]=t.checked;var y=window.scrollY;render();window.scrollTo(0,y);return;}
   if(t.id==="extSelAll"){S.extSel=S.extSel||{};var on=t.checked;[].forEach.call(document.querySelectorAll(".extSel"),function(cb){S.extSel[cb.getAttribute("data-id")]=on;});var y2=window.scrollY;render();window.scrollTo(0,y2);return;}
   if(t.id==="fxFile"){fxSubir(t.files);t.value="";return;}
@@ -2025,7 +2033,7 @@ function jasaInspeccionPages(insp, logo, cli) {
         '<td class="c">' + e(it.forzar ? "RETIRAR DE SERVICIO. " + (it.comentario || "") : it.comentario || "") + '</td></tr>'; }).join("");
     var last = s + per >= items.length, vk = Object.keys(venc);
     pages.push('<div class="ip">' + head + '<table class="ip-t">' + cols + th + rows + '</table>' +
-      (last ? '<div class="ip-f"><div class="ip-sum"><b>RESUMEN</b>: ' + items.length + ' extintores revisados · ' + ok + ' conformes · ' + (items.length - ok) + ' requieren atención' +
+      (last ? '<div class="ip-f"><div class="ip-sum"><b>RESUMEN</b>: ' + items.length + (items.length === 1 ? ' extintor revisado · ' : ' extintores revisados · ') + ok + (ok === 1 ? ' conforme · ' : ' conformes · ') + (items.length - ok) + (items.length - ok === 1 ? ' requiere atención' : ' requieren atención') +
         '<table class="ip-v"><tr><th colspan="3">EXTINTORES VENCIDOS ' + e(mes) + '</th></tr><tr><th>CAP.</th><th>TIPO</th><th>CANTIDAD</th></tr>' + (vk.length ? vk.map(function (k) { var q = k.split("|"); return '<tr><td>' + e(q[0]) + '</td><td>' + e(q[1]) + '</td><td>' + venc[k] + '</td></tr>'; }).join("") : '<tr><td colspan="3">Ninguno</td></tr>') +
         '<tr><td colspan="2">SEÑALAMIENTOS</td><td>' + letr + '</td></tr><tr><td colspan="2">P.H.</td><td>' + ph + '</td></tr></table></div>' +
         '<div class="ip-s">' + (insp.firmaTecnico ? '<img alt="Firma del técnico" src="' + insp.firmaTecnico + '">' : '<i></i>') + '<span>' + e(insp.reviso || "") + '</span><small>REVISÓ (TÉCNICO JASA)</small></div>' +
@@ -2173,6 +2181,16 @@ function jasaCfdiLeer(xml) {
   };
 }
 var JASA_CFDI_TIPO = { I: "Ingreso", E: "Egreso (nota de crédito)", P: "Pago", N: "Nómina", T: "Traslado" };
+
+/* ---------- vigencia de la recarga (NOM-154-SCFI-2005: servicio de mantenimiento y recarga anual) ---------- */
+// Meses entre la última recarga y el vencimiento, por tipo. El vencimiento nunca se captura a mano.
+var JASA_VIGENCIA = { PQS: 12, CO2: 12, "TIPO K": 12, AGUA: 12, AFFF: 12, "TIPO D": 12, "AGENTE LIMPIO": 12 };
+function jasaVence(recarga, tipo) {
+  if (!/^\d{4}-\d{2}$/.test(String(recarga || ""))) return "";
+  var n = JASA_VIGENCIA[tipo] || 12, y = +recarga.slice(0, 4), m = +recarga.slice(5, 7) - 1 + n;
+  y += Math.floor(m / 12); m = m % 12; return y + "-" + String(m + 1).padStart(2, "0");
+}
+function jasaRecargaFutura(recarga) { var d = new Date(), hoy = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0"); return !!recarga && recarga > hoy; }
 /*@/reporte*/
 
 /* ---------- modo Supabase (jasaextintores.com/admin) ---------- */

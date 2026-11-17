@@ -114,7 +114,7 @@ function jasaInspeccionPages(insp, logo, cli) {
         '<td class="c">' + e(it.forzar ? "RETIRAR DE SERVICIO. " + (it.comentario || "") : it.comentario || "") + '</td></tr>'; }).join("");
     var last = s + per >= items.length, vk = Object.keys(venc);
     pages.push('<div class="ip">' + head + '<table class="ip-t">' + cols + th + rows + '</table>' +
-      (last ? '<div class="ip-f"><div class="ip-sum"><b>RESUMEN</b>: ' + items.length + ' extintores revisados · ' + ok + ' conformes · ' + (items.length - ok) + ' requieren atención' +
+      (last ? '<div class="ip-f"><div class="ip-sum"><b>RESUMEN</b>: ' + items.length + (items.length === 1 ? ' extintor revisado · ' : ' extintores revisados · ') + ok + (ok === 1 ? ' conforme · ' : ' conformes · ') + (items.length - ok) + (items.length - ok === 1 ? ' requiere atención' : ' requieren atención') +
         '<table class="ip-v"><tr><th colspan="3">EXTINTORES VENCIDOS ' + e(mes) + '</th></tr><tr><th>CAP.</th><th>TIPO</th><th>CANTIDAD</th></tr>' + (vk.length ? vk.map(function (k) { var q = k.split("|"); return '<tr><td>' + e(q[0]) + '</td><td>' + e(q[1]) + '</td><td>' + venc[k] + '</td></tr>'; }).join("") : '<tr><td colspan="3">Ninguno</td></tr>') +
         '<tr><td colspan="2">SEÑALAMIENTOS</td><td>' + letr + '</td></tr><tr><td colspan="2">P.H.</td><td>' + ph + '</td></tr></table></div>' +
         '<div class="ip-s">' + (insp.firmaTecnico ? '<img alt="Firma del técnico" src="' + insp.firmaTecnico + '">' : '<i></i>') + '<span>' + e(insp.reviso || "") + '</span><small>REVISÓ (TÉCNICO JASA)</small></div>' +
@@ -262,3 +262,13 @@ function jasaCfdiLeer(xml) {
   };
 }
 var JASA_CFDI_TIPO = { I: "Ingreso", E: "Egreso (nota de crédito)", P: "Pago", N: "Nómina", T: "Traslado" };
+
+/* ---------- vigencia de la recarga (NOM-154-SCFI-2005: servicio de mantenimiento y recarga anual) ---------- */
+// Meses entre la última recarga y el vencimiento, por tipo. El vencimiento nunca se captura a mano.
+var JASA_VIGENCIA = { PQS: 12, CO2: 12, "TIPO K": 12, AGUA: 12, AFFF: 12, "TIPO D": 12, "AGENTE LIMPIO": 12 };
+function jasaVence(recarga, tipo) {
+  if (!/^\d{4}-\d{2}$/.test(String(recarga || ""))) return "";
+  var n = JASA_VIGENCIA[tipo] || 12, y = +recarga.slice(0, 4), m = +recarga.slice(5, 7) - 1 + n;
+  y += Math.floor(m / 12); m = m % 12; return y + "-" + String(m + 1).padStart(2, "0");
+}
+function jasaRecargaFutura(recarga) { var d = new Date(), hoy = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0"); return !!recarga && recarga > hoy; }
