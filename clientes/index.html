@@ -463,6 +463,8 @@ function render(){
     '<div class="kpi" style="--k:var(--amber)"><span class="eyebrow">Con nosotros en el taller</span><span class="v">'+abiertas.length+'</span><span class="n">'+(abiertas.length?abiertas.map(function(o){return (STAGES[stg(o)]||STAGES[0])[0].toLowerCase();}).filter(function(v,i,a){return a.indexOf(v)===i;}).join(", "):"Nada pendiente en el taller")+'</span></div></div>'+
     '<div style="display:flex;gap:10px;flex-wrap:wrap"><a class="btn wa" target="_blank" rel="noopener" href="https://wa.me/528781174728?text='+encodeURIComponent("Hola, soy de "+(c.nombre||"")+" y quiero agendar la recarga de mis extintores.")+'">Agendar recarga por WhatsApp</a></div>';
   // lo que encontramos en la última inspección
+  var extF={};ext.forEach(function(e){extF[e.folio]=e;});
+  if(insps[0])insps[0]=Object.assign({},insps[0],{items:(insps[0].items||[]).map(function(x){var e=extF[x.folio];return e&&e.ph!==undefined?Object.assign({},x,{ph:e.ph||""}):x;})});
   var ult=insps[0],hall=ult?jasaHallazgos(ult.items||[],String(ult.fecha||cur).slice(0,7)):[];
   var mkU=ult?String(ult.fecha||cur).slice(0,7):cur,sig=addM(mkU,1),nSig=ult?(ult.items||[]).filter(function(x){return x.vence===sig;}).length:0;
   var msg=function(lista,extra){return "Hola, soy de "+(c.nombre||"")+". Quiero cotizar lo que encontraron en la inspección de "+monthName(mkU)+extra+":\n"+lista.map(function(x){return "• "+x.qty+" × "+x.art;}).join("\n");};
