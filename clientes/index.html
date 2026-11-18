@@ -251,7 +251,7 @@ function jasaInspeccionPages(insp, logo, cli) {
     var last = s + per >= items.length, vk = Object.keys(venc);
     pages.push('<div class="ip">' + head + '<table class="ip-t">' + cols + th + rows + '</table>' +
       (last ? '<div class="ip-f"><div class="ip-sum"><b>RESUMEN</b>: ' + items.length + (items.length === 1 ? ' extintor revisado · ' : ' extintores revisados · ') + ok + (ok === 1 ? ' conforme · ' : ' conformes · ') + (items.length - ok) + (items.length - ok === 1 ? ' requiere atención' : ' requieren atención') +
-        '<table class="ip-v"><tr><th colspan="3">EXTINTORES VENCIDOS ' + e(mes) + '</th></tr><tr><th>CAP.</th><th>TIPO</th><th>CANTIDAD</th></tr>' + (vk.length ? vk.map(function (k) { var q = k.split("|"); return '<tr><td>' + e(q[0]) + '</td><td>' + e(q[1]) + '</td><td>' + venc[k] + '</td></tr>'; }).join("") : '<tr><td colspan="3">Ninguno</td></tr>') +
+        '<table class="ip-v"><tr><th colspan="3">POR RECARGAR ' + e(mes) + ' (VENCIDOS Y DEL MES)</th></tr><tr><th>CAP.</th><th>TIPO</th><th>CANTIDAD</th></tr>' + (vk.length ? vk.map(function (k) { var q = k.split("|"); return '<tr><td>' + e(q[0]) + '</td><td>' + e(q[1]) + '</td><td>' + venc[k] + '</td></tr>'; }).join("") : '<tr><td colspan="3">Ninguno</td></tr>') +
         '<tr><td colspan="2">SEÑALAMIENTOS</td><td>' + letr + '</td></tr><tr><td colspan="2">P.H.</td><td>' + ph + '</td></tr></table></div>' +
         '<div class="ip-s">' + (insp.firmaTecnico ? '<img alt="Firma del técnico" src="' + insp.firmaTecnico + '">' : '<i></i>') + '<span>' + e(insp.reviso || "") + '</span><small>REVISÓ (TÉCNICO JASA)</small></div>' +
         '<div class="ip-s">' + (insp.firma ? '<img alt="Firma del responsable" src="' + insp.firma + '">' : '<i></i>') + '<span>' + e(insp.responsable || "") + '</span><small>RESPONSABLE DEL CLIENTE</small></div></div>' : '') +
@@ -289,13 +289,15 @@ function jasaPrefijo(nombre) {
 
 /* Hallazgos de una inspección, agrupados para cotizar. */
 var JASA_CATS = ["Mantenimiento y recarga", "Reparaciones", "Señalamientos", "Accesorios"];
-function jasaHallazgos(items, hoyMes) {
+// adelantar = meses extra: 0 = vencidas y las que vencen este mes; 1 = también las del próximo mes; etc.
+function jasaHallazgos(items, hoyMes, adelantar) {
+  var lim = jasaMasMeses(hoyMes, adelantar || 0) || hoyMes;
   var map = {}, out = [];
   function add(cat, art) { var k = cat + "|" + art; if (!map[k]) { map[k] = { cat: cat, art: art, qty: 0 }; out.push(map[k]); } map[k].qty++; }
   (items || []).forEach(function (i) {
     var t = i.tipo === "CO2" ? "CO2" : (i.tipo || "PQS"), cap = String(i.cap || "").toUpperCase(), eq = (cap + " " + t).trim(), p = jasaPuntosDe(i.puntos), ch = (i.chips || []).join(" ") + " " + (i.nota || "");
-    if (i.vencido || /recarga|vencido|despresurizado/i.test(ch)) add(JASA_CATS[0], "RECARGA DE EXTINTOR " + eq);
-    if (i.ph && i.ph < hoyMes) add(JASA_CATS[0], "PRUEBA HIDROSTÁTICA DE EXTINTOR " + eq);
+    if (i.vencido || (i.vence && i.vence <= lim) || /recarga|vencido|despresurizado/i.test(ch)) add(JASA_CATS[0], "RECARGA DE EXTINTOR " + eq);
+    if (i.ph && i.ph <= lim) add(JASA_CATS[0], "PRUEBA HIDROSTÁTICA DE EXTINTOR " + eq);
     if (p.recipiente === "mal" || p.pintura === "mal" || /golpeado/i.test(ch)) add(JASA_CATS[0], "MANTENIMIENTO Y PINTURA DE EXTINTOR " + eq);
     if (p.manguera === "mal" || /manguera/i.test(ch)) add(JASA_CATS[1], "CAMBIO DE MANGUERA DE EXTINTOR " + eq);
     if (p.corneta === "mal") add(JASA_CATS[1], "CAMBIO DE CORNETA O DIFUSOR " + eq);
@@ -402,11 +404,15 @@ var JASA_CFDI_TIPO = { I: "Ingreso", E: "Egreso (nota de crédito)", P: "Pago", 
 /* ---------- vigencia de la recarga (NOM-154-SCFI-2005: servicio de mantenimiento y recarga anual) ---------- */
 // Meses entre la última recarga y el vencimiento, por tipo. El vencimiento nunca se captura a mano.
 var JASA_VIGENCIA = { PQS: 12, CO2: 12, "TIPO K": 12, AGUA: 12, AFFF: 12, "TIPO D": 12, "AGENTE LIMPIO": 12 };
-function jasaVence(recarga, tipo) {
-  if (!/^\d{4}-\d{2}$/.test(String(recarga || ""))) return "";
-  var n = JASA_VIGENCIA[tipo] || 12, y = +recarga.slice(0, 4), m = +recarga.slice(5, 7) - 1 + n;
-  y += Math.floor(m / 12); m = m % 12; return y + "-" + String(m + 1).padStart(2, "0");
+function jasaMasMeses(k, n) {
+  if (!/^\d{4}-\d{2}$/.test(String(k || ""))) return "";
+  var y = +k.slice(0, 4), m = +k.slice(5, 7) - 1 + n; y += Math.floor(m / 12); m = ((m % 12) + 12) % 12;
+  return y + "-" + String(m + 1).padStart(2, "0");
 }
+function jasaVence(recarga, tipo) { return jasaMasMeses(recarga, JASA_VIGENCIA[tipo] || 12); }
+// Prueba hidrostática: cada 5 años (NOM-002-STPS-2010). Se captura la última; la próxima se calcula.
+var JASA_VIGENCIA_PH = 60;
+function jasaPhProxima(ultima) { return jasaMasMeses(ultima, JASA_VIGENCIA_PH); }
 function jasaRecargaFutura(recarga) { var d = new Date(), hoy = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0"); return !!recarga && recarga > hoy; }
 /*@/reporte*/
 
@@ -458,8 +464,11 @@ function render(){
     '<div style="display:flex;gap:10px;flex-wrap:wrap"><a class="btn wa" target="_blank" rel="noopener" href="https://wa.me/528781174728?text='+encodeURIComponent("Hola, soy de "+(c.nombre||"")+" y quiero agendar la recarga de mis extintores.")+'">Agendar recarga por WhatsApp</a></div>';
   // lo que encontramos en la última inspección
   var ult=insps[0],hall=ult?jasaHallazgos(ult.items||[],String(ult.fecha||cur).slice(0,7)):[];
-  if(hall.length){var txt="Hola, soy de "+(c.nombre||"")+". Quiero cotizar lo que encontraron en la inspección de "+monthName(String(ult.fecha).slice(0,7))+":\n"+hall.map(function(x){return "• "+x.qty+" × "+x.art;}).join("\n");
-    h+='<div class="box" style="border-left:4px solid var(--amber)"><div class="box-h"><h2>Requiere atención</h2><span class="eyebrow">Inspección de '+esc(monthName(String(ult.fecha).slice(0,7)))+'</span></div><div class="tbl"><table><thead><tr><th class="num">CANT.</th><th>QUÉ HACE FALTA</th></tr></thead><tbody>'+hall.map(function(x){return '<tr><td class="num">'+x.qty+'</td><td>'+esc(x.art.charAt(0)+x.art.slice(1).toLowerCase())+'</td></tr>';}).join("")+'</tbody></table></div><div class="ord" style="border-top:1px solid var(--line)"><span class="s">Te mandamos la cotización por WhatsApp o correo.</span><a class="btn sm" target="_blank" rel="noopener" href="https://wa.me/528781174728?text='+encodeURIComponent(txt)+'">Pedir cotización</a></div></div>';}
+  var mkU=ult?String(ult.fecha||cur).slice(0,7):cur,sig=addM(mkU,1),nSig=ult?(ult.items||[]).filter(function(x){return x.vence===sig;}).length:0;
+  var msg=function(lista,extra){return "Hola, soy de "+(c.nombre||"")+". Quiero cotizar lo que encontraron en la inspección de "+monthName(mkU)+extra+":\n"+lista.map(function(x){return "• "+x.qty+" × "+x.art;}).join("\n");};
+  if(hall.length||nSig){var txt=msg(hall,""),txt2=nSig?msg(jasaHallazgos(ult.items||[],mkU,1),", adelantando también las recargas de "+monthName(sig)):"";
+    h+='<div class="box" style="border-left:4px solid var(--amber)"><div class="box-h"><h2>Requiere atención</h2><span class="eyebrow">Inspección de '+esc(monthName(String(ult.fecha).slice(0,7)))+'</span></div><div class="tbl"><table><thead><tr><th class="num">CANT.</th><th>QUÉ HACE FALTA</th></tr></thead><tbody>'+hall.map(function(x){return '<tr><td class="num">'+x.qty+'</td><td>'+esc(x.art.charAt(0)+x.art.slice(1).toLowerCase())+'</td></tr>';}).join("")+'</tbody></table></div><div class="ord" style="border-top:1px solid var(--line)"><span class="s">Incluye los vencidos y los que vencen en '+esc(monthName(mkU))+'. Te mandamos la cotización por WhatsApp o correo.</span><a class="btn sm" target="_blank" rel="noopener" href="https://wa.me/528781174728?text='+encodeURIComponent(txt)+'">Pedir cotización</a></div>'+
+      (nSig?'<div class="ord"><span class="s"><b>'+nSig+(nSig===1?" extintor vence":" extintores vencen")+' en '+esc(monthName(sig))+'.</b> ¿Quieres recargarlos de una vez y evitar otra visita?</span><a class="btn sm ghost" target="_blank" rel="noopener" href="https://wa.me/528781174728?text='+encodeURIComponent(txt2)+'">Cotizar adelantando</a></div>':"")+'</div>';}
   h+='<div class="box"><div class="box-h"><h2>Reportes de inspección</h2><span class="eyebrow">'+insps.length+'</span></div>'+(insps.length?insps.map(function(it,i){var its=it.items||[],mal=its.filter(function(x){return x.resultado!=="Conforme";}).length;
       return '<div class="ord"><div><b style="font-weight:600">Inspección de '+esc(monthName(String(it.fecha||"").slice(0,7)))+'</b>'+(its.length?'<span class="pill" style="color:'+(mal?"var(--amber)":"var(--green)")+'">'+(mal?mal+" por atender":"Todo conforme")+'</span>':'')+'<div class="s">Revisada el '+fd(it.fecha)+' · '+its.length+(its.length===1?" extintor":" extintores")+(it.reviso?' · Técnico: '+esc(it.reviso):'')+'</div></div>'+
         '<div class="acts"><button type="button" class="btn sm ghost" data-ver="'+i+'">Ver</button><button type="button" class="btn sm" data-insp="'+i+'">PDF</button></div></div>';}).join(""):'<div class="empty">Aún no hay inspecciones registradas. Cuando hagamos tu inspección, el reporte aparece aquí.</div>')+'</div>';

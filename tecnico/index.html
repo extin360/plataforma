@@ -248,7 +248,7 @@ function jasaInspeccionPages(insp, logo, cli) {
     var last = s + per >= items.length, vk = Object.keys(venc);
     pages.push('<div class="ip">' + head + '<table class="ip-t">' + cols + th + rows + '</table>' +
       (last ? '<div class="ip-f"><div class="ip-sum"><b>RESUMEN</b>: ' + items.length + (items.length === 1 ? ' extintor revisado · ' : ' extintores revisados · ') + ok + (ok === 1 ? ' conforme · ' : ' conformes · ') + (items.length - ok) + (items.length - ok === 1 ? ' requiere atención' : ' requieren atención') +
-        '<table class="ip-v"><tr><th colspan="3">EXTINTORES VENCIDOS ' + e(mes) + '</th></tr><tr><th>CAP.</th><th>TIPO</th><th>CANTIDAD</th></tr>' + (vk.length ? vk.map(function (k) { var q = k.split("|"); return '<tr><td>' + e(q[0]) + '</td><td>' + e(q[1]) + '</td><td>' + venc[k] + '</td></tr>'; }).join("") : '<tr><td colspan="3">Ninguno</td></tr>') +
+        '<table class="ip-v"><tr><th colspan="3">POR RECARGAR ' + e(mes) + ' (VENCIDOS Y DEL MES)</th></tr><tr><th>CAP.</th><th>TIPO</th><th>CANTIDAD</th></tr>' + (vk.length ? vk.map(function (k) { var q = k.split("|"); return '<tr><td>' + e(q[0]) + '</td><td>' + e(q[1]) + '</td><td>' + venc[k] + '</td></tr>'; }).join("") : '<tr><td colspan="3">Ninguno</td></tr>') +
         '<tr><td colspan="2">SEÑALAMIENTOS</td><td>' + letr + '</td></tr><tr><td colspan="2">P.H.</td><td>' + ph + '</td></tr></table></div>' +
         '<div class="ip-s">' + (insp.firmaTecnico ? '<img alt="Firma del técnico" src="' + insp.firmaTecnico + '">' : '<i></i>') + '<span>' + e(insp.reviso || "") + '</span><small>REVISÓ (TÉCNICO JASA)</small></div>' +
         '<div class="ip-s">' + (insp.firma ? '<img alt="Firma del responsable" src="' + insp.firma + '">' : '<i></i>') + '<span>' + e(insp.responsable || "") + '</span><small>RESPONSABLE DEL CLIENTE</small></div></div>' : '') +
@@ -286,13 +286,15 @@ function jasaPrefijo(nombre) {
 
 /* Hallazgos de una inspección, agrupados para cotizar. */
 var JASA_CATS = ["Mantenimiento y recarga", "Reparaciones", "Señalamientos", "Accesorios"];
-function jasaHallazgos(items, hoyMes) {
+// adelantar = meses extra: 0 = vencidas y las que vencen este mes; 1 = también las del próximo mes; etc.
+function jasaHallazgos(items, hoyMes, adelantar) {
+  var lim = jasaMasMeses(hoyMes, adelantar || 0) || hoyMes;
   var map = {}, out = [];
   function add(cat, art) { var k = cat + "|" + art; if (!map[k]) { map[k] = { cat: cat, art: art, qty: 0 }; out.push(map[k]); } map[k].qty++; }
   (items || []).forEach(function (i) {
     var t = i.tipo === "CO2" ? "CO2" : (i.tipo || "PQS"), cap = String(i.cap || "").toUpperCase(), eq = (cap + " " + t).trim(), p = jasaPuntosDe(i.puntos), ch = (i.chips || []).join(" ") + " " + (i.nota || "");
-    if (i.vencido || /recarga|vencido|despresurizado/i.test(ch)) add(JASA_CATS[0], "RECARGA DE EXTINTOR " + eq);
-    if (i.ph && i.ph < hoyMes) add(JASA_CATS[0], "PRUEBA HIDROSTÁTICA DE EXTINTOR " + eq);
+    if (i.vencido || (i.vence && i.vence <= lim) || /recarga|vencido|despresurizado/i.test(ch)) add(JASA_CATS[0], "RECARGA DE EXTINTOR " + eq);
+    if (i.ph && i.ph <= lim) add(JASA_CATS[0], "PRUEBA HIDROSTÁTICA DE EXTINTOR " + eq);
     if (p.recipiente === "mal" || p.pintura === "mal" || /golpeado/i.test(ch)) add(JASA_CATS[0], "MANTENIMIENTO Y PINTURA DE EXTINTOR " + eq);
     if (p.manguera === "mal" || /manguera/i.test(ch)) add(JASA_CATS[1], "CAMBIO DE MANGUERA DE EXTINTOR " + eq);
     if (p.corneta === "mal") add(JASA_CATS[1], "CAMBIO DE CORNETA O DIFUSOR " + eq);
@@ -399,11 +401,15 @@ var JASA_CFDI_TIPO = { I: "Ingreso", E: "Egreso (nota de crédito)", P: "Pago", 
 /* ---------- vigencia de la recarga (NOM-154-SCFI-2005: servicio de mantenimiento y recarga anual) ---------- */
 // Meses entre la última recarga y el vencimiento, por tipo. El vencimiento nunca se captura a mano.
 var JASA_VIGENCIA = { PQS: 12, CO2: 12, "TIPO K": 12, AGUA: 12, AFFF: 12, "TIPO D": 12, "AGENTE LIMPIO": 12 };
-function jasaVence(recarga, tipo) {
-  if (!/^\d{4}-\d{2}$/.test(String(recarga || ""))) return "";
-  var n = JASA_VIGENCIA[tipo] || 12, y = +recarga.slice(0, 4), m = +recarga.slice(5, 7) - 1 + n;
-  y += Math.floor(m / 12); m = m % 12; return y + "-" + String(m + 1).padStart(2, "0");
+function jasaMasMeses(k, n) {
+  if (!/^\d{4}-\d{2}$/.test(String(k || ""))) return "";
+  var y = +k.slice(0, 4), m = +k.slice(5, 7) - 1 + n; y += Math.floor(m / 12); m = ((m % 12) + 12) % 12;
+  return y + "-" + String(m + 1).padStart(2, "0");
 }
+function jasaVence(recarga, tipo) { return jasaMasMeses(recarga, JASA_VIGENCIA[tipo] || 12); }
+// Prueba hidrostática: cada 5 años (NOM-002-STPS-2010). Se captura la última; la próxima se calcula.
+var JASA_VIGENCIA_PH = 60;
+function jasaPhProxima(ultima) { return jasaMasMeses(ultima, JASA_VIGENCIA_PH); }
 function jasaRecargaFutura(recarga) { var d = new Date(), hoy = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0"); return !!recarga && recarga > hoy; }
 /*@/reporte*/
 var RECOVERY=/type=(recovery|invite)/.test(location.hash||"");
@@ -506,7 +512,7 @@ function render(){stopCam();var v=S.view,h="";
   $("app").innerHTML=h;window.scrollTo(0,0);var tb=$("tabbar");if(tb){var on=v==="home"&&!S.soloAsist;tb.hidden=!on;document.body.classList.toggle("with-tabs",on);if(on)tb.innerHTML=tabsHTML();}
   if(v==="scan"&&!S.manual)startCam();if(v==="finish"||v==="firma")initSig();updSync();
 }
-function vLogin(){dock("");return '<h1>Entrar</h1><form class="card" id="loginForm"><div class="field"><label for="lgMail">Correo</label><input class="inp" id="lgMail" type="email" autocomplete="username" required></div><div class="field"><label for="lgPass">Contraseña</label><input class="inp" id="lgPass" type="password" autocomplete="current-password" required></div><div class="err" id="lgErr" role="alert"></div><button class="btn" type="submit">Entrar</button><button type="button" class="link" style="align-self:flex-start" onclick="forgotPass(sb,\'/tecnico/\')">¿Olvidaste tu contraseña?</button><span class="hint">Usa el mismo correo y contraseña del panel de JASA. · Versión 17/11/2026 16:00</span></form>';}
+function vLogin(){dock("");return '<h1>Entrar</h1><form class="card" id="loginForm"><div class="field"><label for="lgMail">Correo</label><input class="inp" id="lgMail" type="email" autocomplete="username" required></div><div class="field"><label for="lgPass">Contraseña</label><input class="inp" id="lgPass" type="password" autocomplete="current-password" required></div><div class="err" id="lgErr" role="alert"></div><button class="btn" type="submit">Entrar</button><button type="button" class="link" style="align-self:flex-start" onclick="forgotPass(sb,\'/tecnico/\')">¿Olvidaste tu contraseña?</button><span class="hint">Usa el mismo correo y contraseña del panel de JASA. · Versión 18/11/2026 13:49</span></form>';}
 var visitaCard=function(x){var t0=today(),v=visit();var late=x.fecha<t0,hoy=x.fecha===t0;return '<div class="card"><span class="eyebrow" style="color:'+(late?"var(--red-2)":hoy?"var(--amber)":"var(--muted)")+'">'+(hoy?"Hoy":late?"Atrasada · ":"")+(hoy?"":esc(String(x.fecha).split("-").reverse().join("/")))+' · '+esc(x.tipo||"Inspección")+'</span><h2>'+esc(x.cliente)+'</h2>'+(function(){var cl=findCli(x.cliente)||{},dir=[cl.direccion,cl.ciudad,cl.estado].filter(Boolean).join(", "),map=cl.mapa||(dir?"https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(dir+(cl.cp?" "+cl.cp:"")):"");return (dir?'<span class="hint">'+esc(dir)+'</span>':"")+(cl.contacto||cl.tel?'<span class="hint">'+esc([cl.contacto,cl.tel].filter(Boolean).join(" · "))+'</span>':"")+(map||cl.tel?'<div style="display:flex;gap:8px;flex-wrap:wrap">'+(map?'<a class="btn ghost sm" style="width:auto" target="_blank" rel="noopener" href="'+esc(map)+'">Cómo llegar</a>':"")+(cl.tel?'<a class="btn ghost sm" style="width:auto" href="tel:'+esc(String(cl.tel).replace(/\D/g,""))+'">Llamar</a>':"")+'</div>':"");})()+(x.notas?'<span class="hint">'+esc(x.notas)+'</span>':"")+(v&&v.estado==="en curso"?"":'<button type="button" class="btn" data-act="startVis" data-id="'+esc(x.id)+'">'+(x.estado==="en curso"?"Continuar":"Empezar inspección")+'</button>')+'</div>';};
 var ICON={ruta:'<path d="M12 21s-6-5.6-6-11a6 6 0 0 1 12 0c0 5.4-6 11-6 11z"/><circle cx="12" cy="10" r="2.2"/>',ordenes:'<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1M9 10h6M9 14h6M9 18h4"/>',insp:'<path d="M9 11l2 2 4-4"/><rect x="4" y="3" width="16" height="18" rx="2"/>',cuenta:'<circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/>'};
 function asistCard(){var t0=today(),me=String(S.user.email||"").toLowerCase(),mine=(S.asist||[]).filter(function(m){return String(m.email).toLowerCase()===me;}),est=jasaAsistEstado(mine,t0),last=est.m;
@@ -540,7 +546,7 @@ function vInspTab(){var v=visit(),mv=misVisitas(),tec=S.rol!=="admin",rev=load(K
 function vCuenta(){var em=String(S.user.email||"");
   return '<div class="t-head"><h1>Mi cuenta</h1></div>'+asistCard()+'<div class="card"><span class="eyebrow">'+esc({admin:"Administrador",oficina:"Oficina",taller:"Taller",tecnico:"Técnico"}[S.rol]||"Personal")+'</span><h2>'+esc(S.nombre||em.split("@")[0])+'</h2><span class="hint">'+esc(em)+'</span></div>'+
     '<div class="card"><span class="eyebrow">Mi firma</span>'+(S.miFirma?'<img alt="Tu firma" src="'+S.miFirma+'" style="max-width:100%;height:80px;object-fit:contain;background:#fff;border:1px solid var(--line-2);border-radius:6px"><button type="button" class="btn ghost" data-act="firma">Cambiar mi firma</button>':'<span class="hint">Aparece en el recuadro Revisó de tus reportes.</span><button type="button" class="btn" data-act="firma">Agregar mi firma</button>')+'</div>'+
-    '<div class="card"><span class="eyebrow">Esta app</span><span class="hint">Para tenerla a la mano: en iPhone, Compartir › Agregar a inicio; en Android, menú › Instalar app.</span><button type="button" class="btn ghost" data-act="refrescar">Actualizar mis órdenes y visitas</button><span class="hint">Versión 17/11/2026 16:00</span></div>'+
+    '<div class="card"><span class="eyebrow">Esta app</span><span class="hint">Para tenerla a la mano: en iPhone, Compartir › Agregar a inicio; en Android, menú › Instalar app.</span><button type="button" class="btn ghost" data-act="refrescar">Actualizar mis órdenes y visitas</button><span class="hint">Versión 18/11/2026 13:49</span></div>'+
     '<button type="button" class="btn ghost" data-act="logout">Cerrar sesión</button>';}
 function vCliPick(){dock('<button type="button" class="btn ghost" data-act="cliBack">Cancelar</button>');var q=S.cliQ||"";
   return '<h1>Elegir cliente</h1><div class="field"><label for="cliQ">Buscar</label><input class="inp" id="cliQ" type="search" autocomplete="off" placeholder="Nombre, ciudad o responsable" value="'+esc(q)+'"></div>'+
@@ -601,7 +607,7 @@ function vForm(){
       '<div class="field"><label for="fTipo">Tipo</label>'+tipoSel+'</div>'+capChips(d)+
       (nuevo?'<div class="field"><label for="fSerie">No. de serie (opcional)</label><input class="inp" id="fSerie" value="'+esc(d.serie||"")+'" autocomplete="off"></div>':"")+
       '<div class="two"><div class="field"><label for="fRec">Última recarga</label><input class="inp" id="fRec" type="month" value="'+esc(d.recarga||"")+'"></div><div class="field"><label for="fVen">Vence (automático)</label><input class="inp" id="fVen" type="month" readonly tabindex="-1" style="background:var(--panel-2)" value="'+esc(jasaVence(d.recarga,d.tipo)||d.vence||"")+'"></div></div>'+
-      '<div class="field"><label for="fPh">Próxima prueba hidrostática</label><input class="inp" id="fPh" type="month" value="'+esc(d.ph||"")+'"></div><span class="hint">Copia las fechas de la etiqueta de servicio pegada en el extintor.</span></div>';
+      '<div class="two"><div class="field"><label for="fPhU">Última prueba hidrostática</label><input class="inp" id="fPhU" type="month" value="'+esc(d.phUltima||"")+'"></div><div class="field"><label for="fPh">Próxima P.H. (automático)</label><input class="inp" id="fPh" type="month" readonly tabindex="-1" style="background:var(--panel-2)" value="'+esc(jasaPhProxima(d.phUltima)||d.ph||"")+'"></div></div><span class="hint">Copia las fechas de la etiqueta de servicio pegada en el extintor.</span></div>';
   }
   if(d.step<n){
     var p=qs[d.step],v=d.puntos[p.k],q=PREG[p.k]||[p.l+"?",""],pct=Math.round(d.step/n*100);
@@ -642,24 +648,25 @@ function openItem(folio){
   var v=visit(),x=S.ext[folio],prev=v.items[folio];
   if(x&&x.estado&&x.estado!=="sin asignar"&&x.cliente&&String(x.cliente).trim().toLowerCase()!==String(v.cliente).trim().toLowerCase()){if(!confirmBox("Este extintor está registrado con "+x.cliente+". ¿Revisarlo de todos modos?"))return false;}
   var base=prev||{};var src=x||{};
-  S.draft={folio:folio,ubicacion:base.ubicacion||src.ubicacion||"",tipo:base.tipo||src.tipo||"PQS",cap:base.cap||src.cap||"",serie:src.serie||"",recarga:base.recarga||src.recarga||"",vence:base.vence||src.vence||"",ph:base.ph||src.ph||"",
+  S.draft={folio:folio,ubicacion:base.ubicacion||src.ubicacion||"",tipo:base.tipo||src.tipo||"PQS",cap:base.cap||src.cap||"",serie:src.serie||"",recarga:base.recarga||src.recarga||"",vence:base.vence||src.vence||"",ph:base.ph||src.ph||"",phUltima:base.phUltima||src.phUltima||"",
     puntos:Object.assign({},jasaPuntosDe(base.puntos)),chips:(base.chips||[]).slice(),nota:base.nota||"",forzar:base.forzar||"",step:prev?99:null};
   if(!prev&&src.vence&&src.vence<today().slice(0,7))S.draft.chips.push("Vencido");
   S.view="form";render();return true;
 }
 function confirmBox(msg){return window.confirm(msg);}
-function readForm(){var d=S.draft;["fUbi:ubicacion","fCap:cap","fSerie:serie","fRec:recarga","fVen:vence","fPh:ph","fCom:nota"].forEach(function(p){var a=p.split(":"),el=$(a[0]);if(el)d[a[1]]=el.value.trim();});var t=$("fTipo");if(t)d.tipo=t.value;var r=$("fRet");d.forzar=r&&r.checked?"Retirar de servicio":"";d.cap=d.cap?jasaCap(d.cap):"";if(d.recarga)d.vence=jasaVence(d.recarga,d.tipo);}
+function readForm(){var d=S.draft;["fUbi:ubicacion","fCap:cap","fSerie:serie","fRec:recarga","fVen:vence","fPh:ph","fPhU:phUltima","fCom:nota"].forEach(function(p){var a=p.split(":"),el=$(a[0]);if(el)d[a[1]]=el.value.trim();});var t=$("fTipo");if(t)d.tipo=t.value;var r=$("fRet");d.forzar=r&&r.checked?"Retirar de servicio":"";d.cap=d.cap?jasaCap(d.cap):"";if(d.recarga)d.vence=jasaVence(d.recarga,d.tipo);if(d.phUltima)d.ph=jasaPhProxima(d.phUltima);}
 function saveItem(){
   readForm();var d=S.draft,v=visit(),x=S.ext[d.folio]||{};
   if(!d.ubicacion){toast("Escribe la ubicación del extintor.");d.step=-1;render();return;}
   if(jasaRecargaFutura(d.recarga)){toast("La última recarga no puede ser un mes futuro.");d.step=-1;render();return;}
+  if(jasaRecargaFutura(d.phUltima)){toast("La última prueba hidrostática no puede ser un mes futuro.");d.step=-1;render();return;}
   fixNA(d);var fl=faltan(d);if(fl.length){toast("Te falta contestar: "+fl[0].l);d.step=qList(d).indexOf(fl[0]);render();return;}
   if(!d.cap){toast("Escribe la capacidad.");d.step=-1;render();return;}
   var cm=today().slice(0,7);
-  var it={folio:d.folio,numero:x.numero||"",n:(v.items[d.folio]||{}).n||(Object.keys(v.items).length+1),ubicacion:d.ubicacion,tipo:d.tipo,cap:d.cap,recarga:d.recarga,vence:d.vence,ph:d.ph,puntos:d.puntos,chips:d.chips,nota:d.nota,forzar:d.forzar,
+  var it={folio:d.folio,numero:x.numero||"",n:(v.items[d.folio]||{}).n||(Object.keys(v.items).length+1),ubicacion:d.ubicacion,tipo:d.tipo,cap:d.cap,recarga:d.recarga,vence:d.vence,ph:d.ph,phUltima:d.phUltima||"",puntos:d.puntos,chips:d.chips,nota:d.nota,forzar:d.forzar,
     comentario:d.chips.concat(d.nota?[d.nota]:[]).join(", "),vencido:jasaVencido(d.vence,cm),hora:new Date().toISOString()};
   it.resultado=resultado(it);v.items[d.folio]=it;saveVisit();
-  var ex=Object.assign({},x,{folio:d.folio,cliente:v.cliente,ubicacion:d.ubicacion,tipo:d.tipo,cap:d.cap,serie:d.serie||x.serie||"",recarga:d.recarga,vence:d.vence,ph:d.ph,estado:x.estado&&x.estado!=="sin asignar"?x.estado:"servicio",
+  var ex=Object.assign({},x,{folio:d.folio,cliente:v.cliente,ubicacion:d.ubicacion,tipo:d.tipo,cap:d.cap,serie:d.serie||x.serie||"",recarga:d.recarga,vence:d.vence,ph:d.ph,phUltima:d.phUltima||x.phUltima||"",estado:x.estado&&x.estado!=="sin asignar"?x.estado:"servicio",
     ultima:{fecha:v.fecha,resultado:it.resultado,puntos:d.puntos,comentario:it.comentario,tecnico:v.reviso,inspeccion:v.id}});
   if(d.nueva)ex.etiquetaPendiente=true;delete ex.creado;S.ext[d.folio]=ex;enqueue({col:"extintores",id:d.folio,t:Date.now(),data:ex});
   toast(d.folio+" guardado · "+it.resultado);S.view="visit";render();
@@ -736,7 +743,7 @@ document.addEventListener("click",function(e){var b=e.target.closest("[data-act]
   if(a==="ans"){var dd=S.draft;dd.puntos[b.getAttribute("data-k")]=b.getAttribute("data-v");if(navigator.vibrate)navigator.vibrate(15);var nq=qList(dd).length,nx=dd.step+1;while(nx<nq&&dd.puntos[qList(dd)[nx].k]&&dd.stepFwd)nx++;dd.step=nx;render();window.scrollTo(0,0);return;}
   if(a==="qPrev"){readForm();var dp=S.draft;dp.step=Math.max(dp.step>=qList(dp).length?qList(dp).length-1:dp.step-1,-1);if(dp.step===-1&&S.ext[dp.folio]&&S.ext[dp.folio].estado&&S.ext[dp.folio].estado!=="sin asignar"&&!dp.datosEdit)dp.step=0;render();window.scrollTo(0,0);return;}
   if(a==="qDatos"){readForm();S.draft.datosEdit=true;S.draft.backStep=S.draft.step;S.draft.step=-1;render();window.scrollTo(0,0);return;}
-  if(a==="qDatosOk"){readForm();var dk=S.draft;if(!dk.ubicacion){toast("Escribe la ubicación del extintor.");return;}if(!dk.cap){toast("Escribe la capacidad.");return;}if(jasaRecargaFutura(dk.recarga)){toast("La última recarga no puede ser un mes futuro.");return;}dk.datosOk=true;dk.step=dk.datosEdit&&dk.backStep!=null?dk.backStep:0;dk.datosEdit=false;render();window.scrollTo(0,0);return;}
+  if(a==="qDatosOk"){readForm();var dk=S.draft;if(!dk.ubicacion){toast("Escribe la ubicación del extintor.");return;}if(!dk.cap){toast("Escribe la capacidad.");return;}if(jasaRecargaFutura(dk.recarga)){toast("La última recarga no puede ser un mes futuro.");return;}if(jasaRecargaFutura(dk.phUltima)){toast("La última prueba hidrostática no puede ser un mes futuro.");return;}dk.datosOk=true;dk.step=dk.datosEdit&&dk.backStep!=null?dk.backStep:0;dk.datosEdit=false;render();window.scrollTo(0,0);return;}
   if(a==="allOk"){var da=S.draft;qList(da).forEach(function(z){if(!da.puntos[z.k])da.puntos[z.k]=z.o[0];});da.step=qList(da).length;render();window.scrollTo(0,0);return;}
   if(a==="goStep"){readForm();S.draft.step=+b.getAttribute("data-v");render();window.scrollTo(0,0);return;}
   if(a==="pt"){readForm();S.draft.puntos[b.getAttribute("data-k")]=b.getAttribute("data-v");var y=window.scrollY;render();window.scrollTo(0,y);return;}
@@ -748,7 +755,7 @@ document.addEventListener("click",function(e){var b=e.target.closest("[data-act]
   if(a==="home"){S.view="home";render();return;}
 });
 document.addEventListener("input",function(e){if(e.target.id==="cliQ"){S.cliQ=e.target.value;var l=$("cliList");if(l)l.innerHTML=cliRows(S.cliQ);}});
-document.addEventListener("change",function(e){if(e.target.id==="fRec"){var fv=$("fVen");if(fv)fv.value=jasaVence(e.target.value,($("fTipo")||{}).value)||"";if(jasaRecargaFutura(e.target.value))toast("La última recarga no puede ser un mes futuro.");return;}if(e.target.id==="fTipo"){readForm();S.draft.capOtra=false;S.draft.cap="";var y0=window.scrollY;render();window.scrollTo(0,y0);return;}if(e.target.id==="fRet"){readForm();var y=window.scrollY;render();window.scrollTo(0,y);}});
+document.addEventListener("change",function(e){if(e.target.id==="fPhU"){var fp=$("fPh");if(fp)fp.value=jasaPhProxima(e.target.value)||"";if(jasaRecargaFutura(e.target.value))toast("La última prueba hidrostática no puede ser un mes futuro.");return;}if(e.target.id==="fRec"){var fv=$("fVen");if(fv)fv.value=jasaVence(e.target.value,($("fTipo")||{}).value)||"";if(jasaRecargaFutura(e.target.value))toast("La última recarga no puede ser un mes futuro.");return;}if(e.target.id==="fTipo"){readForm();S.draft.capOtra=false;S.draft.cap="";var y0=window.scrollY;render();window.scrollTo(0,y0);return;}if(e.target.id==="fRet"){readForm();var y=window.scrollY;render();window.scrollTo(0,y);}});
 document.addEventListener("submit",function(e){e.preventDefault();var f=e.target;
   if(f.id==="loginForm"){$("lgErr").textContent="Entrando…";sb.auth.signInWithPassword({email:$("lgMail").value.trim(),password:$("lgPass").value}).then(function(r){if(r.error){$("lgErr").textContent=/invalid/i.test(r.error.message)?"Correo o contraseña incorrectos.":"No se pudo entrar: "+r.error.message;return;}boot();});return;}
   if(f.id==="newForm"){var cli=S.nfCli?S.nfCli.nombre:"";if(!cli){toast("Elige el cliente.");return;}S.nfCli=null;var rev=$("nfRev").value.trim();save(KR,rev);

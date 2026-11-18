@@ -100,6 +100,9 @@ generados.
 - Vencimiento de recarga: nunca se captura; `jasaVence(recarga, tipo)` (`JASA_VIGENCIA`, 12 meses todos los tipos, NOM-154) en
   formulario del panel (campo de solo lectura), app, importación y edición masiva. `jasaRecargaFutura()` bloquea recargas en
   meses futuros. Extintores avisa y corrige los que no cuadran (`extMalVence`).
+- Prueba hidrostática: se captura `phUltima`; `ph` (próxima) = `jasaPhProxima()` = + 5 años (`JASA_VIGENCIA_PH`), igual en panel,
+  app, importación (columna ÚLTIMA P.H.) y edición masiva. Recargas adelantadas: `jasaHallazgos(items, mes, adelantar)` incluye
+  vencidas y las del mes; en la inspección (`S.hallAdel`) y en el portal se puede adelantar 1–3 meses.
 - Portal: "Ver" inspección muestra las hojas del PDF (`jasaInspeccionPages`) escaladas en pantalla (tocar = acercar), sin descargar.
 - Llave publicable en el código (es pública por diseño). Nunca poner la Secret key ni contraseñas en el repo.
 - Registro de usuarios cerrado: el personal se da de alta en Authentication › Users y en `public.staff`.
