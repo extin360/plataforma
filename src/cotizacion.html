@@ -63,13 +63,18 @@ textarea.inp{min-height:70px;resize:vertical}
 </style>
 </head>
 <body>
-<header><div class="wrap"><a class="brand" href="https://jasaextintores.com/"><b>JASA</b><span class="eyebrow">Cotización</span></a><span class="eyebrow">Piedras Negras, Coah.</span></div></header>
+<header><div class="wrap"><a class="brand" href="/"><b data-emp="etqMarca">JASA</b><span class="eyebrow">Cotización</span></a><span class="eyebrow" data-emp="lugar">Piedras Negras, Coahuila</span></div></header>
 <main class="wrap" id="out"><p class="note">Abriendo tu cotización…</p></main>
 <form name="cotizacion-autorizada" data-netlify="true" netlify-honeypot="bot-field" hidden aria-hidden="true"><input name="bot-field"><input name="subject"><input name="folio"><input name="cliente"><input name="autorizo"><textarea name="comentario"></textarea><input name="total"><input name="ver_cotizacion"></form>
-<div class="wrap foot" style="padding-bottom:24px">JASA Extintores SA de CV · Mutualista 412, Col. Buena Vista Sur, Piedras Negras, Coahuila · Tel. 878 783 3216 · WhatsApp 878 117 4728</div>
+<div class="wrap foot" style="padding-bottom:24px"><span data-emp="razon">JASA EXTINTORES SA DE CV</span> · <span data-emp="dir">Mutualista 412, Col. Buena Vista Sur, Piedras Negras, Coahuila</span> · <span data-emp="contacto">878 783 3216 · WhatsApp 878 117 4728</span></div>
+<script>
+/*@reporte*/
+/*@/reporte*/
+</script>
 <script>
 (function(){
-var SUPA_URL="https://psggoagcdokwrkykgufr.supabase.co",SUPA_KEY="sb_publishable_jwx2IRxOqdCW-SjmKcYW2A_lrJTFJa3",IVA=0.08,WA="528781174728";
+var SUPA_URL="https://psggoagcdokwrkykgufr.supabase.co",SUPA_KEY="sb_publishable_jwx2IRxOqdCW-SjmKcYW2A_lrJTFJa3",IVA=jasaIva();
+jasaEmpresaPintar();jasaEmpresaCargar(SUPA_URL,SUPA_KEY,function(){IVA=jasaIva();jasaEmpresaPintar();if(Q)render();});
 var $=function(i){return document.getElementById(i);};
 function esc(v){return String(v==null?"":v).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
 function money(n){return "$"+(+n||0).toLocaleString("es-MX",{minimumFractionDigits:2,maximumFractionDigits:2});}
@@ -81,11 +86,11 @@ var Q=null;
 function render(){
   var q=Q,lines=q.lines||[],sub=lines.reduce(function(a,l){return a+(parseFloat(l.price)||0)*(+l.qty||0);},0),tot=sub*(1+IVA);
   var aut=q.status==="Autorizada"||q.status==="Aceptada",rech=q.status==="Rechazada",missing=lines.some(function(l){return l.price===""||l.price==null;});
-  var wa="https://wa.me/"+WA+"?text="+encodeURIComponent("Hola, tengo una duda sobre la cotización "+q.folio+" de "+q.cliente+".");
+  var wa=jasaWaLink("Hola, tengo una duda sobre la cotización "+q.folio+" de "+q.cliente+".");
   $("out").innerHTML='<div class="card"><div class="head"><div><span class="eyebrow">Cotización '+esc(q.folio)+' · '+esc(fd(q.fecha))+'</span><h1>'+esc(q.cliente)+'</h1></div><span class="pill" style="color:'+(aut?"var(--green)":rech?"var(--red-2)":"var(--warn)")+'">'+(aut?"Autorizada":rech?"No vigente":"Por autorizar")+'</span></div>'+
     '<div class="meta">'+[["Dirigido a",q.dirigido],["Dirección",[q.direccion,q.ciudad].filter(Boolean).join(", ")],["Condiciones",q.cond],["Tiempo de entrega",q.entregaTxt],["Vigencia de precios",q.vigencia]].filter(function(m){return m[1];}).map(function(m){return '<div><span class="eyebrow">'+m[0]+'</span><span>'+esc(m[1])+'</span></div>';}).join("")+'</div>'+
     '<div class="tbl"><table><thead><tr><th>#</th><th>Concepto</th><th class="n">Cant.</th><th class="n">Precio unit.</th><th class="n">Importe</th></tr></thead><tbody>'+lines.map(function(l,i){var has=l.price!==""&&l.price!=null;return '<tr><td>'+(i+1)+'</td><td>'+esc(l.art)+'</td><td class="n">'+esc(l.qty)+'</td><td class="n">'+(has?money(l.price):"—")+'</td><td class="n">'+(has?money((parseFloat(l.price)||0)*(+l.qty||0)):"—")+'</td></tr>';}).join("")+'</tbody></table></div>'+
-    '<div class="tot"><span class="s">Subtotal '+money(sub)+' · I.V.A. 8% '+money(sub*IVA)+'</span><span class="big">'+money(tot)+'</span><span class="s">Precios en pesos mexicanos</span></div></div>'+
+    '<div class="tot"><span class="s">Subtotal '+money(sub)+' · I.V.A. '+JASA_EMPRESA.iva+'% '+money(sub*IVA)+'</span><span class="big">'+money(tot)+'</span><span class="s">Precios en pesos mexicanos</span></div></div>'+
     (aut?'<div class="card"><div class="ok">Autorizada por '+esc((q.autorizo||{}).nombre||"el cliente")+((q.autorizo||{}).fecha?' el '+esc(fd(q.autorizo.fecha))+' a las '+esc(String(q.autorizo.fecha).slice(11,16)):"")+'. Ya nos llegó el aviso; te contactamos para programar el servicio.</div></div>'
     :rech?'<div class="card"><div class="form"><b>Esta cotización ya no está vigente.</b><span class="note">Escríbenos y te mandamos una nueva.</span><div class="btns"><a class="btn wa" target="_blank" rel="noopener" href="'+esc(wa)+'">Escribir por WhatsApp</a></div></div></div>'
     :missing?'<div class="card"><div class="form"><b>Estamos terminando tu cotización.</b><span class="note">Algunos precios todavía no están listos. Te avisamos en cuanto la completemos.</span></div></div>'
@@ -104,8 +109,8 @@ document.addEventListener("submit",function(e){if(e.target.id!=="autForm")return
   b.disabled=true;$("aErr").textContent="";
   rpc("autorizar_cotizacion",{token:token,nombre:n,comentario:c}).then(function(){aviso(Q,n,c);return rpc("cotizacion_publica",{token:token});}).then(function(q){Q=q;render();window.scrollTo(0,0);},
     function(err){b.disabled=false;$("aErr").textContent=(err&&err.message&&!/fetch|network/i.test(err.message)?err.message:"No se pudo enviar. Revisa tu conexión e inténtalo otra vez.");});});
-if(token.length<20){$("out").innerHTML='<div class="card"><div class="form"><b>Este enlace no está completo.</b><span class="note">Ábrelo directo desde el mensaje que te mandamos, o escríbenos al 878 117 4728.</span></div></div>';return;}
-rpc("cotizacion_publica",{token:token}).then(function(q){if(!q){$("out").innerHTML='<div class="card"><div class="form"><b>No encontramos esta cotización.</b><span class="note">Pide el enlace otra vez por WhatsApp al 878 117 4728.</span></div></div>';return;}Q=q;render();},
+if(token.length<20){$("out").innerHTML='<div class="card"><div class="form"><b>Este enlace no está completo.</b><span class="note">Ábrelo directo desde el mensaje que te mandamos, o escríbenos al '+esc(JASA_EMPRESA.wa)+'.</span></div></div>';return;}
+rpc("cotizacion_publica",{token:token}).then(function(q){if(!q){$("out").innerHTML='<div class="card"><div class="form"><b>No encontramos esta cotización.</b><span class="note">Pide el enlace otra vez por WhatsApp al '+esc(JASA_EMPRESA.wa)+'.</span></div></div>';return;}Q=q;render();},
   function(){$("out").innerHTML='<div class="card"><div class="form"><b>No se pudo abrir la cotización.</b><span class="note">Revisa tu conexión y vuelve a intentar.</span></div></div>';});
 })();
 </script>

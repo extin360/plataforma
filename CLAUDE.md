@@ -109,6 +109,13 @@ generados.
   archivo (Web Share) o lo descarga y abre el correo. "Para cotizar" permite agregar conceptos (`hallAdd`, se conservan al
   adelantar) y actualizar la cotización si sigue Nueva. Fechas de P.H. viejas sin `phUltima`: aviso en Extintores (`extPhConv`).
 - Portal: "Ver" inspección muestra las hojas del PDF (`jasaInspeccionPages`) escaladas en pantalla (tocar = acercar), sin descargar.
+- Mi empresa (Extin360, paso 1; `supabase/13_empresa.sql`): `docs('ajustes','empresa')` {corto, nombre, razon, rfc, calle, cp,
+  ciudad, estado, tel, wa, correo, web, iva (%), norma, pie, etqArriba, etqMarca, logo (dataURL ≤600 px)}; pantalla panel `#empresa`
+  (solo admin). `public.empresa_publica()` (anon y authenticated, quita `privado`) la entrega a todas las páginas con
+  `jasaEmpresaCargar()` (cache en localStorage `jasaEmpresa`). Valores de fábrica = JASA en `JASA_EMPRESA_BASE` (`src/reporte.js`).
+  Nunca escribir datos de la empresa en el código: usar `JASA_EMPRESA.*`, `jasaSheetCo()`, `jasaWaLink()`, `jasaContacto()`,
+  `jasaIva()`, y en HTML estático `data-emp="campo"` / `data-emp-wa="mensaje"` + `jasaEmpresaPintar()`. Pendiente: correos de las
+  funciones de Netlify (`netlify/lib/correo.mjs`) y el sitio público siguen con JASA fijo.
 - Llave publicable en el código (es pública por diseño). Nunca poner la Secret key ni contraseñas en el repo.
 - Registro de usuarios cerrado: el personal se da de alta en Authentication › Users y en `public.staff`.
 

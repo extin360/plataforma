@@ -253,7 +253,7 @@ body.monitor-mode aside,body.monitor-mode header.top,body.monitor-mode .mtabs{di
     <nav id="nav" aria-label="Secciones"></nav>
     <div class="side-foot">
       <span id="syncNote">Conectando…</span>
-      <span id="verNote" style="font-family:var(--mono);font-size:10px;color:var(--faint)">Versión 18/11/2026 14:10</span>
+      <span id="verNote" style="font-family:var(--mono);font-size:10px;color:var(--faint)">Versión 18/11/2026 14:48</span>
       <button type="button" class="link" data-act="backup" id="backupBtn" hidden style="text-align:left;padding:0">Descargar respaldo</button>
       <button type="button" class="link" data-act="importAsk" id="importBtn" hidden style="text-align:left;padding:0">Importar respaldo</button>
       <input type="file" id="importFile" accept=".json,application/json" hidden>
@@ -295,7 +295,7 @@ function jasaLogo(neg,uid){var a=neg?"#ffffff":"#1a1716",band=neg?"#0d0d0d":"#ff
 var PERMS=[["cotizaciones","Cotizaciones y lista de precios"],["clientes","Clientes"],["proveedores","Proveedores"],["finanzas","Finanzas: ingresos, egresos y utilidad"],["taller","Taller: órdenes"],["inventario","Inventario y órdenes de compra"],["costos","Costos y recetas"],["extintores","Extintores y etiquetas QR"],["inspecciones","Inspecciones y visitas"],["pendientes","Pendientes"],["campo","App del técnico (jasaextintores.com/tecnico)"]];
 var PUESTOS=[["admin","Administrador: todo, incluso personal y permisos"],["oficina","Oficina"],["taller","Taller"],["tecnico","Técnico de campo"],["otro","Personalizado"]];
 var PRESET={oficina:["cotizaciones","clientes","proveedores","finanzas","taller","inventario","costos","extintores","inspecciones","pendientes"],taller:["taller","inventario","extintores","pendientes","campo"],tecnico:["campo","extintores"]};
-var SCREEN_PERM={reportes:"finanzas",monitor:"taller",quotes:"cotizaciones",clientes:"clientes",proveedores:"proveedores",finanzas:"finanzas",taller:"taller",inventario:"inventario",costos:"costos",extintores:"extintores",inspecciones:"inspecciones",pendientes:"pendientes",personal:"_admin",asistencia:"",facturas:"finanzas"};
+var SCREEN_PERM={reportes:"finanzas",monitor:"taller",quotes:"cotizaciones",clientes:"clientes",proveedores:"proveedores",finanzas:"finanzas",taller:"taller",inventario:"inventario",costos:"costos",extintores:"extintores",inspecciones:"inspecciones",pendientes:"pendientes",personal:"_admin",empresa:"_admin",asistencia:"",facturas:"finanzas"};
 function isAdmin(){return !S.me||!S.me.rol||S.me.rol==="admin";}
 function perm(k){if(isAdmin())return true;if(k==="_admin")return false;var l=(S.me.permisos||[]).slice();if(S.me.rol==="tecnico")l.push("campo");return l.indexOf(k)>=0;}
 function canScreen(sc){var k=SCREEN_PERM[sc];return !k||perm(k);}
@@ -383,11 +383,11 @@ var FORMAS_PAGO=[["03","03 · Transferencia electrónica"],["01","01 · Efectivo
 var FISCAL_KEYS=["razonSocial","rfc","regimen","cpFiscal","domFiscal","usoCfdi","metodoPago","formaPago","diasCredito","requiereOC","emailFact"];
 function fiscalOf(c){if(!c)return {};var src=c.fiscalDe?byId("clientes",c.fiscalDe):null;return src||c;}
 function fiscalOk(c){var f=fiscalOf(c);return !!(f.rfc&&f.razonSocial&&f.regimen&&f.cpFiscal);}
-var JASA_MAIL="jasa-extintores@live.com.mx",SITE="https://jasaextintores.com";
+var SITE=(/^https?:$/.test(location.protocol)&&!/claude|usercontent|localhost|127\.0\.0\.1/.test(location.hostname))?location.origin:"https://jasaextintores.com";
 function mailLink(to,subj,body,cc){return "mailto:"+String(to||"").split(/[,;\s]+/).filter(Boolean).join(",")+"?"+(cc?"cc="+encodeURIComponent(cc)+"&":"")+"subject="+encodeURIComponent(subj)+"&body="+encodeURIComponent(body);}
 function newToken(){var a=new Uint8Array(24);(window.crypto||window.msCrypto).getRandomValues(a);return Array.prototype.map.call(a,function(b){return "abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789"[b%56];}).join("");}
 function quoteLink(q){return SITE+"/q/"+q.token;}
-function quoteMsg(q){var t=money(quoteTotal(q)*(1+IVA));return "Hola"+(q.dirigido?" "+q.dirigido:"")+", le compartimos la cotización "+q.folio+" de JASA Extintores por "+t+" (I.V.A. incluido)"+(q.entregaTxt?". Tiempo de entrega: "+q.entregaTxt:"")+".\n\nPuede verla y autorizarla aquí:\n"+quoteLink(q)+"\n\nCualquier duda, aquí estamos. JASA Extintores · 878 783 3216";}
+function quoteMsg(q){var t=money(quoteTotal(q)*(1+IVA));return "Hola"+(q.dirigido?" "+q.dirigido:"")+", le compartimos la cotización "+q.folio+" de "+JASA_EMPRESA.corto+" por "+t+" (I.V.A. incluido)"+(q.entregaTxt?". Tiempo de entrega: "+q.entregaTxt:"")+".\n\nPuede verla y autorizarla aquí:\n"+quoteLink(q)+"\n\nCualquier duda, aquí estamos. "+JASA_EMPRESA.corto+" · "+JASA_EMPRESA.tel;}
 function ensureToken(q){if(q.token)return Promise.resolve(q);var ch={token:newToken()};if(q.status==="Nueva"){ch.status="Respondida";ch.respondida=today();}return patch("quotes",q.id,ch).then(function(){return Object.assign({},q,ch);});}
 function staffByEmail(e){return (S.staff||[]).find(function(x){return String(x.email).toLowerCase()===String(e||"").toLowerCase();});}
 var PRIO={urgente:["Urgente","var(--red)"],normal:["Normal","var(--muted)"],programada:["Programada","var(--blue)"]};
@@ -548,21 +548,21 @@ function drawLogo(){
   x.save();jasa("#E10F0F");x.restore();
   x.save();x.beginPath();x.rect(0,98,440,16);x.clip();jasa("#ffffff");x.restore();
   LOGO=cv.toDataURL("image/png");
-  var im=document.getElementById("shLogo");if(im)im.src=LOGO;
+  var im=document.getElementById("shLogo");if(im&&!JASA_EMPRESA.logo)im.src=LOGO;
 }
 function sheetHTML(q){
   var lines=q.lines||[],sub=quoteTotal(q),n=Math.max(lines.length,10),rows="";
   for(var i=0;i<n;i++){var l=lines[i];var has=l&&l.price!==""&&l.price!=null;
     rows+="<tr><td>"+(l?i+1:"")+"</td><td>"+(l?esc(l.art):"")+"</td><td>"+(l?esc(l.qty):"")+"</td><td>"+(l?(has?money(l.price):"—"):"")+"</td><td>"+(l?(has?money((parseFloat(l.price)||0)*(+l.qty||0)):"—"):"")+"</td></tr>";}
   var cond=[q.cond,q.vigencia?"Precios válidos "+q.vigencia:""].filter(Boolean).join("\n");
-  return '<div class="sheet" id="shSheet"><div class="sh-top"><div class="sh-logo"><img id="shLogo" alt="JASA Extintores" width="300" height="136" src="'+LOGO+'"></div>'+
-   '<div class="sh-co"><b>JASA EXTINTORES SA DE CV</b><span>MUTUALISTA 412 COL. BUENA VISTA SUR</span><span>PIEDRAS NEGRAS, COAHUILA</span><span>JEX180118NA0</span><span class="sh-tel">878 783 3216 · WhatsApp 878 117 4728</span></div></div>'+
+  return '<div class="sheet" id="shSheet"><div class="sh-top"><div class="sh-logo"><img id="shLogo" alt="'+esc(JASA_EMPRESA.corto)+'" width="300" height="136" src="'+(JASA_EMPRESA.logo||LOGO)+'"></div>'+
+   jasaSheetCo()+'</div>'+
    '<div class="sh-row"><div class="sh-title">COTIZACIÓN</div><div class="sh-num"><div><span>NÚMERO:</span><b>'+esc(q.folio)+'</b></div><div><span>FECHA:</span><b>'+fmtDate(q.respondida||today())+'</b></div></div></div>'+
    '<div class="sh-row"><dl class="sh-client"><dt>Cliente:</dt><dd>'+esc(q.cliente)+'</dd><dt>Dirigido A:</dt><dd>'+esc(q.dirigido)+'</dd><dt>Dirección:</dt><dd>'+esc(q.direccion)+'</dd><dt>Ciudad:</dt><dd>'+esc(q.ciudad)+'</dd><dt>RFC:</dt><dd>'+esc(q.rfc)+'</dd><dt>Tel.:</dt><dd>'+esc(q.tel)+'</dd></dl>'+
    '<div class="sh-cond"><b>CONDICIONES</b><div>'+esc(cond)+'</div></div></div>'+
    '<table class="sh-table"><colgroup><col style="width:9%"><col style="width:51%"><col style="width:10%"><col style="width:15%"><col style="width:15%"></colgroup><thead><tr><th>PARTIDAS</th><th>Artículo</th><th>Unidades</th><th>Precio Un.</th><th>Subtotal</th></tr></thead><tbody>'+rows+'</tbody></table>'+
-   '<div class="sh-foot"><div class="sh-foot-l"><b>TIEMPO DE ENTREGA: '+esc(q.entregaTxt?String(q.entregaTxt).toUpperCase():"POR CONFIRMAR")+'</b><span>Gracias por su preferencia. Para confirmar su pedido responda este mensaje o llame al 878 783 3216.</span></div>'+
-   '<div class="sh-tot"><div><span>SUB TOTAL</span><b>'+money(sub)+'</b></div><div><span>I.V.A. 8%</span><b>'+money(sub*IVA)+'</b></div><div class="sh-total"><span>TOTAL</span><b>'+money(sub*(1+IVA))+'</b></div></div></div></div>';
+   '<div class="sh-foot"><div class="sh-foot-l"><b>TIEMPO DE ENTREGA: '+esc(q.entregaTxt?String(q.entregaTxt).toUpperCase():"POR CONFIRMAR")+'</b><span>'+esc(JASA_EMPRESA.pie)+' Para confirmar su pedido responda este mensaje o llame al '+esc(JASA_EMPRESA.tel)+'.</span></div>'+
+   '<div class="sh-tot"><div><span>SUB TOTAL</span><b>'+money(sub)+'</b></div><div><span>I.V.A. '+JASA_EMPRESA.iva+'%</span><b>'+money(sub*IVA)+'</b></div><div class="sh-total"><span>TOTAL</span><b>'+money(sub*(1+IVA))+'</b></div></div></div></div>';
 }
 function fitSheet(){var w=document.getElementById("shWrap"),sc=document.getElementById("shScale"),sh=document.getElementById("shSheet");if(!w||!sc||!sh)return;var k=Math.min(1,(w.clientWidth-28)/816);sc.style.transform="scale("+k+")";w.style.height=Math.ceil(sh.offsetHeight*k+28)+"px";}
 window.addEventListener("resize",fitSheet);
@@ -592,10 +592,10 @@ function replyText(q){
   var lines=q.lines||[],sub=quoteTotal(q);
   var L=["*COTIZACIÓN · JASA EXTINTORES*","Número: "+q.folio,"Cliente: "+q.cliente,""];
   lines.forEach(function(l,i){var has=l.price!==""&&l.price!=null;L.push((i+1)+". "+l.art+" — "+l.qty+" × "+(has?money(l.price)+" = "+money((parseFloat(l.price)||0)*(+l.qty||0)):"por definir"));});
-  L.push("","Sub total: "+money(sub),"I.V.A. 8%: "+money(sub*IVA),"*Total: "+money(sub*(1+IVA))+"*");
+  L.push("","Sub total: "+money(sub),"I.V.A. "+JASA_EMPRESA.iva+"%: "+money(sub*IVA),"*Total: "+money(sub*(1+IVA))+"*");
   if(q.entregaTxt)L.push("Tiempo de entrega: "+q.entregaTxt);
   if(q.vigencia)L.push("Precios válidos "+q.vigencia);
-  L.push("","Le comparto la cotización en PDF. Para confirmar su pedido responda este mensaje.","Gracias por su preferencia. JASA Extintores · 878 783 3216");
+  L.push("","Le comparto la cotización en PDF. Para confirmar su pedido responda este mensaje.",JASA_EMPRESA.pie+" "+JASA_EMPRESA.corto+" · "+JASA_EMPRESA.tel);
   return L.join("\n");
 }
 
@@ -625,8 +625,8 @@ function orderSheetHTML(o){
   var us=unitsOf(o),cli=findClient(o.cliente)||{},n=Math.max(us.length,10),rows="";
   for(var i=0;i<n;i++){var u=us[i];rows+="<tr><td>"+(u?i+1:"")+"</td><td>"+(u?esc(tipoLabel(u.row.tipo)+" "+u.row.cap):"")+"</td><td>"+(u?esc(u.row.servicio||""):"")+"</td><td>"+(u?esc(u.serie):"")+"</td><td>"+(u?esc(u.etiqueta):"")+"</td></tr>";}
   var rec=o.recibido||tsISO(o.creado);
-  return '<div class="sheet"><div class="sh-top"><div class="sh-logo"><img alt="JASA Extintores" width="300" height="136" src="'+LOGO+'"></div>'+
-   '<div class="sh-co"><b>JASA EXTINTORES SA DE CV</b><span>MUTUALISTA 412 COL. BUENA VISTA SUR</span><span>PIEDRAS NEGRAS, COAHUILA</span><span>JEX180118NA0</span><span class="sh-tel">878 783 3216 · WhatsApp 878 117 4728</span></div></div>'+
+  return '<div class="sheet"><div class="sh-top"><div class="sh-logo"><img alt="'+esc(JASA_EMPRESA.corto)+'" width="300" height="136" src="'+(JASA_EMPRESA.logo||LOGO)+'"></div>'+
+   jasaSheetCo()+'</div>'+
    '<div class="sh-row"><div class="sh-title">ORDEN DE SERVICIO</div><div class="sh-num"><div><span>FOLIO:</span><b>'+esc(o.folio)+'</b></div><div><span>RECIBIDO:</span><b>'+fmtDate(rec)+'</b></div><div><span>ENTREGA:</span><b>'+(o.entregado?fmtDate(o.entregado):o.entrega?fmtDate(o.entrega):"POR CONFIRMAR")+'</b></div></div></div>'+
    '<div class="sh-row"><dl class="sh-client"><dt>Cliente:</dt><dd>'+esc(o.cliente)+'</dd><dt>Contacto:</dt><dd>'+esc(o.contacto||cli.contacto||"")+'</dd><dt>Tel.:</dt><dd>'+esc(o.tel||cli.tel||"")+'</dd><dt>Ciudad:</dt><dd>'+esc(cli.ciudad||"")+'</dd><dt>Equipos:</dt><dd>'+us.length+'</dd><dt>Cotización:</dt><dd>'+esc(o.cotizacion||"")+'</dd></dl>'+
    '<div class="sh-cond"><b>OBSERVACIONES</b><div>'+esc(o.notas||"")+'</div></div></div>'+
@@ -770,7 +770,7 @@ function printLabels(list,size){
   win.document.write("<!doctype html><html><head><meta charset='utf-8'><title>Etiquetas JASA</title><link rel='stylesheet' href='https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@900&family=IBM+Plex+Mono:wght@600&family=Barlow:wght@500&display=swap'><style>@page{size:"+w+"mm "+h+"mm;margin:0}*{box-sizing:border-box}body{margin:0;font-family:Barlow,Arial,sans-serif;color:#000}.l{width:"+w+"mm;height:"+h+"mm;display:flex;align-items:center;gap:2mm;padding:2mm;page-break-after:always;overflow:hidden}.l:last-child{page-break-after:auto}.q{width:"+q+"mm;height:"+q+"mm;flex:none}.q svg{width:100%;height:100%;display:block}.t{display:flex;flex-direction:column;justify-content:center;min-width:0;line-height:1}.e{font-size:"+(h<30?5.5:8)+"pt;letter-spacing:.18em}.j{font-family:'Saira Condensed',Impact,sans-serif;font-weight:900;font-style:italic;font-size:"+(h<30?17:28)+"pt;line-height:.9;border-bottom:1.2mm solid #000;padding-bottom:.6mm;margin-bottom:1mm}.f{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:"+(h<30?8:12)+"pt}.s{font-size:"+(h<30?5:7)+"pt;margin-top:.6mm}.u{font-size:"+(h<30?5.5:8)+"pt;margin-top:.5mm;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}</style></head><body><p style='font:14px Arial;padding:12px'>Preparando etiquetas…</p></body></html>");
   win.document.close();
   getQR().then(function(){
-    win.document.body.innerHTML=list.map(function(x){return "<div class='l'><div class='q'>"+qrSvg("https://jasaextintores.com/e/"+x.folio)+"</div><div class='t'><span class='e'>EXTINTORES</span><span class='j'>JASA</span><span class='f'>"+esc(x.folio)+"</span>"+(x.ubicacion||x.numero?"<span class='u'>"+esc((x.numero?"No. "+x.numero+" · ":"")+(x.ubicacion||""))+"</span>":"")+"<span class='s'>Escanea · 878 783 3216</span></div></div>";}).join("");
+    win.document.body.innerHTML=list.map(function(x){return "<div class='l'><div class='q'>"+qrSvg(SITE+"/e/"+x.folio)+"</div><div class='t'><span class='e'>"+esc(JASA_EMPRESA.etqArriba)+"</span><span class='j'>"+esc(JASA_EMPRESA.etqMarca)+"</span><span class='f'>"+esc(x.folio)+"</span>"+(x.ubicacion||x.numero?"<span class='u'>"+esc((x.numero?"No. "+x.numero+" · ":"")+(x.ubicacion||""))+"</span>":"")+"<span class='s'>Escanea · "+esc(JASA_EMPRESA.tel)+"</span></div></div>";}).join("");
     var go=function(){win.focus();win.print();};
     if(win.document.fonts&&win.document.fonts.ready)win.document.fonts.ready.then(function(){setTimeout(go,300);});else setTimeout(go,800);
   },function(){toast("No se pudo cargar el generador de QR. Revisa tu conexión.");});
@@ -881,7 +881,7 @@ function vInspDetail(i){
   out+='<div class="box"><div class="box-h"><h2>Para cotizar</h2><span class="hint">Marca lo que se cotiza; los precios salen de tu lista</span></div>'+
     '<div class="plan" style="padding-block:10px;flex-direction:row;flex-wrap:wrap;align-items:center;gap:8px"><span class="eyebrow">Recargas</span>'+[[0,"Vencidas y las de "+monthName(mkI)],[1,"+ las de "+monthName(jasaMasMeses(mkI,1))+" ("+nAd(1)+")"],[2,"+ 2 meses ("+nAd(2)+")"],[3,"+ 3 meses ("+nAd(3)+")"]].map(function(o){return '<button type="button" class="btn sm'+(adel===o[0]?"":" ghost")+'" data-act="hallAdel" data-v="'+o[0]+'">'+esc(o[1])+'</button>';}).join("")+'<span class="hint" style="flex-basis:100%">Si el cliente quiere recargar antes de que venzan, elige cuántos meses adelantar: se suman a la cotización.</span></div>'+
     (rows.length?'<div class="tbl-wrap"><table><thead><tr><th></th><th>CONCEPTO</th><th class="num">CANT.</th><th class="num">PRECIO UNIT.</th></tr></thead><tbody>'+JASA_CATS.map(function(c){var rr=rows.filter(function(r){return r.cat===c;});if(!rr.length)return "";return '<tr><td colspan="4" class="eyebrow" style="color:var(--red-2);padding-top:14px">'+c+'</td></tr>'+rr.map(function(r){var ix=rows.indexOf(r);return '<tr><td><input type="checkbox" data-hall="'+ix+'" data-hk="on"'+(r.on?" checked":"")+(ro?" disabled":"")+' aria-label="Cotizar '+esc(r.art)+'" style="width:20px;height:20px;accent-color:var(--red)"></td><td><input class="inp" autocomplete="off" data-hall="'+ix+'" data-hk="art" value="'+esc(r.art)+'"'+(ro?" disabled":"")+'></td><td class="num"><input class="inp" style="width:70px;text-align:right" type="number" min="1" data-hall="'+ix+'" data-hk="qty" value="'+esc(r.qty)+'"'+(ro?" disabled":"")+'></td><td class="num"><input class="inp" style="width:110px;text-align:right" type="number" min="0" step="any" placeholder="$" data-hall="'+ix+'" data-hk="price" value="'+esc(r.price)+'"'+(ro?" disabled":"")+'></td></tr>';}).join("");}).join("")+hallExtras(rows,ro)+'</tbody></table></div>'+(ro?"":'<div class="plan" style="padding-block:10px;flex-direction:row;gap:8px;flex-wrap:wrap;align-items:center"><button type="button" class="btn ghost sm" data-act="hallAdd">+ Agregar concepto</button><span class="hint">Lo que el cliente quiera sumar: extintores nuevos, señalamientos, gabinetes, capacitación… Escribe o elige de tu lista de precios.</span></div><datalist id="precioList">'+S.data.precios.map(function(x){return '<option value="'+esc(x.art||"")+'">';}).join("")+'</datalist>')+
-      '<div class="totals"><span class="s" style="color:var(--muted)">Subtotal '+money(tot)+' · I.V.A. 8% '+money(tot*IVA)+'</span><span class="big">'+money(tot*(1+IVA))+'</span></div>'+
+      '<div class="totals"><span class="s" style="color:var(--muted)">Subtotal '+money(tot)+' · I.V.A. '+JASA_EMPRESA.iva+'% '+money(tot*IVA)+'</span><span class="big">'+money(tot*(1+IVA))+'</span></div>'+
       (ro?"":'<div class="actions">'+(i.cotizacion&&byId("quotes",i.cotizacion)?(byId("quotes",i.cotizacion).status==="Nueva"?'<button type="button" class="btn" data-act="inspQuoteUpd">Actualizar cotización '+esc(byId("quotes",i.cotizacion).folio)+' con lo marcado</button>':"")+'<button type="button" class="btn ghost" data-act="openQuote" data-id="'+i.cotizacion+'">Ver cotización '+esc(byId("quotes",i.cotizacion).folio)+'</button>'+(byId("quotes",i.cotizacion).status!=="Nueva"?'<span class="hint">Ya se envió al cliente: para sumar conceptos, edítalos en la cotización.</span>':""):'<button type="button" class="btn" data-act="inspQuote">Crear cotización para '+esc(i.cliente)+'</button>')+(i.estado!=="revisada"?'<button type="button" class="btn ghost" data-act="inspReviewed">Marcar revisada sin cotizar</button>':"")+'</div>')
     :'<div class="empty"><span>No hay nada que cotizar en esta inspección.</span>'+(ro||i.estado==="revisada"?"":'<button type="button" class="btn sm" data-act="inspReviewed">Marcar revisada</button>')+'</div>')+'</div>';
   return out;
@@ -919,7 +919,7 @@ function inspTextos(i,cli,code){var st=inspStats(i);return {
   portal:code?portalLink(code):"",code:code,st:st};}
 function inspWa(i){var cli=findClient(i.cliente)||{};var w=window.open("about:blank","_blank");
   codigoPortalDe(cli).then(function(code){var t=inspTextos(i,cli,code);
-    var msg="Hola"+(cli.contacto?" "+cli.contacto:"")+", le escribimos de JASA Extintores. Ya está listo el reporte de la inspección de extintores del "+fmtDate(i.fecha)+" en "+i.cliente+": "+t.resumen+"."+
+    var msg="Hola"+(cli.contacto?" "+cli.contacto:"")+", le escribimos de "+JASA_EMPRESA.corto+". Ya está listo el reporte de la inspección de extintores del "+fmtDate(i.fecha)+" en "+i.cliente+": "+t.resumen+"."+
       (code?"\n\nPuede verlo en pantalla o descargarlo en PDF en su portal:\n"+t.portal+"\n\nSu código de acceso: "+code+"\nAhí también ve sus extintores, las fechas de recarga y sus cotizaciones.":"");
     var url=cli.tel?waLink(cli.tel,msg):"https://wa.me/?text="+encodeURIComponent(msg);if(w)w.location.href=url;else location.href=url;});}
 function inspMail(i,b){var cli=findClient(i.cliente)||{},para=cli.email||(fiscalOf(cli)||{}).emailFact||"";if(b)b.disabled=true;inspAviso("Preparando el PDF para enviarlo…");
@@ -927,7 +927,7 @@ function inspMail(i,b){var cli=findClient(i.cliente)||{},para=cli.email||(fiscal
   Promise.all([codigoPortalDe(cli),inspPdfBlob(i),SB?SB.auth.getSession():Promise.resolve(null)]).then(function(r){var code=r[0],pdf=r[1],ses=r[2]&&r[2].data&&r[2].data.session,t=inspTextos(i,cli,code);
     var respaldo=function(motivo){var file=new File([pdf.blob],pdf.name,{type:"application/pdf"});
       if(navigator.canShare&&navigator.canShare({files:[file]})){return navigator.share({files:[file],title:"Reporte de inspección "+fmtDate(i.fecha),text:"Reporte de inspección de "+i.cliente+(code?". Portal: "+t.portal+" (código "+code+")":"")}).then(function(){listo("Listo. "+motivo);},function(){listo(motivo);});}
-      return saveBlob(pdf.name,pdf.blob).then(function(){location.href=mailLink(para,"Reporte de inspección "+fmtDate(i.fecha)+" · JASA Extintores","Hola"+(cli.contacto?" "+cli.contacto:"")+":\n\nLe compartimos el reporte de la inspección de extintores del "+fmtDate(i.fecha)+" en "+i.cliente+": "+t.resumen+".\n\nVa adjunto en PDF."+(code?"\nTambién puede verlo en su portal: "+t.portal+"\nCódigo de acceso: "+code:"")+"\n\nJASA Extintores · 878 783 3216",JASA_MAIL);listo(motivo+" Se descargó el PDF: adjúntalo al correo que se abrió.");});};
+      return saveBlob(pdf.name,pdf.blob).then(function(){location.href=mailLink(para,"Reporte de inspección "+fmtDate(i.fecha)+" · "+JASA_EMPRESA.corto,"Hola"+(cli.contacto?" "+cli.contacto:"")+":\n\nLe compartimos el reporte de la inspección de extintores del "+fmtDate(i.fecha)+" en "+i.cliente+": "+t.resumen+".\n\nVa adjunto en PDF."+(code?"\nTambién puede verlo en su portal: "+t.portal+"\nCódigo de acceso: "+code:"")+"\n\n"+JASA_EMPRESA.corto+" · "+JASA_EMPRESA.tel,JASA_EMPRESA.correo);listo(motivo+" Se descargó el PDF: adjúntalo al correo que se abrió.");});};
     if(!para)return respaldo("El cliente no tiene correo registrado (agrégalo en Clientes).");
     if(!ses)return respaldo("Sin sesión para enviar directo.");
     var fr=new FileReader();return new Promise(function(ok){fr.onload=function(){ok(String(fr.result).split(",")[1]);};fr.readAsDataURL(pdf.blob);}).then(function(b64){
@@ -939,7 +939,7 @@ function inspMail(i,b){var cli=findClient(i.cliente)||{},para=cli.email||(fiscal
   }).catch(function(){listo("No se pudo preparar el reporte. Inténtalo otra vez.");});}
 
 /* ---------- vistas ---------- */
-var TITLES={asistencia:["Personal","Asistencia"],facturas:["Contabilidad","Facturas recibidas (SAT)"],panel:["Resumen","Panel"],quotes:["Bandeja","Cotizaciones"],clientes:["Cartera","Clientes"],proveedores:["Compras","Proveedores"],finanzas:["Contabilidad","Ingresos y egresos"],taller:["Taller JASA","Órdenes de taller"],inventario:["Taller JASA","Inventario"],pendientes:["Agenda","Pendientes"],extintores:["Expedientes","Extintores"],inspecciones:["Campo","Inspecciones"],costos:["Taller JASA","Costos y precios"],reportes:["Análisis","Reportes"],monitor:["Taller JASA","Monitor de taller"],personal:["Equipo","Personal y permisos"]};
+var TITLES={empresa:["Ajustes","Mi empresa"],asistencia:["Personal","Asistencia"],facturas:["Contabilidad","Facturas recibidas (SAT)"],panel:["Resumen","Panel"],quotes:["Bandeja","Cotizaciones"],clientes:["Cartera","Clientes"],proveedores:["Compras","Proveedores"],finanzas:["Contabilidad","Ingresos y egresos"],taller:["Taller JASA","Órdenes de taller"],inventario:["Taller JASA","Inventario"],pendientes:["Agenda","Pendientes"],extintores:["Expedientes","Extintores"],inspecciones:["Campo","Inspecciones"],costos:["Taller JASA","Costos y precios"],reportes:["Análisis","Reportes"],monitor:["Taller JASA","Monitor de taller"],personal:["Equipo","Personal y permisos"]};
 function lowStock(){return S.data.inventario.filter(function(i){return (+i.stock||0)<(+i.min||0);});}
 function dueClients(){
   var lim=addMonths(today().slice(0,7),2);
@@ -956,7 +956,7 @@ function renderNav(){
   var fxN=S.data.cfdis.filter(function(c){return c.estado==="nuevo"&&(c.tipo==="I"||c.tipo==="E"||c.tipo==="P");}).length;
   items.splice(items.findIndex(function(n){return n[0]==="finanzas";})+1,0,["facturas","Facturas SAT",fxN||""]);
   items.push(["asistencia","Asistencia",""]);
-  if(isAdmin()&&S.me)items.push(["personal","Personal y permisos",""]);
+  if(isAdmin()&&S.me)items.push(["personal","Personal y permisos",""],["empresa","Mi empresa",""]);
   items=items.filter(function(n){return canScreen(n[0]);});
   document.getElementById("nav").innerHTML=items.map(function(n){return '<button type="button" class="nav-b" data-act="go" data-v="'+n[0]+'"'+(S.screen===n[0]?' aria-current="page"':"")+'><span>'+n[1]+'</span><span class="cnt">'+n[2]+'</span></button>';}).join("");
   var mt=document.getElementById("mtabs");if(mt){var main=["panel","quotes","taller","clientes"].filter(function(k){return canScreen(k);}),lab={panel:"Panel",quotes:"Cotizar",taller:"Taller",clientes:"Clientes"},cnt={quotes:pend,taller:open};
@@ -989,7 +989,7 @@ function vPanel(){
   '<div class="grid2"><div class="box"><div class="box-h"><h2>Cotizaciones por contestar</h2><button type="button" class="link" data-act="go" data-v="quotes">Ver todas →</button></div>'+
   (pend.length?pend.slice(0,8).map(function(q){return '<button type="button" class="row" data-act="openQuote" data-id="'+q.id+'"><span class="t">'+esc(q.cliente)+'</span><span class="mono" style="color:var(--amber)">'+ago(q.creado)+'</span><span class="s">'+esc(q.folio)+' · '+(q.lines||[]).length+((q.lines||[]).length===1?" partida":" partidas")+'</span></button>';}).join(""):emptyBox("Nada pendiente","Cuando llegue una solicitud por WhatsApp, cópiala y pégala con el botón “Pegar solicitud”.","goPaste","Pegar solicitud"))+
   '</div><div style="display:flex;flex-direction:column;gap:16px;min-width:0"><div class="box"><div class="box-h"><h2>Recargas por vencer</h2><span class="eyebrow">próximos 2 meses</span></div>'+
-  (due.length?due.slice(0,8).map(function(c){var late=c.proximaRecarga<cur;return '<div class="row"><span class="t">'+esc(c.nombre)+'</span>'+(c.tel?'<a class="btn wa sm" target="_blank" rel="noopener" href="'+esc(waLink(c.tel,"Hola, le escribimos de JASA Extintores. Sus extintores "+(eqText(c)?"("+eqText(c)+") ":"")+(late?"ya vencieron":"están por vencer")+" ("+fmtMonth(c.proximaRecarga)+"). ¿Agendamos su recarga?"))+'">Avisar</a>':'<span></span>')+'<span class="s">'+(eqTotal(c)?eqTotal(c)+" extintores · ":"")+'<span style="color:'+(late?"var(--rose)":"var(--amber)")+'">'+(late?"vencido ":"vence ")+fmtMonth(c.proximaRecarga)+'</span></span></div>';}).join(""):emptyBox("Sin recargas próximas","Registra la próxima recarga de cada cliente y aquí verás a quién avisar.","new:clientes","Nuevo cliente"))+
+  (due.length?due.slice(0,8).map(function(c){var late=c.proximaRecarga<cur;return '<div class="row"><span class="t">'+esc(c.nombre)+'</span>'+(c.tel?'<a class="btn wa sm" target="_blank" rel="noopener" href="'+esc(waLink(c.tel,"Hola, le escribimos de "+JASA_EMPRESA.corto+". Sus extintores "+(eqText(c)?"("+eqText(c)+") ":"")+(late?"ya vencieron":"están por vencer")+" ("+fmtMonth(c.proximaRecarga)+"). ¿Agendamos su recarga?"))+'">Avisar</a>':'<span></span>')+'<span class="s">'+(eqTotal(c)?eqTotal(c)+" extintores · ":"")+'<span style="color:'+(late?"var(--rose)":"var(--amber)")+'">'+(late?"vencido ":"vence ")+fmtMonth(c.proximaRecarga)+'</span></span></div>';}).join(""):emptyBox("Sin recargas próximas","Registra la próxima recarga de cada cliente y aquí verás a quién avisar.","new:clientes","Nuevo cliente"))+
   '</div>'+(function(){var t0=today(),l=dayTasks(t0).filter(function(t){return !isDone(t,t0);});return l.length?'<div class="box"><div class="box-h"><h2>Pendientes de hoy</h2><button type="button" class="link" data-act="go" data-v="pendientes">Agenda →</button></div>'+l.slice(0,6).map(function(t){return taskRow(t,t0,false);}).join("")+'</div>':"";})()+(low.length?'<div class="box"><div class="box-h"><h2>Bajo mínimo</h2><button type="button" class="link" data-act="go" data-v="inventario">Inventario →</button></div>'+low.map(function(i){return '<div class="row"><span class="t">'+esc(i.nombre)+'</span><span class="mono" style="color:var(--rose)">'+esc(i.stock)+' / mín '+esc(i.min)+'</span></div>';}).join("")+'</div>':"")+'</div></div>';
 }
 
@@ -1014,7 +1014,7 @@ function vQuotes(){
       '<div class="tbl-wrap"><table><thead><tr><th>#</th><th>Artículo</th><th class="num">Cant.</th><th class="num">Precio unit.</th><th class="num">Importe</th><th></th></tr></thead><tbody>'+
       (lines.length?lines.map(function(l,i){return '<tr><td class="mono">'+(i+1)+'</td><td style="min-width:200px"><input class="inp" autocomplete="off" aria-label="Artículo '+(i+1)+'" data-line="'+i+'" data-k="art" value="'+esc(l.art)+'"'+(ro?" disabled":"")+'></td><td class="num"><input class="inp" style="width:70px;text-align:right" type="number" min="0" step="1" aria-label="Cantidad '+(i+1)+'" data-line="'+i+'" data-k="qty" value="'+esc(l.qty)+'"'+(ro?" disabled":"")+'></td><td class="num"><input class="inp" style="width:110px;text-align:right" type="number" min="0" step="any" inputmode="decimal" placeholder="$" aria-label="Precio '+(i+1)+'" data-line="'+i+'" data-k="price" value="'+esc(l.price)+'"'+(ro?" disabled":"")+'></td><td class="num">'+(l.price!==""&&l.price!=null?money((parseFloat(l.price)||0)*(+l.qty||0)):"—")+'</td><td>'+(ro?"":'<button type="button" class="link" style="color:var(--muted)" data-act="delLine" data-i="'+i+'" aria-label="Quitar partida '+(i+1)+'">Quitar</button>')+'</td></tr>';}).join(""):'<tr><td colspan="6" style="color:var(--muted)">Sin partidas. Agrega la primera.</td></tr>')+
       '</tbody></table></div>'+(ro?"":'<div style="padding:10px 18px"><button type="button" class="link" data-act="addLine">+ Agregar partida</button></div>')+
-      (ro?"":'<div style="padding:0 18px 10px;display:flex;gap:14px;flex-wrap:wrap"><button type="button" class="link" data-act="fillPrices">Llenar con mi lista de precios</button><button type="button" class="link" data-act="savePrices">Guardar estos precios en mi lista</button></div>')+'<div class="totals"><span class="s" style="color:var(--muted)">Sub total '+money(sub)+' · I.V.A. 8% '+money(sub*IVA)+'</span><span class="big">'+money(sub*(1+IVA))+'</span>'+(missing?'<span class="s" style="color:var(--amber);font-size:13px">Faltan precios en algunas partidas</span>':"")+'</div>'+
+      (ro?"":'<div style="padding:0 18px 10px;display:flex;gap:14px;flex-wrap:wrap"><button type="button" class="link" data-act="fillPrices">Llenar con mi lista de precios</button><button type="button" class="link" data-act="savePrices">Guardar estos precios en mi lista</button></div>')+'<div class="totals"><span class="s" style="color:var(--muted)">Sub total '+money(sub)+' · I.V.A. '+JASA_EMPRESA.iva+'% '+money(sub*IVA)+'</span><span class="big">'+money(sub*(1+IVA))+'</span>'+(missing?'<span class="s" style="color:var(--amber);font-size:13px">Faltan precios en algunas partidas</span>':"")+'</div>'+
       (q.status==="Autorizada"&&q.autorizo?'<div class="notice" style="margin:14px 18px 0;border-left-color:var(--green)"><b>Autorizada por el cliente:</b> '+esc(q.autorizo.nombre)+' · '+esc(fmtDate(String(q.autorizo.fecha||"").slice(0,10)))+' '+esc(String(q.autorizo.fecha||"").slice(11,16))+(q.autorizo.comentario?'<br>“'+esc(q.autorizo.comentario)+'”':"")+(ro||q.otFolio?"":'<div style="margin-top:8px"><button type="button" class="btn sm" data-act="qAccept">Abrir orden y asignar técnico →</button></div>')+'</div>':"")+
       '<div class="actions">'+(missing||!lines.length?'<span class="s" style="color:var(--muted);font-size:13px;align-self:center">Pon el precio de todas las partidas para enviarla.</span>':(q.tel?'<button type="button" class="btn wa" data-act="qSendWa">Enviar por WhatsApp</button>':'<span class="s" style="color:var(--muted);font-size:13px;align-self:center">Sin teléfono para WhatsApp.</span>')+((q.email||(findClient(q.cliente)||{}).email)?'<button type="button" class="btn ghost" data-act="qSendMail">Enviar por correo</button>':"")+(q.token?'<a class="btn ghost" target="_blank" rel="noopener" href="'+esc(quoteLink(q))+'">Ver como el cliente</a>':""))+
       (ro?"":'<button type="button" class="btn ghost" data-act="qStatus" data-v="Respondida">Marcar respondida</button><button type="button" class="btn'+(q.otFolio?"":" ghost")+'" data-act="'+(q.otFolio?"qVerOt":"qAccept")+'">'+(q.otFolio?"Ver orden "+esc(q.otFolio)+" y asignar técnico →":"Aceptada → abrir orden")+'</button><button type="button" class="btn ghost" data-act="qStatus" data-v="Rechazada">Rechazada</button><button type="button" class="btn ghost" data-act="askDeleteQuote">Eliminar</button>')+
@@ -1039,7 +1039,7 @@ function vDir(kind){
     if(isCli){var pr=x.proximaRecarga,col=!pr?"var(--muted)":pr<cur?"var(--rose)":pr<=soon?"var(--amber)":"var(--muted)";var tot=eqTotal(x),det=eqList(x);c4='<span style="color:'+col+'">'+(tot?tot+(tot===1?" extintor · ":" extintores · "):"")+(pr?(pr<cur?"vencido ":"vence ")+fmtMonth(pr):"sin fecha")+'</span>'+(det.length?'<div class="eq-chips">'+det.map(function(e){return '<span class="eq-chip">'+e.qty+' × '+esc(tipoLabel(e.tipo))+' '+esc(String(e.cap).toLowerCase())+'</span>';}).join("")+'</div>':"");c3=esc(x.tel||"—");}
     else{c4=esc(x.surte||"—");c3=esc(x.tel||"—")+(x.ciudad?'<div class="s" style="color:var(--muted);font-size:12px">'+esc(x.ciudad)+'</div>':"");}
     var s=+x.saldo||0;
-    return '<tr><td><b style="font-weight:600">'+esc(x.nombre)+'</b>'+(isCli?'<div style="color:var(--muted);font-size:12px">'+esc([x.ciudad,x.estado].filter(Boolean).join(", "))+(x.ciudad||x.estado?" · ":"")+(fiscalOk(x)?'<span style="color:var(--green)">'+(x.fiscalDe?"factura "+esc((byId("clientes",x.fiscalDe)||{}).nombre||""):"RFC "+esc(x.rfc))+'</span>':'<span style="color:var(--amber)">faltan datos fiscales</span>')+'</div>':"")+'</td><td>'+esc(x.contacto||"—")+'</td><td>'+c3+'</td><td>'+c4+'</td><td class="num" style="color:'+(s?(isCli?"var(--amber)":"var(--rose)"):"var(--green)")+'">'+(s?money(s):(isCli?"Al corriente":"Sin saldo"))+'</td><td class="num">'+(x.tel?'<a class="link" target="_blank" rel="noopener" href="'+esc(waLink(x.tel,"Hola, le escribimos de JASA Extintores."))+'">WhatsApp</a>':"")+(isCli&&S.data.extintores.some(function(e){return e.cliente===x.nombre;})?'<button type="button" class="link" data-act="extOfCli" data-v="'+esc(x.nombre)+'">Extintores</button>':"")+(isCli&&!S.readOnly&&db?'<button type="button" class="link" data-act="portalShare" data-id="'+x.id+'" title="'+esc(x.codigoPortal?"Código: "+x.codigoPortal:"Generar código de acceso")+'">Portal</button>':"")+(S.readOnly||!db?"":'<button type="button" class="link" data-act="edit:'+kind+'" data-id="'+x.id+'">Editar</button>')+'</td></tr>';
+    return '<tr><td><b style="font-weight:600">'+esc(x.nombre)+'</b>'+(isCli?'<div style="color:var(--muted);font-size:12px">'+esc([x.ciudad,x.estado].filter(Boolean).join(", "))+(x.ciudad||x.estado?" · ":"")+(fiscalOk(x)?'<span style="color:var(--green)">'+(x.fiscalDe?"factura "+esc((byId("clientes",x.fiscalDe)||{}).nombre||""):"RFC "+esc(x.rfc))+'</span>':'<span style="color:var(--amber)">faltan datos fiscales</span>')+'</div>':"")+'</td><td>'+esc(x.contacto||"—")+'</td><td>'+c3+'</td><td>'+c4+'</td><td class="num" style="color:'+(s?(isCli?"var(--amber)":"var(--rose)"):"var(--green)")+'">'+(s?money(s):(isCli?"Al corriente":"Sin saldo"))+'</td><td class="num">'+(x.tel?'<a class="link" target="_blank" rel="noopener" href="'+esc(waLink(x.tel,"Hola, le escribimos de "+JASA_EMPRESA.corto+"."))+'">WhatsApp</a>':"")+(isCli&&S.data.extintores.some(function(e){return e.cliente===x.nombre;})?'<button type="button" class="link" data-act="extOfCli" data-v="'+esc(x.nombre)+'">Extintores</button>':"")+(isCli&&!S.readOnly&&db?'<button type="button" class="link" data-act="portalShare" data-id="'+x.id+'" title="'+esc(x.codigoPortal?"Código: "+x.codigoPortal:"Generar código de acceso")+'">Portal</button>':"")+(S.readOnly||!db?"":'<button type="button" class="link" data-act="edit:'+kind+'" data-id="'+x.id+'">Editar</button>')+'</td></tr>';
   }).join("");
   return '<div class="box"><div class="box-h"><div style="display:flex;flex-direction:column;gap:2px"><span class="s" style="color:var(--muted);font-size:13px">'+(isCli?"Cartera con equipos registrados y fecha de su próxima recarga.":"Proveedores y saldos pendientes de pago.")+'</span><span class="mono" style="color:var(--muted)">'+list.length+' registros · '+(isCli?"por cobrar ":"por pagar ")+money(total)+'</span></div>'+(S.readOnly||!db?"":'<span style="display:flex;gap:8px;flex-wrap:wrap">'+(isCli?'<button type="button" class="btn ghost sm" data-act="cliImport">Alta masiva de clientes</button><button type="button" class="btn ghost sm" data-act="extImp" data-v="">Extintores e inspecciones (Excel)</button>':"")+'<button type="button" class="btn sm" data-act="new:'+kind+'">+ Nuevo '+(isCli?"cliente":"proveedor")+'</button></span>')+'</div>'+
     (list.length?'<div class="tbl-wrap"><table><thead><tr>'+head.map(function(h,i){return '<th'+(i>=4?' class="num"':"")+'>'+h.toUpperCase()+'</th>';}).join("")+'</tr></thead><tbody>'+rows+'</tbody></table></div>':emptyBox(S.search?"Sin resultados":"Aún no hay "+(isCli?"clientes":"proveedores"),S.search?"Prueba con otra búsqueda.":(isCli?"Agrega tus clientes con sus extintores y la fecha de su próxima recarga.":"Agrega a quién le compras polvo, CO₂, válvulas o señalamientos."),S.search?null:"new:"+kind,isCli?"Nuevo cliente":"Nuevo proveedor"))+'</div>';
@@ -1209,10 +1209,10 @@ function ocSave(silent){
   return p0.then(function(){return o.id?write("compras",o.id,Object.assign({},byId("compras",o.id),body)).then(function(){return o.id;}):write("compras",null,body);})
     .then(function(id){o.id=id;o.folio=body.folio;if(!silent)toast("Orden "+body.folio+" guardada");return id;});
 }
-function ocText(o){var b=ocBody(o);return "Hola, le escribimos de JASA Extintores. Orden de compra "+b.folio+":\n"+b.lines.map(function(l){return "• "+l.art+": "+l.cant+(l.unidad?" "+l.unidad:"");}).join("\n")+(b.notas?"\n\n"+b.notas:"")+"\n\nGracias.";}
+function ocText(o){var b=ocBody(o);return "Hola, le escribimos de "+JASA_EMPRESA.corto+". Orden de compra "+b.folio+":\n"+b.lines.map(function(l){return "• "+l.art+": "+l.cant+(l.unidad?" "+l.unidad:"");}).join("\n")+(b.notas?"\n\n"+b.notas:"")+"\n\nGracias.";}
 function ocPrint(){
   var o=ocBody(S.oc);var win=window.open("","_blank");if(!win){toast("Permite las ventanas emergentes para imprimir.");return;}
-  win.document.write("<!doctype html><html><head><meta charset='utf-8'><title>Orden de compra "+esc(o.folio)+"</title><style>@page{size:letter;margin:14mm}body{font-family:Arial,sans-serif;font-size:12px;color:#000}.b{border-top:6px solid #E10F0F;padding-top:10px;display:flex;justify-content:space-between}h1{font-size:20px;margin:0}table{width:100%;border-collapse:collapse;margin-top:14px}th,td{border-bottom:1px solid #999;padding:6px;text-align:left}th{font-size:10px;letter-spacing:.06em}.n{text-align:right}.t{font-size:16px;font-weight:bold;text-align:right;margin-top:10px}</style></head><body><div class='b'><div><h1>JASA EXTINTORES SA DE CV</h1><div>Piedras Negras, Coahuila · 878 783 3216</div></div><div style='text-align:right'><b>ORDEN DE COMPRA</b><div style='font-family:monospace;font-size:14px'>"+esc(o.folio)+"</div><div>"+fmtDate(o.fecha)+"</div></div></div><p><b>Proveedor:</b> "+esc(o.proveedor)+"</p><table><thead><tr><th>ARTÍCULO</th><th class='n'>CANTIDAD</th><th class='n'>COSTO UNIT.</th><th class='n'>IMPORTE</th></tr></thead><tbody>"+o.lines.map(function(l){return "<tr><td>"+esc(l.art)+"</td><td class='n'>"+l.cant+(l.unidad?" "+esc(l.unidad):"")+"</td><td class='n'>"+(l.costo?money(l.costo):"")+"</td><td class='n'>"+(l.costo?money(l.cant*l.costo):"")+"</td></tr>";}).join("")+"</tbody></table>"+(ocTotal(o)?"<div class='t'>Total "+money(ocTotal(o))+"</div>":"")+(o.notas?"<p><b>Notas:</b> "+esc(o.notas)+"</p>":"")+"<script>setTimeout(function(){print()},300)<\/script></body></html>");win.document.close();
+  win.document.write("<!doctype html><html><head><meta charset='utf-8'><title>Orden de compra "+esc(o.folio)+"</title><style>@page{size:letter;margin:14mm}body{font-family:Arial,sans-serif;font-size:12px;color:#000}.b{border-top:6px solid #E10F0F;padding-top:10px;display:flex;justify-content:space-between}h1{font-size:20px;margin:0}table{width:100%;border-collapse:collapse;margin-top:14px}th,td{border-bottom:1px solid #999;padding:6px;text-align:left}th{font-size:10px;letter-spacing:.06em}.n{text-align:right}.t{font-size:16px;font-weight:bold;text-align:right;margin-top:10px}</style></head><body><div class='b'><div><h1>"+esc(JASA_EMPRESA.razon)+"</h1><div>"+esc(JASA_EMPRESA.lugar)+" · "+esc(JASA_EMPRESA.tel)+(JASA_EMPRESA.rfc?" · RFC "+esc(JASA_EMPRESA.rfc):"")+"</div></div><div style='text-align:right'><b>ORDEN DE COMPRA</b><div style='font-family:monospace;font-size:14px'>"+esc(o.folio)+"</div><div>"+fmtDate(o.fecha)+"</div></div></div><p><b>Proveedor:</b> "+esc(o.proveedor)+"</p><table><thead><tr><th>ARTÍCULO</th><th class='n'>CANTIDAD</th><th class='n'>COSTO UNIT.</th><th class='n'>IMPORTE</th></tr></thead><tbody>"+o.lines.map(function(l){return "<tr><td>"+esc(l.art)+"</td><td class='n'>"+l.cant+(l.unidad?" "+esc(l.unidad):"")+"</td><td class='n'>"+(l.costo?money(l.costo):"")+"</td><td class='n'>"+(l.costo?money(l.cant*l.costo):"")+"</td></tr>";}).join("")+"</tbody></table>"+(ocTotal(o)?"<div class='t'>Total "+money(ocTotal(o))+"</div>":"")+(o.notas?"<p><b>Notas:</b> "+esc(o.notas)+"</p>":"")+"<script>setTimeout(function(){print()},300)<\/script></body></html>");win.document.close();
 }
 function ocReceive(pagada){
   var o=S.oc;ocSave(true).then(function(id){
@@ -1227,6 +1227,39 @@ function ocReceive(pagada){
 function staffList(){return (S.staff||[]).slice().sort(function(a,b){return (a.rol==="admin"?0:1)-(b.rol==="admin"?0:1)||String(a.nombre||a.email).localeCompare(String(b.nombre||b.email),"es");});}
 function permsOf(x){if(x.rol==="admin")return PERMS.map(function(p){return p[0];});var l=(x.permisos||[]).slice();if(x.rol==="tecnico"&&l.indexOf("campo")<0)l.push("campo");return l;}
 function reloadStaff(){return SB.from("staff").select("*").then(function(r){if(!r.error){S.staff=r.data||[];var me=String(S.user.email).toLowerCase();S.me=S.staff.find(function(x){return String(x.email).toLowerCase()===me;})||S.me;}render();});}
+/* ---------- Mi empresa: datos del negocio (ajustes/empresa) ---------- */
+var EMP_CAMPOS=[["Identidad",[["corto","Nombre comercial","Como aparece en mensajes y correos. Ej. JASA Extintores"],["nombre","Nombre corto en documentos","En mayúsculas. Ej. JASA EXTINTORES"],["razon","Razón social","Ej. JASA EXTINTORES SA DE CV"],["rfc","RFC",""]]],
+  ["Domicilio",[["calle","Calle, número y colonia",""],["cp","C.P.",""],["ciudad","Ciudad",""],["estado","Estado",""]]],
+  ["Contacto",[["tel","Teléfono",""],["wa","WhatsApp","El número al que escriben los clientes desde el portal, la ficha del QR y la cotización."],["correo","Correo","Recibe copia de cotizaciones y reportes que salen por correo."],["web","Sitio web","Sin https://. Ej. jasaextintores.com"]]],
+  ["Documentos",[["iva","I.V.A. (%)","8 en la franja fronteriza; 16 en el resto del país."],["norma","Norma de servicio","Sale al pie del reporte de inspección."],["pie","Texto al pie de la cotización",""]]],
+  ["Etiqueta del QR y marca",[["etqArriba","Texto chico (arriba)","Ej. EXTINTORES"],["etqMarca","Marca corta","Letra grande de la etiqueta y del encabezado del portal, la ficha y la cotización. Ej. JASA (corto: cabe en 50 × 25 mm)."]]]];
+function empDoc(){return byId("ajustes","empresa")||{};}
+function vEmpresa(){var d=empDoc(),E=JASA_EMPRESA,B=JASA_EMPRESA_BASE,ro=S.readOnly||!db;
+  var out='<div class="hint">Estos datos salen en cotizaciones, órdenes, reportes de inspección, etiquetas, mensajes de WhatsApp y correo, el portal de clientes, la ficha del QR y la cotización en línea. Si dejas un campo vacío se usa el valor de fábrica.</div>';
+  if(!S.empresaRpc)out+='<div class="notice"><b>Falta un paso en Supabase.</b> Corre <span class="mono">supabase/13_empresa.sql</span> en SQL Editor para que el portal, la ficha del QR, la app y la cotización en línea también usen estos datos.</div>';
+  out+='<div class="box"><div class="box-h"><h2>Vista previa</h2><span class="eyebrow">Encabezado de cotizaciones y reportes</span></div><div style="overflow:auto"><div class="sheet" style="width:auto;min-width:640px;padding:16px 20px;box-shadow:none"><div class="sh-top"><div class="sh-logo"><img alt="" style="max-height:110px;width:auto" src="'+esc(E.logo||LOGO)+'"></div>'+jasaSheetCo()+'</div></div></div></div>';
+  out+='<div class="box"><div class="box-h"><h2>Logo</h2></div><div class="plan"><span class="hint">PNG o JPG con fondo blanco o transparente, horizontal. Se guarda reducido (máx. 600 px de ancho). Sin logo propio se usa el de JASA.</span>'+
+    '<div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">'+(d.logo?'<img alt="Logo actual" src="'+esc(d.logo)+'" style="max-height:70px;max-width:240px;background:#fff;border:1px solid var(--line);padding:6px">':'<span class="pill">Logo de fábrica</span>')+
+    (ro?'':'<label class="btn ghost sm" style="width:auto">Subir logo<input type="file" id="empLogo" accept="image/png,image/jpeg,image/webp" hidden></label>'+(d.logo?'<button type="button" class="btn ghost sm" data-act="empLogoX">Quitar logo</button>':''))+'</div></div></div>';
+  EMP_CAMPOS.forEach(function(g){out+='<div class="box"><div class="box-h"><h2>'+g[0]+'</h2></div><div class="plan"><div class="f2">'+g[1].map(function(f){var k=f[0],v=d[k]!=null?d[k]:"";
+      var ctl=k==="iva"?'<select class="inp" id="emp_iva"'+(ro?" disabled":"")+'>'+[["","De fábrica ("+B.iva+" %)"],["8","8 % (frontera)"],["16","16 %"],["0","0 % (exento)"]].map(function(o){return '<option value="'+o[0]+'"'+(String(v)===o[0]?" selected":"")+'>'+o[1]+'</option>';}).join("")+'</select>'
+        :k==="pie"?'<textarea class="inp" id="emp_pie" rows="2" placeholder="'+esc(B.pie)+'"'+(ro?" readonly":"")+'>'+esc(v)+'</textarea>'
+        :'<input class="inp" id="emp_'+k+'" autocomplete="off" value="'+esc(v)+'" placeholder="'+esc(B[k]||"")+'"'+(ro?" readonly":"")+'>';
+      return '<div class="field"><label for="emp_'+k+'">'+f[1]+'</label>'+ctl+(f[2]?'<small>'+esc(f[2])+'</small>':'')+'</div>';}).join("")+'</div></div></div>';});
+  if(!ro)out+='<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><button type="button" class="btn" style="width:auto" data-act="empSave">Guardar datos de la empresa</button><span class="hint" id="empMsg"></span></div>';
+  return out;}
+function empAplicar(d){jasaEmpresaUsar(d);IVA=jasaIva();try{localStorage.setItem("jasaEmpresa",JSON.stringify(d||{}));}catch(e){}}
+function empSave(extra){var d=Object.assign({},empDoc());delete d.id;
+  EMP_CAMPOS.forEach(function(g){g[1].forEach(function(f){var el=document.getElementById("emp_"+f[0]);if(el)d[f[0]]=el.value.trim();});});
+  if(d.iva!==""&&!(parseFloat(d.iva)>=0&&parseFloat(d.iva)<=30)){toast("El I.V.A. debe ser un porcentaje entre 0 y 30.");return;}
+  if(d.rfc&&!/^[A-ZÑ&]{3,4}\d{6}[A-Z0-9]{3}$/i.test(d.rfc)){toast("Revisa el RFC: 12 o 13 caracteres.");return;}
+  d.web=String(d.web||"").replace(/^https?:\/\//i,"").replace(/\/+$/,"");
+  Object.assign(d,extra||{},{actualizado:new Date().toISOString(),por:String(S.user&&S.user.email||"").toLowerCase()});
+  return write("ajustes","empresa",d).then(function(){empAplicar(d);toast("Datos de la empresa guardados");render();});}
+function empLogoFile(file){if(!file)return;if(!/^image\//.test(file.type)){toast("Sube una imagen PNG o JPG.");return;}
+  var rd=new FileReader();rd.onload=function(){var im=new Image();im.onload=function(){var w=Math.min(600,im.width),h=Math.round(im.height*w/im.width),cv=document.createElement("canvas");cv.width=w;cv.height=h;
+      var x=cv.getContext("2d");x.drawImage(im,0,0,w,h);var url=cv.toDataURL("image/png");if(url.length>400000)url=cv.toDataURL("image/jpeg",0.9);
+      empSave({logo:url});};im.onerror=function(){toast("No se pudo leer la imagen.");};im.src=rd.result;};rd.readAsDataURL(file);}
 function vPersonal(){
   var list=staffList(),hasCol=list.some(function(x){return "permisos" in x;});
   return '<div class="hint">Aquí decides quién entra al sistema y qué puede ver y modificar cada persona. Los permisos se cumplen en la base de datos: aunque alguien sepa de sistemas, no puede ver lo que no tiene permitido.</div>'+
@@ -1708,6 +1741,7 @@ function render(){
   else if(S.screen==="inspecciones")html+=vInsp();
   else if(S.screen==="costos")html+=vCostos();
   else if(S.screen==="personal")html+=vPersonal();
+  else if(S.screen==="empresa")html+=vEmpresa();
   else if(S.screen==="asistencia")html+=vAsist();
   else if(S.screen==="facturas")html+=vFacturas();
   else if(S.screen==="reportes")html+=vReportes();
@@ -1758,7 +1792,7 @@ document.addEventListener("click",function(e){
   if(a==="qStatus"&&q){patch("quotes",q.id,v==="Respondida"?{status:v,respondida:today()}:{status:v}).then(function(){toast("Marcada como "+v.toLowerCase());});return;}
   if(a==="qVerOt"&&q){var vo=S.data.ordenes.find(function(x){return x.folio===q.otFolio;});if(!vo){toast("No encontré la orden "+q.otFolio+".");return;}S.screen="taller";S.otSel=vo.id;render();window.scrollTo(0,0);return;}
   if(a==="qSendWa"&&q){var ww=window.open("","_blank");ensureToken(q).then(function(q2){var u=waLink(q2.tel,quoteMsg(q2));if(ww)ww.location=u;else location.href=u;toast("Cotización enviada: el cliente puede autorizarla desde el enlace");},function(){if(ww)ww.close();});return;}
-  if(a==="qSendMail"&&q){ensureToken(q).then(function(q2){var em=q2.email||(findClient(q2.cliente)||{}).email;location.href=mailLink(em,"Cotización "+q2.folio+" · JASA Extintores",quoteMsg(q2),JASA_MAIL);toast("Se abrió tu correo con la cotización y copia a JASA");});return;}
+  if(a==="qSendMail"&&q){ensureToken(q).then(function(q2){var em=q2.email||(findClient(q2.cliente)||{}).email;location.href=mailLink(em,"Cotización "+q2.folio+" · "+JASA_EMPRESA.corto,quoteMsg(q2),JASA_EMPRESA.correo);toast("Se abrió tu correo con la cotización y copia a JASA");});return;}
   if(a==="qAccept"&&q&&!q.otFolio){
     var folio=nextOT();
     var eqd=(q.lines||[]).map(parseExtLine).filter(Boolean);
@@ -1867,6 +1901,8 @@ document.addEventListener("click",function(e){
   if(a==="asDel"){if(confirm("¿Borrar esta marca?"))remove("asistencia",id).then(function(){toast("Marca borrada");});return;}
   if(a==="asHere"){asHere();return;}
   if(a==="asCfgSave"){asCfgSave();return;}
+  if(a==="empSave"){empSave();return;}
+  if(a==="empLogoX"){if(!confirm("¿Quitar el logo propio y volver al de fábrica?"))return;empSave({logo:""});return;}
   if(a==="asXls"){asXls();return;}
   if(a==="asMail"){var cf=asCfg()||{};location.href=mailLink(cf.correo||S.user.email,"Asistencia JASA · semana del "+(S.asWk||jasaLunes(today())),asTexto());return;}
   if(a==="cliExt"){S.extCli=v;S.drawer=null;renderDrawer();S.screen="extintores";try{history.replaceState(null,"","#extintores");}catch(er){}render();window.scrollTo(0,0);return;}
@@ -1928,6 +1964,7 @@ document.addEventListener("change",function(e){
       var buenas=hs.filter(function(h){return !h.error;});extImpLoad(buenas.length?hs.filter(function(h){return !h.error||!/encabezado/.test(h.error);}):hs,ef.name);t.value="";});}).catch(function(){em.textContent="No se pudo leer el archivo. Guárdalo como .xlsx e inténtalo otra vez.";});return;}
   if(/^eiCli\d+$/.test(t.id)&&S.extImp){S.extImp.hojas[+t.getAttribute("data-hoja")].cli=t.value;eiResolver();extImportDrawer();return;}
   if(/^eiR[vs]\d+$/.test(t.id)&&S.extImp){S.extImp.hojas[+t.getAttribute("data-hoja")][/^eiRv/.test(t.id)?"reviso":"resp"]=t.value.trim();eiResolver();extImportDrawer();return;}
+  if(t.id==="empLogo"){empLogoFile(t.files&&t.files[0]);t.value="";return;}
   if(t.id==="eiRepl"&&S.extImp){S.extImp.reemplazar=t.checked;return;}
   if(/^eiF\d+$/.test(t.id)&&S.extImp){S.extImp.hojas[+t.getAttribute("data-hoja")].fecha=t.value;eiResolver();extImportDrawer();return;}
   if(t.id==="f_fiscalDe"){document.querySelectorAll("#drawerForm .field.fis").forEach(function(el){el.hidden=!!t.value;});return;}
@@ -1969,7 +2006,7 @@ function backup(){
   saveBlob("jasa-respaldo-"+today()+".json",new Blob([JSON.stringify(out,null,2)],{type:"application/json"})).then(function(){toast("Respaldo guardado");},function(e){if(e&&e.code!=="declined")toast("No se pudo descargar el respaldo.");});
 }
 function portalLink(code){return SITE+"/clientes/#"+code;}
-function portalMsg(c){return "Hola"+(c.contacto?" "+c.contacto:"")+", le escribimos de JASA Extintores.\n\nEste es su acceso al portal de clientes, donde puede consultar sus extintores, sus próximas recargas y descargar sus reportes de inspección.\n\nEntre directo con este enlace:\n"+portalLink(c.codigoPortal)+"\n\nO entre a jasaextintores.com/clientes y escriba su código de acceso:\n\n"+c.codigoPortal+"\n\nEl código es solo para su empresa. Cualquier duda: 878 783 3216 · WhatsApp 878 117 4728.";}
+function portalMsg(c){return "Hola"+(c.contacto?" "+c.contacto:"")+", le escribimos de "+JASA_EMPRESA.corto+".\n\nEste es su acceso al portal de clientes, donde puede consultar sus extintores, sus próximas recargas y descargar sus reportes de inspección.\n\nEntre directo con este enlace:\n"+portalLink(c.codigoPortal)+"\n\nO entre a "+JASA_EMPRESA.web+"/clientes y escriba su código de acceso:\n\n"+c.codigoPortal+"\n\nEl código es solo para su empresa. Cualquier duda: "+jasaContacto()+".";}
 function copiarTxt(tx,ok){function hecho(){toast(ok);}function viejo(){var ta=document.createElement("textarea");ta.value=tx;ta.setAttribute("readonly","");ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.select();try{document.execCommand("copy");hecho();}catch(e){toast("No se pudo copiar; selecciónalo y cópialo a mano.");}ta.remove();}
   if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(tx).then(hecho,viejo);else viejo();}
 function portalDrawer(c){var msg=portalMsg(c),em=c.email||fiscalOf(c).emailFact||"";
@@ -1979,7 +2016,7 @@ function portalDrawer(c){var msg=portalMsg(c),em=c.email||fiscalOf(c).emailFact|
     '<div class="field"><label>Enlace directo (entra sin escribir el código)</label><div style="display:flex;gap:6px"><input class="inp mono" readonly value="'+esc(portalLink(c.codigoPortal))+'" onclick="this.select()"><button type="button" class="btn ghost sm" data-act="copiar" data-txt="'+esc(portalLink(c.codigoPortal))+'" data-msg="Enlace copiado">Copiar</button></div></div>'+
     '<div class="field"><label>Mensaje</label><textarea class="inp" readonly rows="9" style="font-family:var(--body);font-size:14px">'+esc(msg)+'</textarea></div>'+
     '<div style="display:flex;gap:8px;flex-wrap:wrap">'+(c.tel?'<a class="btn wa" target="_blank" rel="noopener" href="'+esc(waLink(c.tel,msg))+'">Enviar por WhatsApp</a>':'<span class="hint">Sin teléfono para WhatsApp.</span>')+
-    (em?'<a class="btn ghost" href="'+esc(mailLink(em,"Su acceso al portal de clientes · JASA Extintores",msg,JASA_MAIL))+'">Enviar por correo</a>':'<span class="hint">Sin correo: agrégalo en la ficha del cliente para enviarlo por correo.</span>')+
+    (em?'<a class="btn ghost" href="'+esc(mailLink(em,"Su acceso al portal de clientes · "+JASA_EMPRESA.corto,msg,JASA_EMPRESA.correo))+'">Enviar por correo</a>':'<span class="hint">Sin correo: agrégalo en la ficha del cliente para enviarlo por correo.</span>')+
     '<button type="button" class="btn ghost" data-act="copiar" data-txt="'+esc(msg)+'" data-msg="Mensaje copiado">Copiar mensaje</button></div>'+
     '<span class="hint">Para quitarle el acceso a este cliente, borra el código en su ficha (Editar).</span></div></div></div>';}
 function newPortalCode(){var A="ABCDEFGHJKLMNPQRSTUVWXYZ23456789",b=new Uint8Array(10),o="";crypto.getRandomValues(b);for(var i=0;i<10;i++){o+=A[b[i]%A.length];if(i===3||i===7)o+="-";}return o;}
@@ -2011,15 +2048,15 @@ function jasaReportHTML(o, cli, logo) {
     var r = rows[i];
     body += "<tr><td>" + (r ? i + 1 : "") + "</td><td>" + (r ? e(r.eq) : "") + "</td><td>" + (r ? e(r.svc) : "") + "</td><td>" + (r ? e(r.serie) : "") + "</td><td>" + (r ? e(fm(r.fab)) : "") + "</td><td>" + (r ? e(fm(r.ph)) : "") + "</td><td>" + (r ? e(r.et) : "") + "</td><td>" + (r ? (r.ok || entregada ? "Conforme" : "En proceso") : "") + "</td></tr>";
   }
-  return '<div class="sheet"><div class="sh-top"><div class="sh-logo"><img alt="JASA Extintores" width="300" height="136" src="' + (logo || "") + '"></div>' +
-    '<div class="sh-co"><b>JASA EXTINTORES SA DE CV</b><span>MUTUALISTA 412 COL. BUENA VISTA SUR</span><span>PIEDRAS NEGRAS, COAHUILA</span><span>JEX180118NA0</span><span class="sh-tel">878 783 3216 · WhatsApp 878 117 4728</span></div></div>' +
+  return '<div class="sheet"><div class="sh-top"><div class="sh-logo"><img alt="' + e(JASA_EMPRESA.corto) + '" width="300" height="136" src="' + (JASA_EMPRESA.logo || logo || "") + '"></div>' +
+    jasaSheetCo() + '</div>' +
     '<div class="sh-row"><div class="sh-title" style="font-size:24px">REPORTE DE INSPECCIÓN Y SERVICIO</div><div class="sh-num"><div><span>ORDEN:</span><b>' + e(o.folio) + '</b></div><div><span>FECHA:</span><b>' + e(fd(fecha)) + '</b></div><div><span>PRÓX. RECARGA:</span><b>' + e(fm(prox) || "—") + '</b></div></div></div>' +
     '<div class="sh-row"><dl class="sh-client"><dt>Cliente:</dt><dd>' + e(cli.nombre || o.cliente) + '</dd><dt>Ciudad:</dt><dd>' + e(cli.ciudad || "") + '</dd><dt>Recibido:</dt><dd>' + e(fd(o.recibido)) + '</dd><dt>Entregado:</dt><dd>' + e(entregada ? fd(o.entregado) : "EN PROCESO") + '</dd><dt>Extintores:</dt><dd>' + rows.length + '</dd></dl>' +
     '<div class="sh-cond"><b>OBSERVACIONES</b><div>' + e(o.notas || "") + '</div></div></div>' +
     '<table class="sh-table"><colgroup><col style="width:5%"><col style="width:17%"><col style="width:15%"><col style="width:14%"><col style="width:11%"><col style="width:12%"><col style="width:14%"><col style="width:12%"></colgroup>' +
     '<thead><tr><th>#</th><th>Equipo</th><th>Servicio</th><th>No. de serie</th><th>Fabricación</th><th>Próx. P. H.</th><th>Etiqueta NOM-154</th><th>Resultado</th></tr></thead><tbody>' + body + '</tbody></table>' +
-    '<div class="sh-legal">Servicio de mantenimiento y recarga conforme a la NOM-154-SCFI-2005 y a la NOM-002-STPS-2010. P. H. = prueba hidrostática. Conserve este reporte para sus inspecciones de Protección Civil.</div>' +
-    '<div class="sh-sign" style="grid-template-columns:repeat(2,1fr)"><div><span>TÉCNICO RESPONSABLE (JASA)</span><small>' + e(o.entrego || o.recibio || "") + '</small></div><div><span>RECIBE DE CONFORMIDAD (CLIENTE)</span><small>' + e(o.recibioCliente || "") + '</small></div></div></div>';
+    '<div class="sh-legal">Servicio de mantenimiento y recarga conforme a la ' + e(JASA_EMPRESA.norma) + ' y a la NOM-002-STPS-2010. P. H. = prueba hidrostática. Conserve este reporte para sus inspecciones de Protección Civil.</div>' +
+    '<div class="sh-sign" style="grid-template-columns:repeat(2,1fr)"><div><span>TÉCNICO RESPONSABLE (' + e(JASA_EMPRESA.etqMarca || JASA_EMPRESA.corto) + ')</span><small>' + e(o.entrego || o.recibio || "") + '</small></div><div><span>RECIBE DE CONFORMIDAD (CLIENTE)</span><small>' + e(o.recibioCliente || "") + '</small></div></div></div>';
 }
 var JASA_SHEET_CSS = ".sheet{width:816px;background:#ffffff;color:#111111;padding:36px 40px 40px;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.3;box-sizing:border-box}" +
   ".sheet *{box-sizing:border-box}" +
@@ -2063,7 +2100,47 @@ var JASA_PUNTOS = [
 // Inspecciones viejas (antes del formato de JASA) traían "manometro"; se lee como presión.
 function jasaPuntosDe(p) { p = Object.assign({}, p || {}); if (!p.presion && p.manometro) p.presion = p.manometro === "bien" ? "si" : p.manometro === "mal" ? "no" : p.manometro; return p; }
 function jasaNA(p, tipo) { return !!(p.na && p.na(tipo)); }
-var JASA_EMPRESA = { nombre: "JASA EXTINTORES", rfc: "JEX180118NA0", dir: "Mutualista 412, Col. Buena Vista Sur, C.P. 26040, Piedras Negras, Coahuila", tel: "878 783 3216", wa: "878 117 4728", correo: "jasa-extintores@live.com.mx", norma: "NOM-154-SCFI-2005" };
+/* Mi empresa: datos del negocio que usan documentos, mensajes y páginas. Valores de fábrica = JASA;
+   se reemplazan con docs('ajustes','empresa') vía public.empresa_publica() (jasaEmpresaUsar). */
+var JASA_EMPRESA_BASE = { corto: "JASA Extintores", nombre: "JASA EXTINTORES", razon: "JASA EXTINTORES SA DE CV", rfc: "JEX180118NA0",
+  calle: "Mutualista 412, Col. Buena Vista Sur", ciudad: "Piedras Negras", estado: "Coahuila", cp: "26040",
+  tel: "878 783 3216", wa: "878 117 4728", correo: "jasa-extintores@live.com.mx", web: "jasaextintores.com",
+  iva: 8, norma: "NOM-154-SCFI-2005", logo: "", etqArriba: "EXTINTORES", etqMarca: "JASA", pie: "Gracias por su preferencia." };
+var JASA_EMPRESA = {};
+function jasaEmpresaUsar(d) {
+  var E = JASA_EMPRESA, B = JASA_EMPRESA_BASE;
+  Object.keys(E).forEach(function (k) { delete E[k]; });
+  Object.keys(B).forEach(function (k) { E[k] = B[k]; });
+  Object.keys(d || {}).forEach(function (k) { if (d[k] !== "" && d[k] != null && k !== "id") E[k] = d[k]; });
+  E.iva = isFinite(parseFloat(E.iva)) ? parseFloat(E.iva) : 8;
+  E.dir = [E.calle, E.cp ? "C.P. " + E.cp : "", E.ciudad, E.estado].filter(Boolean).join(", ");
+  E.lugar = [E.ciudad, E.estado].filter(Boolean).join(", ");
+  E.waNum = "52" + String(E.wa || E.tel || "").replace(/\D/g, "").slice(-10);
+  return E;
+}
+jasaEmpresaUsar(null);
+function jasaIva() { return (JASA_EMPRESA.iva || 0) / 100; }
+function jasaWaLink(txt) { return "https://wa.me/" + JASA_EMPRESA.waNum + (txt ? "?text=" + encodeURIComponent(txt) : ""); }
+function jasaContacto() { var E = JASA_EMPRESA; return [E.tel ? E.tel : "", E.wa && E.wa !== E.tel ? "WhatsApp " + E.wa : ""].filter(Boolean).join(" · "); }
+/* Bloque de la empresa en cotizaciones, órdenes y reportes (hoja carta). */
+function jasaSheetCo() {
+  var E = JASA_EMPRESA; function e(v) { return String(v == null ? "" : v).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+  return '<div class="sh-co"><b>' + e(E.razon || E.nombre) + '</b><span>' + e(String(E.calle || "").toUpperCase()) + '</span><span>' + e(E.lugar.toUpperCase()) + (E.cp ? " · C.P. " + e(E.cp) : "") + '</span>' + (E.rfc ? '<span>' + e(E.rfc) + '</span>' : "") + '<span class="sh-tel">' + e(jasaContacto()) + '</span></div>';
+}
+/* Carga los datos guardados (y los recuerda en el teléfono para abrir sin señal). */
+function jasaEmpresaCargar(url, key, listo) {
+  try { var c = JSON.parse(localStorage.getItem("jasaEmpresa") || "null"); if (c) jasaEmpresaUsar(c); } catch (e) {}
+  return fetch(url + "/rest/v1/rpc/empresa_publica", { method: "POST", headers: { apikey: key, "Content-Type": "application/json" }, body: "{}" })
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (d) { var ok = !!(d && typeof d === "object" && !Array.isArray(d)); if (ok) { jasaEmpresaUsar(d); try { localStorage.setItem("jasaEmpresa", JSON.stringify(d)); } catch (e) {} } if (listo) listo(JASA_EMPRESA, ok); return JASA_EMPRESA; })
+    .catch(function () { if (listo) listo(JASA_EMPRESA, false); return JASA_EMPRESA; });
+}
+/* Rellena los elementos marcados en el HTML: data-emp="tel" (texto) y data-emp-wa="mensaje" (enlace). */
+function jasaEmpresaPintar(root) {
+  root = root || document; var E = JASA_EMPRESA;
+  Array.prototype.forEach.call(root.querySelectorAll("[data-emp]"), function (el) { var k = el.getAttribute("data-emp"); if (k === "contacto") el.textContent = jasaContacto(); else if (E[k] != null) el.textContent = E[k]; });
+  Array.prototype.forEach.call(root.querySelectorAll("[data-emp-wa]"), function (el) { el.href = jasaWaLink(el.getAttribute("data-emp-wa")); });
+}
 function jasaCap(c) { var m = String(c || "").toUpperCase().replace(",", ".").match(/(\d+(?:\.\d+)?)\s*(KG|KGS|LBS?|LTS?|L)?/); if (!m) return String(c || ""); var u = !m[2] || m[2].indexOf("K") === 0 ? "KG" : m[2].indexOf("LB") === 0 ? "LB" : "L"; return m[1] + " " + u; }
 var JASA_OPT_LABEL = { bien: "Bien", mal: "Mal", libre: "Libre", obstruido: "Obst.", si: "Sí", no: "No", na: "No aplica" };
 var JASA_OPT_COL = { bien: "BIEN", mal: "MAL", libre: "LIBRE", obstruido: "OBST.", si: "SI", no: "NO" };
@@ -2084,7 +2161,7 @@ function jasaInspeccionPages(insp, logo, cli) {
     if (it.vence && it.vence <= mk) { var k = jasaCap(it.cap).replace(/ KG$/, "") + "|" + (it.tipo === "TIPO K" ? "K" : it.tipo || ""); venc[k] = (venc[k] || 0) + 1; }
     if (it.ph && it.ph <= mk) ph++; if (p.letrero === "no") letr++; });
   var cliDir = [cli.direccion, cli.ciudad, cli.estado, cli.cp ? "C.P. " + cli.cp : ""].filter(Boolean).join(" · ");
-  var head = '<div class="ip-band"><div class="ip-logo">' + (logo ? '<img alt="Extintores JASA" src="' + logo + '">' : "<b>EXTINTORES JASA</b>") + '</div><div class="ip-tit"><b>' + e(String(insp.cliente || "").toUpperCase()) + '</b><span class="ip-sub">INSPECCIÓN DE EXTINTORES · MES DE ' + e(mes) + '</span>' +
+  var head = '<div class="ip-band"><div class="ip-logo">' + (E.logo || logo ? '<img alt="' + e(E.corto) + '" src="' + (E.logo || logo) + '">' : "<b>" + e(E.nombre) + "</b>") + '</div><div class="ip-tit"><b>' + e(String(insp.cliente || "").toUpperCase()) + '</b><span class="ip-sub">INSPECCIÓN DE EXTINTORES · MES DE ' + e(mes) + '</span>' +
     (fis.razonSocial || fis.rfc || cliDir ? '<span>' + e([fis.razonSocial, fis.rfc ? "RFC " + fis.rfc : "", cliDir].filter(Boolean).join(" · ")) + '</span>' : "") + '</div>' +
     '<div class="ip-per"><span>FECHA DE REVISIÓN</span><b>' + e(f.split("-").reverse().join("/")) + '</b></div></div>' +
     '<div class="ip-rr"><span><b>REVISÓ:</b> ' + e(String(insp.reviso || "").toUpperCase()) + '</span><span><b>RESPONSABLE:</b> ' + e(String(insp.responsable || cli.contacto || "").toUpperCase()) + '</span></div>';
@@ -2104,9 +2181,9 @@ function jasaInspeccionPages(insp, logo, cli) {
       (last ? '<div class="ip-f"><div class="ip-sum"><b>RESUMEN</b>: ' + items.length + (items.length === 1 ? ' extintor revisado · ' : ' extintores revisados · ') + ok + (ok === 1 ? ' conforme · ' : ' conformes · ') + (items.length - ok) + (items.length - ok === 1 ? ' requiere atención' : ' requieren atención') +
         '<table class="ip-v"><tr><th colspan="3">POR RECARGAR ' + e(mes) + ' (VENCIDOS Y DEL MES)</th></tr><tr><th>CAP.</th><th>TIPO</th><th>CANTIDAD</th></tr>' + (vk.length ? vk.map(function (k) { var q = k.split("|"); return '<tr><td>' + e(q[0]) + '</td><td>' + e(q[1]) + '</td><td>' + venc[k] + '</td></tr>'; }).join("") : '<tr><td colspan="3">Ninguno</td></tr>') +
         '<tr><td colspan="2">SEÑALAMIENTOS</td><td>' + letr + '</td></tr><tr><td colspan="2">P.H.</td><td>' + ph + '</td></tr></table></div>' +
-        '<div class="ip-s">' + (insp.firmaTecnico ? '<img alt="Firma del técnico" src="' + insp.firmaTecnico + '">' : '<i></i>') + '<span>' + e(insp.reviso || "") + '</span><small>REVISÓ (TÉCNICO JASA)</small></div>' +
+        '<div class="ip-s">' + (insp.firmaTecnico ? '<img alt="Firma del técnico" src="' + insp.firmaTecnico + '">' : '<i></i>') + '<span>' + e(insp.reviso || "") + '</span><small>REVISÓ (TÉCNICO ' + e(E.etqMarca || E.corto) + ')</small></div>' +
         '<div class="ip-s">' + (insp.firma ? '<img alt="Firma del responsable" src="' + insp.firma + '">' : '<i></i>') + '<span>' + e(insp.responsable || "") + '</span><small>RESPONSABLE DEL CLIENTE</small></div></div>' : '') +
-      '<div class="ip-foot"><span>' + e(E.nombre) + ' · RFC ' + e(E.rfc) + ' · Tel. ' + e(E.tel) + ' · ' + e(E.dir) + '</span><span>Generado: ' + gen + ' · Pág. ' + pg + ' de ' + nPag + ' · ' + e(E.norma) + '</span></div></div>');
+      '<div class="ip-foot"><span>' + e(E.razon || E.nombre) + (E.rfc ? ' · RFC ' + e(E.rfc) : '') + ' · Tel. ' + e(E.tel) + ' · ' + e(E.dir) + '</span><span>Generado: ' + gen + ' · Pág. ' + pg + ' de ' + nPag + ' · ' + e(E.norma) + '</span></div></div>');
   }
   return pages;
 }
@@ -2269,6 +2346,7 @@ function jasaRecargaFutura(recarga) { var d = new Date(), hoy = d.getFullYear() 
 
 /* ---------- modo Supabase (jasaextintores.com/admin) ---------- */
 var SUPA_URL="https://psggoagcdokwrkykgufr.supabase.co",SUPA_KEY="sb_publishable_jwx2IRxOqdCW-SjmKcYW2A_lrJTFJa3",SB=null;
+if(typeof fetch==="function"&&location.protocol.indexOf("http")===0)jasaEmpresaCargar(SUPA_URL,SUPA_KEY,function(E,ok){S.empresaRpc=ok;IVA=jasaIva();try{if(S.user)render();}catch(e){}});
 function makeSupaDb(sb){
   var cache={},subs={};
   function snap(c){var m=cache[c]||{};var arr=Object.keys(m).map(function(id){var d=m[id];return {id:id,exists:true,data:function(){return d;},metadata:{fromCache:false,hasPendingWrites:false}};});return {docs:arr,size:arr.length,empty:!arr.length,metadata:{fromCache:false,hasPendingWrites:false},docChanges:function(){return [];}};}
@@ -2361,7 +2439,7 @@ function doImport(){
 }
 
 /* ---------- enlaces directos ---------- */
-var HASH={asistencia:"asistencia",facturas:"facturas",sat:"facturas",reportes:"reportes",dashboard:"reportes",monitor:"monitor",personal:"personal",permisos:"personal",compras:"inventario",conteo:"inventario",costos:"costos",recetas:"costos",extintores:"extintores",inspecciones:"inspecciones",panel:"panel",cotizaciones:"quotes",quotes:"quotes",clientes:"clientes",proveedores:"proveedores",finanzas:"finanzas",taller:"taller",inventario:"inventario",pendientes:"pendientes",agenda:"pendientes"};
+var HASH={empresa:"empresa",ajustes:"empresa",asistencia:"asistencia",facturas:"facturas",sat:"facturas",reportes:"reportes",dashboard:"reportes",monitor:"monitor",personal:"personal",permisos:"personal",compras:"inventario",conteo:"inventario",costos:"costos",recetas:"costos",extintores:"extintores",inspecciones:"inspecciones",panel:"panel",cotizaciones:"quotes",quotes:"quotes",clientes:"clientes",proveedores:"proveedores",finanzas:"finanzas",taller:"taller",inventario:"inventario",pendientes:"pendientes",agenda:"pendientes"};
 function fromHash(){var hq=(location.hash||"").match(/^#cotizacion-(.+)$/i);if(hq){S.goFolio=decodeURIComponent(hq[1]).toUpperCase();S.screen="quotes";render();return;}var h=(location.hash||"").replace("#","").toLowerCase();if(HASH[h]&&S.screen!==HASH[h]){S.screen=HASH[h];S.otSel=null;render();}}
 window.addEventListener("hashchange",fromHash);fromHash();
 

@@ -24,15 +24,15 @@ function jasaReportHTML(o, cli, logo) {
     var r = rows[i];
     body += "<tr><td>" + (r ? i + 1 : "") + "</td><td>" + (r ? e(r.eq) : "") + "</td><td>" + (r ? e(r.svc) : "") + "</td><td>" + (r ? e(r.serie) : "") + "</td><td>" + (r ? e(fm(r.fab)) : "") + "</td><td>" + (r ? e(fm(r.ph)) : "") + "</td><td>" + (r ? e(r.et) : "") + "</td><td>" + (r ? (r.ok || entregada ? "Conforme" : "En proceso") : "") + "</td></tr>";
   }
-  return '<div class="sheet"><div class="sh-top"><div class="sh-logo"><img alt="JASA Extintores" width="300" height="136" src="' + (logo || "") + '"></div>' +
-    '<div class="sh-co"><b>JASA EXTINTORES SA DE CV</b><span>MUTUALISTA 412 COL. BUENA VISTA SUR</span><span>PIEDRAS NEGRAS, COAHUILA</span><span>JEX180118NA0</span><span class="sh-tel">878 783 3216 · WhatsApp 878 117 4728</span></div></div>' +
+  return '<div class="sheet"><div class="sh-top"><div class="sh-logo"><img alt="' + e(JASA_EMPRESA.corto) + '" width="300" height="136" src="' + (JASA_EMPRESA.logo || logo || "") + '"></div>' +
+    jasaSheetCo() + '</div>' +
     '<div class="sh-row"><div class="sh-title" style="font-size:24px">REPORTE DE INSPECCIÓN Y SERVICIO</div><div class="sh-num"><div><span>ORDEN:</span><b>' + e(o.folio) + '</b></div><div><span>FECHA:</span><b>' + e(fd(fecha)) + '</b></div><div><span>PRÓX. RECARGA:</span><b>' + e(fm(prox) || "—") + '</b></div></div></div>' +
     '<div class="sh-row"><dl class="sh-client"><dt>Cliente:</dt><dd>' + e(cli.nombre || o.cliente) + '</dd><dt>Ciudad:</dt><dd>' + e(cli.ciudad || "") + '</dd><dt>Recibido:</dt><dd>' + e(fd(o.recibido)) + '</dd><dt>Entregado:</dt><dd>' + e(entregada ? fd(o.entregado) : "EN PROCESO") + '</dd><dt>Extintores:</dt><dd>' + rows.length + '</dd></dl>' +
     '<div class="sh-cond"><b>OBSERVACIONES</b><div>' + e(o.notas || "") + '</div></div></div>' +
     '<table class="sh-table"><colgroup><col style="width:5%"><col style="width:17%"><col style="width:15%"><col style="width:14%"><col style="width:11%"><col style="width:12%"><col style="width:14%"><col style="width:12%"></colgroup>' +
     '<thead><tr><th>#</th><th>Equipo</th><th>Servicio</th><th>No. de serie</th><th>Fabricación</th><th>Próx. P. H.</th><th>Etiqueta NOM-154</th><th>Resultado</th></tr></thead><tbody>' + body + '</tbody></table>' +
-    '<div class="sh-legal">Servicio de mantenimiento y recarga conforme a la NOM-154-SCFI-2005 y a la NOM-002-STPS-2010. P. H. = prueba hidrostática. Conserve este reporte para sus inspecciones de Protección Civil.</div>' +
-    '<div class="sh-sign" style="grid-template-columns:repeat(2,1fr)"><div><span>TÉCNICO RESPONSABLE (JASA)</span><small>' + e(o.entrego || o.recibio || "") + '</small></div><div><span>RECIBE DE CONFORMIDAD (CLIENTE)</span><small>' + e(o.recibioCliente || "") + '</small></div></div></div>';
+    '<div class="sh-legal">Servicio de mantenimiento y recarga conforme a la ' + e(JASA_EMPRESA.norma) + ' y a la NOM-002-STPS-2010. P. H. = prueba hidrostática. Conserve este reporte para sus inspecciones de Protección Civil.</div>' +
+    '<div class="sh-sign" style="grid-template-columns:repeat(2,1fr)"><div><span>TÉCNICO RESPONSABLE (' + e(JASA_EMPRESA.etqMarca || JASA_EMPRESA.corto) + ')</span><small>' + e(o.entrego || o.recibio || "") + '</small></div><div><span>RECIBE DE CONFORMIDAD (CLIENTE)</span><small>' + e(o.recibioCliente || "") + '</small></div></div></div>';
 }
 var JASA_SHEET_CSS = ".sheet{width:816px;background:#ffffff;color:#111111;padding:36px 40px 40px;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.3;box-sizing:border-box}" +
   ".sheet *{box-sizing:border-box}" +
@@ -76,7 +76,47 @@ var JASA_PUNTOS = [
 // Inspecciones viejas (antes del formato de JASA) traían "manometro"; se lee como presión.
 function jasaPuntosDe(p) { p = Object.assign({}, p || {}); if (!p.presion && p.manometro) p.presion = p.manometro === "bien" ? "si" : p.manometro === "mal" ? "no" : p.manometro; return p; }
 function jasaNA(p, tipo) { return !!(p.na && p.na(tipo)); }
-var JASA_EMPRESA = { nombre: "JASA EXTINTORES", rfc: "JEX180118NA0", dir: "Mutualista 412, Col. Buena Vista Sur, C.P. 26040, Piedras Negras, Coahuila", tel: "878 783 3216", wa: "878 117 4728", correo: "jasa-extintores@live.com.mx", norma: "NOM-154-SCFI-2005" };
+/* Mi empresa: datos del negocio que usan documentos, mensajes y páginas. Valores de fábrica = JASA;
+   se reemplazan con docs('ajustes','empresa') vía public.empresa_publica() (jasaEmpresaUsar). */
+var JASA_EMPRESA_BASE = { corto: "JASA Extintores", nombre: "JASA EXTINTORES", razon: "JASA EXTINTORES SA DE CV", rfc: "JEX180118NA0",
+  calle: "Mutualista 412, Col. Buena Vista Sur", ciudad: "Piedras Negras", estado: "Coahuila", cp: "26040",
+  tel: "878 783 3216", wa: "878 117 4728", correo: "jasa-extintores@live.com.mx", web: "jasaextintores.com",
+  iva: 8, norma: "NOM-154-SCFI-2005", logo: "", etqArriba: "EXTINTORES", etqMarca: "JASA", pie: "Gracias por su preferencia." };
+var JASA_EMPRESA = {};
+function jasaEmpresaUsar(d) {
+  var E = JASA_EMPRESA, B = JASA_EMPRESA_BASE;
+  Object.keys(E).forEach(function (k) { delete E[k]; });
+  Object.keys(B).forEach(function (k) { E[k] = B[k]; });
+  Object.keys(d || {}).forEach(function (k) { if (d[k] !== "" && d[k] != null && k !== "id") E[k] = d[k]; });
+  E.iva = isFinite(parseFloat(E.iva)) ? parseFloat(E.iva) : 8;
+  E.dir = [E.calle, E.cp ? "C.P. " + E.cp : "", E.ciudad, E.estado].filter(Boolean).join(", ");
+  E.lugar = [E.ciudad, E.estado].filter(Boolean).join(", ");
+  E.waNum = "52" + String(E.wa || E.tel || "").replace(/\D/g, "").slice(-10);
+  return E;
+}
+jasaEmpresaUsar(null);
+function jasaIva() { return (JASA_EMPRESA.iva || 0) / 100; }
+function jasaWaLink(txt) { return "https://wa.me/" + JASA_EMPRESA.waNum + (txt ? "?text=" + encodeURIComponent(txt) : ""); }
+function jasaContacto() { var E = JASA_EMPRESA; return [E.tel ? E.tel : "", E.wa && E.wa !== E.tel ? "WhatsApp " + E.wa : ""].filter(Boolean).join(" · "); }
+/* Bloque de la empresa en cotizaciones, órdenes y reportes (hoja carta). */
+function jasaSheetCo() {
+  var E = JASA_EMPRESA; function e(v) { return String(v == null ? "" : v).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+  return '<div class="sh-co"><b>' + e(E.razon || E.nombre) + '</b><span>' + e(String(E.calle || "").toUpperCase()) + '</span><span>' + e(E.lugar.toUpperCase()) + (E.cp ? " · C.P. " + e(E.cp) : "") + '</span>' + (E.rfc ? '<span>' + e(E.rfc) + '</span>' : "") + '<span class="sh-tel">' + e(jasaContacto()) + '</span></div>';
+}
+/* Carga los datos guardados (y los recuerda en el teléfono para abrir sin señal). */
+function jasaEmpresaCargar(url, key, listo) {
+  try { var c = JSON.parse(localStorage.getItem("jasaEmpresa") || "null"); if (c) jasaEmpresaUsar(c); } catch (e) {}
+  return fetch(url + "/rest/v1/rpc/empresa_publica", { method: "POST", headers: { apikey: key, "Content-Type": "application/json" }, body: "{}" })
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (d) { var ok = !!(d && typeof d === "object" && !Array.isArray(d)); if (ok) { jasaEmpresaUsar(d); try { localStorage.setItem("jasaEmpresa", JSON.stringify(d)); } catch (e) {} } if (listo) listo(JASA_EMPRESA, ok); return JASA_EMPRESA; })
+    .catch(function () { if (listo) listo(JASA_EMPRESA, false); return JASA_EMPRESA; });
+}
+/* Rellena los elementos marcados en el HTML: data-emp="tel" (texto) y data-emp-wa="mensaje" (enlace). */
+function jasaEmpresaPintar(root) {
+  root = root || document; var E = JASA_EMPRESA;
+  Array.prototype.forEach.call(root.querySelectorAll("[data-emp]"), function (el) { var k = el.getAttribute("data-emp"); if (k === "contacto") el.textContent = jasaContacto(); else if (E[k] != null) el.textContent = E[k]; });
+  Array.prototype.forEach.call(root.querySelectorAll("[data-emp-wa]"), function (el) { el.href = jasaWaLink(el.getAttribute("data-emp-wa")); });
+}
 function jasaCap(c) { var m = String(c || "").toUpperCase().replace(",", ".").match(/(\d+(?:\.\d+)?)\s*(KG|KGS|LBS?|LTS?|L)?/); if (!m) return String(c || ""); var u = !m[2] || m[2].indexOf("K") === 0 ? "KG" : m[2].indexOf("LB") === 0 ? "LB" : "L"; return m[1] + " " + u; }
 var JASA_OPT_LABEL = { bien: "Bien", mal: "Mal", libre: "Libre", obstruido: "Obst.", si: "Sí", no: "No", na: "No aplica" };
 var JASA_OPT_COL = { bien: "BIEN", mal: "MAL", libre: "LIBRE", obstruido: "OBST.", si: "SI", no: "NO" };
@@ -97,7 +137,7 @@ function jasaInspeccionPages(insp, logo, cli) {
     if (it.vence && it.vence <= mk) { var k = jasaCap(it.cap).replace(/ KG$/, "") + "|" + (it.tipo === "TIPO K" ? "K" : it.tipo || ""); venc[k] = (venc[k] || 0) + 1; }
     if (it.ph && it.ph <= mk) ph++; if (p.letrero === "no") letr++; });
   var cliDir = [cli.direccion, cli.ciudad, cli.estado, cli.cp ? "C.P. " + cli.cp : ""].filter(Boolean).join(" · ");
-  var head = '<div class="ip-band"><div class="ip-logo">' + (logo ? '<img alt="Extintores JASA" src="' + logo + '">' : "<b>EXTINTORES JASA</b>") + '</div><div class="ip-tit"><b>' + e(String(insp.cliente || "").toUpperCase()) + '</b><span class="ip-sub">INSPECCIÓN DE EXTINTORES · MES DE ' + e(mes) + '</span>' +
+  var head = '<div class="ip-band"><div class="ip-logo">' + (E.logo || logo ? '<img alt="' + e(E.corto) + '" src="' + (E.logo || logo) + '">' : "<b>" + e(E.nombre) + "</b>") + '</div><div class="ip-tit"><b>' + e(String(insp.cliente || "").toUpperCase()) + '</b><span class="ip-sub">INSPECCIÓN DE EXTINTORES · MES DE ' + e(mes) + '</span>' +
     (fis.razonSocial || fis.rfc || cliDir ? '<span>' + e([fis.razonSocial, fis.rfc ? "RFC " + fis.rfc : "", cliDir].filter(Boolean).join(" · ")) + '</span>' : "") + '</div>' +
     '<div class="ip-per"><span>FECHA DE REVISIÓN</span><b>' + e(f.split("-").reverse().join("/")) + '</b></div></div>' +
     '<div class="ip-rr"><span><b>REVISÓ:</b> ' + e(String(insp.reviso || "").toUpperCase()) + '</span><span><b>RESPONSABLE:</b> ' + e(String(insp.responsable || cli.contacto || "").toUpperCase()) + '</span></div>';
@@ -117,9 +157,9 @@ function jasaInspeccionPages(insp, logo, cli) {
       (last ? '<div class="ip-f"><div class="ip-sum"><b>RESUMEN</b>: ' + items.length + (items.length === 1 ? ' extintor revisado · ' : ' extintores revisados · ') + ok + (ok === 1 ? ' conforme · ' : ' conformes · ') + (items.length - ok) + (items.length - ok === 1 ? ' requiere atención' : ' requieren atención') +
         '<table class="ip-v"><tr><th colspan="3">POR RECARGAR ' + e(mes) + ' (VENCIDOS Y DEL MES)</th></tr><tr><th>CAP.</th><th>TIPO</th><th>CANTIDAD</th></tr>' + (vk.length ? vk.map(function (k) { var q = k.split("|"); return '<tr><td>' + e(q[0]) + '</td><td>' + e(q[1]) + '</td><td>' + venc[k] + '</td></tr>'; }).join("") : '<tr><td colspan="3">Ninguno</td></tr>') +
         '<tr><td colspan="2">SEÑALAMIENTOS</td><td>' + letr + '</td></tr><tr><td colspan="2">P.H.</td><td>' + ph + '</td></tr></table></div>' +
-        '<div class="ip-s">' + (insp.firmaTecnico ? '<img alt="Firma del técnico" src="' + insp.firmaTecnico + '">' : '<i></i>') + '<span>' + e(insp.reviso || "") + '</span><small>REVISÓ (TÉCNICO JASA)</small></div>' +
+        '<div class="ip-s">' + (insp.firmaTecnico ? '<img alt="Firma del técnico" src="' + insp.firmaTecnico + '">' : '<i></i>') + '<span>' + e(insp.reviso || "") + '</span><small>REVISÓ (TÉCNICO ' + e(E.etqMarca || E.corto) + ')</small></div>' +
         '<div class="ip-s">' + (insp.firma ? '<img alt="Firma del responsable" src="' + insp.firma + '">' : '<i></i>') + '<span>' + e(insp.responsable || "") + '</span><small>RESPONSABLE DEL CLIENTE</small></div></div>' : '') +
-      '<div class="ip-foot"><span>' + e(E.nombre) + ' · RFC ' + e(E.rfc) + ' · Tel. ' + e(E.tel) + ' · ' + e(E.dir) + '</span><span>Generado: ' + gen + ' · Pág. ' + pg + ' de ' + nPag + ' · ' + e(E.norma) + '</span></div></div>');
+      '<div class="ip-foot"><span>' + e(E.razon || E.nombre) + (E.rfc ? ' · RFC ' + e(E.rfc) : '') + ' · Tel. ' + e(E.tel) + ' · ' + e(E.dir) + '</span><span>Generado: ' + gen + ' · Pág. ' + pg + ' de ' + nPag + ' · ' + e(E.norma) + '</span></div></div>');
   }
   return pages;
 }
