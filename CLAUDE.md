@@ -18,6 +18,7 @@ barras y encabezados de tabla, franja roja, Saira Condensed / Barlow / IBM Plex 
 | Reporte semanal de asistencia | — | `netlify/functions/asistencia-semanal.mjs` (lunes 13:15 UTC) | Netlify Functions |
 | Avisos con diseño (formularios) | — | `netlify/functions/submission-created.mjs` (Resend; sin `RESEND_API_KEY` no hace nada) | Netlify Functions |
 | Facturas recibidas del SAT | — | `netlify/functions/sat-recibidos.mjs` (cada hora; npm `@nodecfdi/sat-ws-descarga-masiva`, `package.json`, `netlify.toml`) | Netlify Functions |
+| Envío de reportes por correo con PDF | — | `netlify/functions/enviar-reporte.mjs` (`/api/enviar-reporte`, valida sesión y staff; Resend con adjunto; marco en `netlify/lib/correo.mjs`) | Netlify Functions |
 | Base de datos | Supabase `psggoagcdokwrkykgufr` | `supabase/*.sql` (se pegan en SQL Editor) | Supabase |
 | Panel viejo (solo lectura) | claude.ai artifact BHJcxnzgNkVbLfyVe49MNu | `admin.html` en modo claude.ai | Artifact |
 
@@ -103,6 +104,10 @@ generados.
 - Prueba hidrostática: se captura `phUltima`; `ph` (próxima) = `jasaPhProxima()` = + 5 años (`JASA_VIGENCIA_PH`), igual en panel,
   app, importación (columna ÚLTIMA P.H.) y edición masiva. Recargas adelantadas: `jasaHallazgos(items, mes, adelantar)` incluye
   vencidas y las del mes; en la inspección (`S.hallAdel`) y en el portal se puede adelantar 1–3 meses.
+- Reporte de inspección: "Enviar por WhatsApp" manda el enlace al portal con el código (`codigoPortalDe` lo crea si falta);
+  "Enviar por correo" genera el PDF (`inspPdfBlob`) y lo manda por `/api/enviar-reporte` con copia a JASA; si falla, comparte el
+  archivo (Web Share) o lo descarga y abre el correo. "Para cotizar" permite agregar conceptos (`hallAdd`, se conservan al
+  adelantar) y actualizar la cotización si sigue Nueva. Fechas de P.H. viejas sin `phUltima`: aviso en Extintores (`extPhConv`).
 - Portal: "Ver" inspección muestra las hojas del PDF (`jasaInspeccionPages`) escaladas en pantalla (tocar = acercar), sin descargar.
 - Llave publicable en el código (es pública por diseño). Nunca poner la Secret key ni contraseñas en el repo.
 - Registro de usuarios cerrado: el personal se da de alta en Authentication › Users y en `public.staff`.
