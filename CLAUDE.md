@@ -141,6 +141,16 @@ Etapas (`etapa`, con `etapaV: 2`): 0 Por recoger, 1 Recibido, 2 En reparación, 
 Al entregar: próxima recarga del cliente = mes de entrega + 12 y se descuenta inventario marcado con `consumo`
 (`PQS`, `CO2`, `ETIQUETA`).
 
+## Extin360 (la plataforma, para venderla a otros negocios de extintores)
+
+- Marca: `docs/Manual-de-identidad-Extin360.pdf`; logos en `img/extin360/` (`svg/`, `png/` web, `web/` favicons e ícono
+  de app). Usar siempre los archivos (letras en trazos), nunca reescribir el logotipo. Horizontal mínimo 120 px; símbolo 24 px.
+- Colores: Tinta #0E1726, Rojo señal #E8321F (el 36, botones, «vencido»), Rojo claro #FF5A44 (solo sobre tinta),
+  Verde vigente #1DB46C, Niebla #EEF1F4 (fondos), Pizarra #4A5566 (texto secundario); ámbar #F2A516 solo «por vencer».
+  Letras: Inter (400/600/800) e IBM Plex Mono 500 en mayúsculas para etiquetas, folios y fechas. Títulos en tipo oración.
+- Extin360 es la marca de la plataforma (consola del dueño, sitio de ventas, instalación, «con tecnología de»). Las páginas de
+  cada negocio (panel, app, portal, ficha, cotización) llevan la marca del negocio de Mi empresa; JASA conserva su manual.
+
 ## Pendientes
 
 Tablero vivo: artifact "Pendientes JASA" (https://claude.ai/artifact/RfWANAWfCLJyoCzcpzqkUc), con base de datos
