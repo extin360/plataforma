@@ -154,8 +154,7 @@ Al entregar: próxima recarga del cliente = mes de entrega + 12 y se descuenta i
 
 ## Pendientes
 
-Tablero vivo: artifact "Pendientes JASA" (https://claude.ai/artifact/RfWANAWfCLJyoCzcpzqkUc), con base de datos
-(`tareas/{id}`: titulo, detalle, quien `tu|claude|ambos`, area, orden, estado `pendiente|hecho`, hechoEn;
-`publicaciones/{AAAA-MM-DD-x}`: fecha, orden, titulo, cambios[]). **Cada vez que se publica en `main`:** marcar como
-hechas las tareas terminadas, agregar las nuevas que salgan y registrar la publicación (ArtifactData `batch`).
-El doc anterior "Plan de pendientes" (https://claude.ai/artifact/BaxhQ51FJp3pDTqNRKmYYp) quedó como historial.
+Lista viva en `docs/PENDIENTES.md` (pendientes por quién y área, terminadas e historial de publicaciones). **Cada vez que
+se publica en `main`:** marcar ahí lo terminado, agregar lo nuevo y anotar la publicación al final del historial.
+El tablero anterior (artifact "Pendientes JASA" de la cuenta de claude.ai de JASA) quedó congelado el 19/11/2026.
+Traspaso del proyecto a las cuentas de Extin360: `docs/TRASPASO-EXTIN360.md`.
