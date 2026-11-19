@@ -3,8 +3,8 @@
 // Variables en Netlify: RESEND_API_KEY, JASA_CORREO_REMITENTE, JASA_CORREO_AVISOS (copia y respuesta).
 import { marco, esc } from "../lib/correo.mjs";
 
-const SUPA_URL = "https://psggoagcdokwrkykgufr.supabase.co";
-const SUPA_KEY = "sb_publishable_jwx2IRxOqdCW-SjmKcYW2A_lrJTFJa3";
+const SUPA_URL = process.env.SUPABASE_URL;
+const SUPA_KEY = process.env.SUPABASE_ANON_KEY;
 const MAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 const json = (o, status = 200) => new Response(JSON.stringify(o), { status, headers: { "Content-Type": "application/json" } });
 

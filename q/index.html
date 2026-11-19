@@ -391,9 +391,10 @@ function jasaPhProxima(ultima) { return jasaMasMeses(ultima, JASA_VIGENCIA_PH); 
 function jasaRecargaFutura(recarga) { var d = new Date(), hoy = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0"); return !!recarga && recarga > hoy; }
 /*@/reporte*/
 </script>
+<script src="/config.js"></script>
 <script>
 (function(){
-var SUPA_URL="https://psggoagcdokwrkykgufr.supabase.co",SUPA_KEY="sb_publishable_jwx2IRxOqdCW-SjmKcYW2A_lrJTFJa3",IVA=jasaIva();
+var IVA=jasaIva();
 jasaEmpresaPintar();jasaEmpresaCargar(SUPA_URL,SUPA_KEY,function(){IVA=jasaIva();jasaEmpresaPintar();if(Q)render();});
 var $=function(i){return document.getElementById(i);};
 function esc(v){return String(v==null?"":v).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}

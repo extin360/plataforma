@@ -2344,7 +2344,8 @@ function jasaRecargaFutura(recarga) { var d = new Date(), hoy = d.getFullYear() 
 /*@/reporte*/
 
 /* ---------- modo Supabase (jasaextintores.com/admin) ---------- */
-var SUPA_URL="https://psggoagcdokwrkykgufr.supabase.co",SUPA_KEY="sb_publishable_jwx2IRxOqdCW-SjmKcYW2A_lrJTFJa3",SB=null;
+/* SUPA_URL y SUPA_KEY vienen de /config.js — cargado en el <head> de admin/index.html */
+var SB=null;
 if(typeof fetch==="function"&&location.protocol.indexOf("http")===0)jasaEmpresaCargar(SUPA_URL,SUPA_KEY,function(E,ok){S.empresaRpc=ok;IVA=jasaIva();try{if(S.user)render();}catch(e){}});
 function makeSupaDb(sb){
   var cache={},subs={};

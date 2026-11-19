@@ -47,6 +47,7 @@ header.top{--ink:#ffffff;--muted:#bdb5b0;color:#ffffff;background:#0d0d0d;border
   <div id="out"><p class="foot">Buscando el extintor…</p></div>
   <div class="foot"><span data-emp="corto">JASA Extintores</span> · <span data-emp="dir">Mutualista 412, Piedras Negras, Coahuila</span> · <span data-emp="contacto">Tel. 878 783 3216 · WhatsApp 878 117 4728</span></div>
 </div>
+<script src="/config.js"></script>
 <script>
 (function(){
 "use strict";
@@ -372,7 +373,6 @@ var JASA_VIGENCIA_PH = 60;
 function jasaPhProxima(ultima) { return jasaMasMeses(ultima, JASA_VIGENCIA_PH); }
 function jasaRecargaFutura(recarga) { var d = new Date(), hoy = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0"); return !!recarga && recarga > hoy; }
 /*@/reporte*/
-var SUPA_URL="https://psggoagcdokwrkykgufr.supabase.co",SUPA_KEY="sb_publishable_jwx2IRxOqdCW-SjmKcYW2A_lrJTFJa3";
 jasaEmpresaPintar();jasaEmpresaCargar(SUPA_URL,SUPA_KEY,function(){jasaEmpresaPintar();});
 var MES=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
 function esc(v){return String(v==null?"":v).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}

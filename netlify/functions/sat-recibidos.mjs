@@ -10,8 +10,8 @@ import {
 } from "@nodecfdi/sat-ws-descarga-masiva";
 import JSZip from "jszip";
 
-const SUPA_URL = "https://psggoagcdokwrkykgufr.supabase.co";
-const SUPA_KEY = "sb_publishable_jwx2IRxOqdCW-SjmKcYW2A_lrJTFJa3";
+const SUPA_URL = process.env.SUPABASE_URL;
+const SUPA_KEY = process.env.SUPABASE_ANON_KEY;
 const TZ = "America/Mexico_City";
 const LIMITE_MS = 22000;
 

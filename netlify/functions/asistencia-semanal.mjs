@@ -5,8 +5,8 @@
 //   RESEND_API_KEY         (opcional) si existe, el correo sale con diseño desde Resend;
 //                          si no, se manda por Netlify Forms ("reporte-asistencia") al correo de avisos de formularios.
 //   JASA_CORREO_REMITENTE  (opcional, con Resend) p. ej. "JASA Extintores <avisos@jasaextintores.com>".
-const SUPA_URL = "https://psggoagcdokwrkykgufr.supabase.co";
-const SUPA_KEY = "sb_publishable_jwx2IRxOqdCW-SjmKcYW2A_lrJTFJa3";
+const SUPA_URL = process.env.SUPABASE_URL;
+const SUPA_KEY = process.env.SUPABASE_ANON_KEY;
 const SITE = "https://jasaextintores.com";
 const TZ = "America/Matamoros";
 const DIAS = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
