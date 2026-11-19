@@ -1,0 +1,396 @@
+<!doctype html>
+<html lang="es-MX">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Extin360 · Control total de extintores</title>
+<meta name="description" content="Plataforma para negocios de extintores: inspección en el celular, etiquetas QR, vencimientos que se calculan solos, portal de clientes y cotizaciones en línea.">
+<meta property="og:title" content="Extin360 · Control total de extintores">
+<meta property="og:description" content="Clientes, técnicos y cada extintor en un solo lugar. Inspección digital, QR, vencimientos NOM-154 y portal de clientes.">
+<meta property="og:image" content="https://extin360.com/img/compartir.png">
+<meta property="og:url" content="https://extin360.com/">
+<meta name="theme-color" content="#0E1726">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/svg+xml" href="/img/extin360-simbolo-color.svg">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{--tinta:#0E1726;--tinta2:#1A2538;--rojo:#E8321F;--rojo2:#FF5A44;--verde:#1DB46C;--ambar:#F2A516;--niebla:#EEF1F4;--pizarra:#4A5566;--linea:#D9DEE5;--blanco:#fff;
+  --sans:Inter,Arial,sans-serif;--mono:"IBM Plex Mono","Courier New",monospace}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{margin:0;font-family:var(--sans);font-size:17px;line-height:1.55;color:var(--tinta);background:var(--blanco)}
+img{max-width:100%;display:block}
+a{color:inherit}
+.wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+.eyebrow{font-family:var(--mono);font-weight:500;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--pizarra)}
+h1,h2,h3{font-weight:800;letter-spacing:-.025em;line-height:1.08;margin:0}
+h1{font-size:clamp(38px,6vw,64px)}
+h2{font-size:clamp(30px,4.2vw,44px)}
+h3{font-size:19px;letter-spacing:-.01em;line-height:1.25}
+p{margin:0}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 22px;border-radius:10px;font:600 16px var(--sans);text-decoration:none;border:2px solid transparent;cursor:pointer;transition:transform .15s,background .15s}
+.btn:active{transform:translateY(1px)}
+.btn-rojo{background:var(--rojo);color:#fff}.btn-rojo:hover{background:#cf2a18}
+.btn-borde{border-color:currentColor;color:inherit;background:transparent}
+.btn:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--verde);outline-offset:2px}
+
+/* encabezado */
+.top{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.94);backdrop-filter:saturate(1.4) blur(8px);border-bottom:1px solid var(--linea)}
+.top .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;height:68px}
+.top .logo img{height:40px;width:auto}
+.top nav{display:flex;align-items:center;gap:26px}
+.top nav a{text-decoration:none;font-weight:600;font-size:15px;color:var(--pizarra)}
+.top nav a:hover{color:var(--tinta)}
+.top nav .btn{min-height:42px;padding:0 16px;font-size:15px;color:#fff}
+@media(max-width:760px){.top nav a:not(.btn){display:none}.top .logo img{height:34px}}
+
+/* portada */
+.hero{background:var(--tinta);color:#fff;overflow:hidden;position:relative}
+.hero .wrap{display:grid;grid-template-columns:1.08fr .92fr;gap:40px;align-items:center;padding-top:72px;padding-bottom:0}
+.hero .eyebrow{color:#AEB8C7}
+.hero h1{margin:16px 0 20px}
+.hero h1 em{font-style:normal;color:var(--rojo2)}
+.hero .lead{font-size:19px;color:#C9D1DC;max-width:560px}
+.hero .ctas{display:flex;gap:12px;flex-wrap:wrap;margin:30px 0 22px}
+.hero .ctas .btn-borde{color:#fff;border-color:#3A475C}
+.hero .ctas .btn-borde:hover{border-color:#fff}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:72px}
+.chip{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;padding:7px 12px;border-radius:999px;background:var(--tinta2);color:#C9D1DC}
+.chip i{width:8px;height:8px;border-radius:50%;background:var(--verde)}
+.hero-art{position:relative;align-self:end;display:flex;justify-content:center}
+.hero-art .gauge{position:absolute;width:520px;height:520px;right:-140px;top:-20px;border-radius:50%;border:56px solid var(--tinta2);opacity:.9}
+.phone{position:relative;width:300px;border-radius:34px 34px 0 0;border:10px solid #22304A;border-bottom:0;background:#fff;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.45)}
+.phone img{width:100%;height:auto}
+.hero .phone{height:470px}
+@media(max-width:900px){.hero .wrap{grid-template-columns:1fr;padding-top:48px}.chips{margin-bottom:8px}.hero-art .gauge{display:none}.hero .phone{width:260px;height:380px}}
+
+/* secciones */
+section{padding:88px 0}
+.sec-h{max-width:720px;margin-bottom:44px}
+.sec-h h2{margin:12px 0 14px}
+.sec-h p{color:var(--pizarra);font-size:18px}
+.niebla{background:var(--niebla)}
+
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+@media(max-width:900px){.grid3{grid-template-columns:1fr 1fr}}
+@media(max-width:600px){.grid3{grid-template-columns:1fr}}
+.card{background:#fff;border:1px solid var(--linea);border-radius:14px;padding:24px}
+.card .ic{width:44px;height:44px;border-radius:12px;background:var(--tinta);display:grid;place-items:center;margin-bottom:16px}
+.card .ic svg{width:24px;height:24px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.card h3{margin-bottom:8px}
+.card p{color:var(--pizarra);font-size:16px}
+.card .tag{display:inline-block;margin-top:12px;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--pizarra);background:var(--niebla);padding:4px 8px;border-radius:6px}
+
+/* estados */
+.estados{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:28px}
+.estado{border-radius:12px;padding:16px 18px}
+.estado b{display:block;font-size:34px;font-weight:800;line-height:1;margin-top:6px}
+.estado.v{background:#DDF5E8}.estado.v .eyebrow{color:#11784A}
+.estado.p{background:#FDF0D3}.estado.p .eyebrow{color:#8A5D00}
+.estado.x{background:#FCE0DC}.estado.x .eyebrow{color:#B42315}
+.dos{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center}
+@media(max-width:900px){.dos{grid-template-columns:1fr}}
+.dos>*,.hero .wrap>*{min-width:0}
+@media(max-width:480px){.estados{gap:8px}.estado{padding:12px}.estado b{font-size:28px}.estados .eyebrow{font-size:10px;letter-spacing:.08em}}
+.lista{list-style:none;margin:24px 0 0;padding:0;display:grid;gap:14px}
+.lista li{display:grid;grid-template-columns:26px 1fr;gap:10px;color:var(--pizarra)}
+.lista li b{color:var(--tinta)}
+.lista li::before{content:"";width:20px;height:20px;margin-top:3px;border-radius:50%;background:var(--verde) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M5.5 10.5l3 3 6-7' fill='none' stroke='%23fff' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/20px no-repeat}
+
+/* pasos */
+.pasos{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;counter-reset:p}
+@media(max-width:900px){.pasos{grid-template-columns:1fr 1fr}}
+@media(max-width:560px){.pasos{grid-template-columns:1fr}}
+.paso{counter-increment:p;border-top:3px solid var(--tinta);padding-top:18px}
+.paso::before{content:"0" counter(p);font-family:var(--mono);font-size:13px;letter-spacing:.12em;color:var(--rojo);display:block;margin-bottom:10px}
+.paso h3{margin-bottom:8px}
+.paso p{color:var(--pizarra);font-size:16px}
+
+/* capturas */
+.capturas{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;align-items:start}
+@media(max-width:900px){.capturas{grid-template-columns:1fr;max-width:340px;margin:0 auto}}
+.capturas figure{margin:0}
+.capturas .phone{width:100%;border-radius:28px;border-bottom:10px solid #22304A;box-shadow:0 18px 40px rgba(14,23,38,.18);aspect-ratio:9/15.5}
+.capturas .phone img{height:100%;object-fit:cover;object-position:top}
+.capturas figcaption{margin-top:14px}
+.capturas figcaption b{display:block;font-size:17px}
+.capturas figcaption span{color:var(--pizarra);font-size:15px}
+.nota{font-size:14px;color:var(--pizarra);margin-top:22px}
+
+/* marca */
+.marca{background:var(--tinta);color:#fff;border-radius:20px;padding:48px;display:grid;grid-template-columns:1.2fr 1fr;gap:40px;align-items:center}
+.marca p{color:#C9D1DC}
+.marca .eyebrow{color:#AEB8C7}
+.marca h2{margin:12px 0 14px}
+.marca .demo{background:#fff;color:var(--tinta);border-radius:14px;padding:20px}
+.marca .demo .barra{display:flex;align-items:baseline;gap:10px;background:#0d0d0d;color:#fff;margin:-20px -20px 16px;padding:14px 18px;border-radius:14px 14px 0 0;border-bottom:4px solid var(--rojo)}
+.marca .demo .barra b{font-weight:800;font-style:italic;font-size:24px;color:var(--rojo2)}
+.marca .demo dl{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;margin:0;font-size:15px}
+.marca .demo dt{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--pizarra);padding-top:3px}
+.marca .demo dd{margin:0}
+@media(max-width:900px){.marca{grid-template-columns:1fr;padding:32px 22px}}
+
+/* precios */
+.precios{display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:900px}
+@media(max-width:760px){.precios{grid-template-columns:1fr}}
+.plan{background:#fff;border:1px solid var(--linea);border-radius:18px;padding:30px;display:flex;flex-direction:column}
+.plan.pro{border:2px solid var(--tinta);position:relative}
+.plan.pro .badge{position:absolute;top:-13px;left:28px;background:var(--rojo);color:#fff;font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;padding:5px 10px;border-radius:6px}
+.plan h3{font-size:24px}
+.plan .desc{color:var(--pizarra);font-size:15px;margin-top:6px;min-height:46px}
+.plan .precio{margin:20px 0 4px;display:flex;align-items:baseline;gap:8px}
+.plan .precio b{font-size:48px;font-weight:800;letter-spacing:-.03em;line-height:1}
+.plan .precio span{color:var(--pizarra);font-size:15px}
+.plan .anual{font-family:var(--mono);font-size:12px;letter-spacing:.06em;color:#11784A}
+.plan ul{list-style:none;padding:0;margin:22px 0 26px;display:grid;gap:10px;font-size:15px;flex:1}
+.plan li{display:grid;grid-template-columns:22px 1fr;gap:8px}
+.plan li::before{content:"✓";color:var(--verde);font-weight:800}
+.plan li.no{color:#9AA3B0}.plan li.no::before{content:"—";color:#B6BDC7}
+.plan .inst{font-size:14px;color:var(--pizarra);border-top:1px solid var(--linea);padding-top:14px;margin-bottom:18px}
+.plan .btn{width:100%}
+.plan.pro .btn{background:var(--tinta);color:#fff}
+.plan.pro .btn:hover{background:#1c2a42}
+.plan .btn-borde{color:var(--tinta)}
+.incluido{margin-top:26px;color:var(--pizarra);font-size:15px;max-width:900px}
+
+/* preguntas */
+.faq{max-width:820px}
+.faq details{border-bottom:1px solid var(--linea);padding:4px 0}
+.faq summary{list-style:none;cursor:pointer;padding:18px 36px 18px 0;font-weight:600;font-size:18px;position:relative}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"+";position:absolute;right:4px;top:12px;font-size:28px;font-weight:400;color:var(--pizarra)}
+.faq details[open] summary::after{content:"–"}
+.faq details p{padding:0 0 20px;color:var(--pizarra)}
+
+/* contacto */
+.contacto{background:var(--tinta);color:#fff}
+.contacto .dos{align-items:start}
+.contacto .eyebrow{color:#AEB8C7}
+.contacto h2{margin:12px 0 16px}
+.contacto p{color:#C9D1DC}
+form.demo{background:#fff;color:var(--tinta);border-radius:18px;padding:28px;display:grid;grid-template-columns:1fr 1fr;gap:14px}
+form.demo .full{grid-column:1/-1}
+form.demo label{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--pizarra);margin-bottom:6px}
+form.demo input,form.demo select,form.demo textarea{width:100%;font:16px var(--sans);color:var(--tinta);border:1px solid var(--linea);border-radius:10px;padding:12px 14px;background:#fff}
+form.demo textarea{min-height:90px;resize:vertical}
+form.demo .btn{width:100%}
+form.demo .msg{font-size:15px;color:var(--pizarra)}
+form.demo .msg.ok{color:#11784A;font-weight:600}
+form.demo .msg.err{color:var(--rojo)}
+@media(max-width:600px){form.demo{grid-template-columns:1fr;padding:22px}}
+.oculto{position:absolute;left:-9999px}
+
+footer{background:#0A111D;color:#AEB8C7;padding:40px 0;font-size:14px}
+footer .wrap{display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap}
+footer img{height:34px;width:auto}
+</style>
+</head>
+<body>
+
+<header class="top"><div class="wrap">
+  <a class="logo" href="#inicio" aria-label="Extin360, inicio"><img src="/img/extin360-horizontal-color.svg" alt="Extin360" width="152" height="40"></a>
+  <nav aria-label="Secciones">
+    <a href="#funciones">Funciones</a><a href="#como">Cómo funciona</a><a href="#precios">Precios</a><a href="#preguntas">Preguntas</a>
+    <a class="btn btn-rojo" href="#demo">Pide una demostración</a>
+  </nav>
+</div></header>
+
+<main id="inicio">
+<section class="hero" aria-labelledby="h-hero" style="padding:0">
+  <div class="wrap">
+    <div>
+      <span class="eyebrow">Plataforma para negocios de extintores</span>
+      <h1 id="h-hero">Cada extintor de tus clientes, <em>bajo control</em>.</h1>
+      <p class="lead">Extin360 junta en un solo lugar a tus clientes, tus técnicos y cada equipo: inspección en el celular, etiquetas QR, vencimientos que se calculan solos y un portal para que tus clientes vean todo, con tu marca.</p>
+      <div class="ctas"><a class="btn btn-rojo" href="#demo">Pide una demostración</a><a class="btn btn-borde" href="#precios">Ver precios</a></div>
+      <div class="chips"><span class="chip"><i></i>NOM-154 y NOM-002</span><span class="chip"><i></i>Funciona sin señal</span><span class="chip"><i></i>Sin límite de extintores</span></div>
+    </div>
+    <div class="hero-art" aria-hidden="true"><div class="gauge"></div><div class="phone"><img src="/img/portal.jpg" alt="" width="585" height="1131"></div></div>
+  </div>
+</section>
+
+<section id="funciones" aria-labelledby="h-fun">
+  <div class="wrap">
+    <div class="sec-h"><span class="eyebrow">Lo que hace la plataforma</span><h2 id="h-fun">Del alta del equipo hasta su próxima recarga</h2><p>Todo lo que hoy llevas en Excel, libretas y mensajes sueltos, en un sistema hecho para el oficio.</p></div>
+    <div class="grid3">
+      <div class="card"><div class="ic"><svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></div><h3>Inventario por planta</h3><p>Cada extintor con folio, ubicación, tipo, capacidad y estado. Sube tus listas desde Excel en minutos.</p></div>
+      <div class="card"><div class="ic"><svg viewBox="0 0 24 24"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M10 18h4M9 9l2 2 4-4"/></svg></div><h3>Inspección digital</h3><p>El técnico revisa en el celular punto por punto, escanea el QR y firma. Si no hay señal, se guarda y se manda después.</p></div>
+      <div class="card"><div class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2M9 2h6"/></svg></div><h3>Vencimientos solos</h3><p>Próxima recarga a 12 meses y prueba hidrostática a 5 años, calculadas solas. Ves lo vencido y lo que vence este mes.</p></div>
+      <div class="card"><div class="ic"><svg viewBox="0 0 24 24"><path d="M3 21h18M5 21V8l7-5 7 5v13"/><path d="M9 21v-6h6v6"/></svg></div><h3>Portal de clientes</h3><p>Tu cliente entra con su código y ve sus extintores, su calendario de recargas y sus reportes en PDF.</p></div>
+      <div class="card"><div class="ic"><svg viewBox="0 0 24 24"><path d="M7 3h10l3 3v15H4V3z"/><path d="M8 12h8M8 16h5M8 8h4"/></svg></div><h3>Cotizaciones en línea</h3><p>De la inspección sale la cotización. La mandas por WhatsApp o correo y el cliente la autoriza desde su celular.</p></div>
+      <div class="card"><div class="ic"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L4 17v3h3l5.3-5.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z"/></svg></div><h3>Taller e inventario</h3><p>Órdenes por etapa, recolección y entrega con ruta del día, inventario de insumos y órdenes de compra.</p></div>
+      <div class="card"><div class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM20 14v.01M14 20h.01M17 20h4v-3"/></svg></div><h3>Etiquetas QR</h3><p>Imprime en tu impresora de etiquetas. Al escanearla, cualquiera ve la ficha del equipo y su última revisión.</p></div>
+      <div class="card"><div class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="10" r="3"/><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/></svg></div><h3>Asistencia con ubicación</h3><p>Entrada, comida y salida desde el celular, dentro del radio del negocio, y reporte semanal de horas por correo.</p><span class="tag">Profesional</span></div>
+      <div class="card"><div class="ic"><svg viewBox="0 0 24 24"><path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6M9 13h8M9 17h8"/></svg></div><h3>Facturas del SAT</h3><p>Las facturas que te hacen tus proveedores llegan solas desde el SAT para registrarlas como gasto o a crédito.</p><span class="tag">Profesional</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="niebla" aria-labelledby="h-claro">
+  <div class="wrap dos">
+    <div>
+      <span class="eyebrow">Se entiende a la primera</span>
+      <h2 id="h-claro" style="margin:12px 0 14px">Vigente, por vencer o vencido</h2>
+      <p style="color:var(--pizarra);font-size:18px">Nada de revisar hoja por hoja. Abres el cliente y ves qué necesita, y el sistema arma la lista de lo que hay que cotizar.</p>
+      <ul class="lista">
+        <li><span><b>Requiere atención:</b> lo que salió mal en la última inspección, agrupado y listo para cotizar.</span></li>
+        <li><span><b>Recargas adelantadas:</b> junta las que vencen el mes que entra en una sola visita.</span></li>
+        <li><span><b>Reporte de inspección en PDF</b> con firma del técnico y del responsable, igual al formato de papel.</span></li>
+      </ul>
+    </div>
+    <div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center"><b style="font-weight:800;font-size:20px">Planta Norte</b><span class="eyebrow">Datos de ejemplo</span></div>
+        <div class="estados"><div class="estado v"><span class="eyebrow">Vigentes</span><b>24</b></div><div class="estado p"><span class="eyebrow">Por vencer</span><b>3</b></div><div class="estado x"><span class="eyebrow">Vencidos</span><b>1</b></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="como" aria-labelledby="h-como">
+  <div class="wrap">
+    <div class="sec-h"><span class="eyebrow">Cómo funciona</span><h2 id="h-como">Listo en días, no en meses</h2><p>Nosotros instalamos y pasamos tu información. Tú sigues trabajando.</p></div>
+    <div class="pasos">
+      <div class="paso"><h3>Instalamos y migramos</h3><p>Tu sistema propio con tu logo y tus datos. Subimos tus clientes y extintores desde tus Excel.</p></div>
+      <div class="paso"><h3>Pegas las etiquetas</h3><p>Imprimes los QR de cada equipo y los colocas en la siguiente visita.</p></div>
+      <div class="paso"><h3>El técnico inspecciona</h3><p>En el celular, con la lista precargada, punto por punto y con firma al terminar.</p></div>
+      <div class="paso"><h3>Tu cliente lo ve</h3><p>Recibe el reporte por WhatsApp o correo y consulta todo en su portal.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="niebla" aria-labelledby="h-cap">
+  <div class="wrap">
+    <div class="sec-h"><span class="eyebrow">Así lo ven tus clientes</span><h2 id="h-cap">Tu servicio, visible todo el año</h2><p>Un cliente que ve sus vencimientos y sus reportes te vuelve a llamar.</p></div>
+    <div class="capturas">
+      <figure><div class="phone"><img src="/img/portal.jpg" alt="Portal de clientes con extintores vigentes y vencidos" width="585" height="1131" loading="lazy"></div><figcaption><b>Portal de clientes</b><span>Extintores, vencimientos, taller y lo que requiere atención.</span></figcaption></figure>
+      <figure><div class="phone"><img src="/img/ficha.jpg" alt="Ficha pública del extintor al escanear el QR" width="585" height="1018" loading="lazy"></div><figcaption><b>Ficha del QR</b><span>Al escanear la etiqueta: tipo, recarga, vencimiento y última revisión.</span></figcaption></figure>
+      <figure><div class="phone"><img src="/img/cotizacion.jpg" alt="Cotización en línea lista para autorizar" width="585" height="1092" loading="lazy"></div><figcaption><b>Cotización en línea</b><span>El cliente la revisa y la autoriza con su nombre.</span></figcaption></figure>
+    </div>
+    <p class="nota">Pantallas con datos y marca de demostración.</p>
+  </div>
+</section>
+
+<section aria-labelledby="h-marca">
+  <div class="wrap">
+    <div class="marca">
+      <div>
+        <span class="eyebrow">Con tu marca</span>
+        <h2 id="h-marca">Tus clientes ven tu negocio, no el nuestro</h2>
+        <p>Tu logo, tu razón social, tus teléfonos y tu I.V.A. en cotizaciones, reportes, etiquetas, portal y mensajes. Cada negocio tiene su propia base de datos: tu información es tuya y nadie más la ve.</p>
+      </div>
+      <div class="demo" aria-hidden="true">
+        <div class="barra"><b>TU MARCA</b><span class="eyebrow" style="color:#AEB8C7">Portal de clientes</span></div>
+        <dl><dt>Cotización</dt><dd>Con tu logo y tus datos fiscales</dd><dt>Reportes</dt><dd>PDF con tu encabezado y firmas</dd><dt>Etiqueta</dt><dd>Tu marca y tu teléfono junto al QR</dd><dt>Dirección</dt><dd>tunegocio.extin360.com o tu dominio</dd></dl>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="precios" class="niebla" aria-labelledby="h-precios">
+  <div class="wrap">
+    <div class="sec-h"><span class="eyebrow">Precios</span><h2 id="h-precios">Dos paquetes, sin límite de extintores</h2><p>Sin mínimos ni cobro por equipo. Usuarios ilimitados en los dos.</p></div>
+    <div class="precios">
+      <div class="plan">
+        <h3>Básico</h3>
+        <p class="desc">Todo para operar: inspecciones, clientes, taller y portal.</p>
+        <div class="precio"><b>$1,299</b><span>MXN al mes + I.V.A.</span></div>
+        <span class="anual">Anual: $12,990 (2 meses gratis)</span>
+        <ul>
+          <li>Extintores, clientes y plantas ilimitados</li>
+          <li>Usuarios ilimitados</li>
+          <li>App del técnico con inspección, firma y ruta del día</li>
+          <li>Etiquetas QR y ficha pública del extintor</li>
+          <li>Portal de clientes y reportes PDF</li>
+          <li>Cotizaciones en línea, taller e inventario</li>
+          <li>Dirección tunegocio.extin360.com</li>
+          <li>Soporte por WhatsApp en horario hábil</li>
+          <li class="no">Asistencia, facturas del SAT y costos</li>
+        </ul>
+        <p class="inst">Instalación y migración: <b>$3,900</b> pago único.</p>
+        <a class="btn btn-borde" href="#demo" data-plan="Básico">Quiero el Básico</a>
+      </div>
+      <div class="plan pro">
+        <span class="badge">Más completo</span>
+        <h3>Profesional</h3>
+        <p class="desc">Todo el Básico, más el control del personal y las finanzas.</p>
+        <div class="precio"><b>$2,199</b><span>MXN al mes + I.V.A.</span></div>
+        <span class="anual">Anual: $21,990 (2 meses gratis)</span>
+        <ul>
+          <li>Todo lo del Básico</li>
+          <li>Asistencia con ubicación y reporte semanal de horas</li>
+          <li>Facturas del SAT automáticas</li>
+          <li>Costos, recetas y reportes financieros</li>
+          <li>Con tu propio dominio (tunegocio.com)</li>
+          <li>Facturación electrónica cuando esté disponible (timbres aparte)</li>
+          <li>Soporte prioritario y capacitación</li>
+        </ul>
+        <p class="inst">Instalación y migración: <b>$5,900</b> pago único.</p>
+        <a class="btn" href="#demo" data-plan="Profesional">Quiero el Profesional</a>
+      </div>
+    </div>
+    <p class="incluido">La instalación incluye tu sistema con tu marca, la carga de tus clientes y extintores desde Excel y la capacitación de tu equipo.</p>
+  </div>
+</section>
+
+<section id="preguntas" aria-labelledby="h-faq">
+  <div class="wrap">
+    <div class="sec-h"><span class="eyebrow">Preguntas frecuentes</span><h2 id="h-faq">Lo que nos preguntan</h2></div>
+    <div class="faq">
+      <details><summary>¿Hay límite de extintores o de clientes?</summary><p>No. Puedes tener 50 o 5,000 extintores y los clientes que quieras, en cualquiera de los dos paquetes.</p></details>
+      <details><summary>¿Necesito internet en las plantas?</summary><p>No para inspeccionar. La app del técnico guarda todo en el celular y lo manda en cuanto vuelve la señal.</p></details>
+      <details><summary>¿Mis datos están seguros? ¿De quién son?</summary><p>Cada negocio tiene su propia base de datos, separada de los demás. Tu información es tuya: si algún día te vas, te la entregamos completa.</p></details>
+      <details><summary>Ya tengo todo en Excel, ¿se puede pasar?</summary><p>Sí. En la instalación subimos tus clientes, extintores e inspecciones desde tus archivos, incluido tu formato de inspección de papel.</p></details>
+      <details><summary>¿Qué impresora necesito para las etiquetas?</summary><p>Cualquier impresora de etiquetas térmica (por ejemplo, Zebra) con etiqueta de 50 × 25 mm; también acepta 76 × 51 y 102 × 51 mm.</p></details>
+      <details><summary>¿Cumple con las normas?</summary><p>La vigencia de recarga se calcula a 12 meses según la NOM-154-SCFI y la prueba hidrostática a 5 años. La inspección mensual sigue lo que pide la NOM-002-STPS.</p></details>
+    </div>
+  </div>
+</section>
+
+<section id="demo" class="contacto" aria-labelledby="h-demo">
+  <div class="wrap dos">
+    <div>
+      <span class="eyebrow">Demostración</span>
+      <h2 id="h-demo">Te enseñamos el sistema con tus propios datos</h2>
+      <p>Déjanos tus datos y te contactamos para agendar una llamada de 30 minutos. Si nos mandas una lista de tus extintores, la vemos ya cargada.</p>
+    </div>
+    <form class="demo" name="demo-extin360" method="POST" data-netlify="true" netlify-honeypot="bot-field" id="fDemo">
+      <input type="hidden" name="form-name" value="demo-extin360">
+      <p class="oculto"><label>No llenes esto <input name="bot-field" tabindex="-1" autocomplete="off"></label></p>
+      <div><label for="dNombre">Tu nombre</label><input id="dNombre" name="nombre" required autocomplete="name"></div>
+      <div><label for="dNegocio">Negocio</label><input id="dNegocio" name="negocio" required autocomplete="organization"></div>
+      <div><label for="dTel">WhatsApp</label><input id="dTel" name="whatsapp" type="tel" required autocomplete="tel" inputmode="tel"></div>
+      <div><label for="dMail">Correo</label><input id="dMail" name="correo" type="email" autocomplete="email"></div>
+      <div><label for="dCiudad">Ciudad</label><input id="dCiudad" name="ciudad" autocomplete="address-level2"></div>
+      <div><label for="dPlan">Paquete</label><select id="dPlan" name="paquete"><option>Aún no sé</option><option>Básico</option><option>Profesional</option></select></div>
+      <div class="full"><label for="dNota">¿Cuántos extintores manejas y cómo los llevas hoy?</label><textarea id="dNota" name="mensaje"></textarea></div>
+      <div class="full"><button class="btn btn-rojo" type="submit">Pedir demostración</button></div>
+      <p class="msg full" id="dMsg" role="status" aria-live="polite"></p>
+    </form>
+  </div>
+</section>
+</main>
+
+<footer><div class="wrap">
+  <img src="/img/extin360-horizontal-negativo.svg" alt="Extin360" width="130" height="34">
+  <span>Plataforma de administración y control para negocios de extintores · Hecho en Coahuila, México</span>
+  <span>© <span id="y">2026</span> Extin360</span>
+</div></footer>
+
+<script>
+document.getElementById("y").textContent=new Date().getFullYear();
+document.querySelectorAll("[data-plan]").forEach(function(a){a.addEventListener("click",function(){var s=document.getElementById("dPlan");if(s)s.value=a.getAttribute("data-plan");});});
+document.getElementById("fDemo").addEventListener("submit",function(e){
+  e.preventDefault();var f=e.target,m=document.getElementById("dMsg"),b=f.querySelector("button");
+  b.disabled=true;m.className="msg full";m.textContent="Enviando…";
+  fetch("/",{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams(new FormData(f)).toString()})
+    .then(function(r){if(!r.ok)throw new Error(r.status);f.reset();m.className="msg full ok";m.textContent="¡Listo! Te contactamos por WhatsApp en un día hábil.";})
+    .catch(function(){m.className="msg full err";m.textContent="No se pudo enviar. Revisa tu conexión e inténtalo otra vez.";})
+    .finally(function(){b.disabled=false;});
+});
+</script>
+</body>
+</html>

@@ -246,7 +246,7 @@ function pdfInsp(it,btn){
   libs.then(function(){
     var doc=new window.jspdf.jsPDF({unit:"pt",format:"letter",orientation:"landscape"}),pages=[].slice.call(holder.children),ch=Promise.resolve();
     pages.forEach(function(pg,ix){ch=ch.then(function(){return window.html2canvas(pg,{scale:2,backgroundColor:"#ffffff",logging:false});}).then(function(cv){if(ix)doc.addPage("letter","landscape");doc.addImage(cv.toDataURL("image/jpeg",0.9),"JPEG",0,0,792,612);});});
-    return ch.then(function(){holder.remove();doc.save("Inspeccion-JASA-"+String(it.fecha||"").replace(/[^0-9-]/g,"")+".pdf");btn.disabled=false;msg.textContent="Listo. Revisa tus descargas.";});
+    return ch.then(function(){holder.remove();doc.save("Inspeccion-"+String(JASA_EMPRESA.etqMarca).replace(/[^A-Za-z0-9]/g,"")+"-"+String(it.fecha||"").replace(/[^0-9-]/g,"")+".pdf");btn.disabled=false;msg.textContent="Listo. Revisa tus descargas.";});
   }).catch(function(){holder.remove();btn.disabled=false;msg.textContent="No se pudo generar el PDF. Inténtalo otra vez.";});
 }
 $("code").addEventListener("input",function(e){var v=norm(e.target.value);if(v!==e.target.value)e.target.value=v;});

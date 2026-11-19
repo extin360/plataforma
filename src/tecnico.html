@@ -411,7 +411,7 @@ function startCam(){
     var tick=function(ts){if(!S.stream)return;raf=requestAnimationFrame(tick);if(ts-last<180||vid.readyState<2)return;last=ts;
       var w=vid.videoWidth,h=vid.videoHeight,sc=Math.min(1,640/Math.max(w,h));cv.width=w*sc;cv.height=h*sc;ctx.drawImage(vid,0,0,cv.width,cv.height);
       var img=ctx.getImageData(0,0,cv.width,cv.height),code=window.jsQR(img.data,img.width,img.height,{inversionAttempts:"dontInvert"});
-      if(code&&code.data){var m=jasaFolio(code.data);if(m){if(navigator.vibrate)navigator.vibrate(60);stopCam();openItem(m);}else msg.textContent="Ese QR no es de una etiqueta de JASA.";}};
+      if(code&&code.data){var m=jasaFolio(code.data);if(m){if(navigator.vibrate)navigator.vibrate(60);stopCam();openItem(m);}else msg.textContent="Ese QR no es de una etiqueta de "+JASA_EMPRESA.etqMarca+".";}};
     raf=requestAnimationFrame(tick);
   },function(){msg.textContent="No se pudo abrir la cámara. Da permiso a la cámara en el navegador o escribe el folio abajo.";});
 }

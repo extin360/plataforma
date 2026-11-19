@@ -65,15 +65,15 @@ if(!folio){out.innerHTML='<div class="card"><h2>Escanea la etiqueta</h2><p>Esta 
 fetch(SUPA_URL+"/rest/v1/rpc/ficha_extintor",{method:"POST",headers:{"apikey":SUPA_KEY,"Content-Type":"application/json"},body:JSON.stringify({folio:folio})})
 .then(function(r){return r.json();}).then(function(d){
   if(!d){out.innerHTML='<div class="card"><h2>No encontramos el folio '+esc(folio)+'</h2><p>Revisa la etiqueta o llámanos al '+esc(JASA_EMPRESA.tel)+'.</p></div>';return;}
-  if(!d.asignado){out.innerHTML='<div class="card"><span class="eyebrow">'+esc(d.folio)+'</span><h2>Etiqueta aún sin registrar</h2><p>Este folio todavía no tiene un extintor asignado. Lo registra el técnico de JASA en su próxima visita.</p></div>';return;}
+  if(!d.asignado){out.innerHTML='<div class="card"><span class="eyebrow">'+esc(d.folio)+'</span><h2>Etiqueta aún sin registrar</h2><p>Este folio todavía no tiene un extintor asignado. Lo registra el técnico de '+esc(JASA_EMPRESA.etqMarca)+' en su próxima visita.</p></div>';return;}
   var cm=new Date().toISOString().slice(0,7),venc=d.vence&&d.vence<cm,phv=d.ph&&d.ph<cm,u=d.ultima||{},p=u.puntos||{};
   var k=d.estado==="baja"?["Fuera de servicio","var(--rose)"]:venc?["Recarga vencida","var(--rose)"]:phv?["Prueba hidrostática vencida","var(--amber)"]:["Vigente","var(--green)"];
   p=jasaPuntosDe(p);var malos=JASA_PUNTOS.filter(function(x){return jasaPuntoMalo(x.k,p[x.k]);}).map(function(x){return x.l+": "+JASA_OPT_LABEL[p[x.k]];});
   out.innerHTML='<div class="state" style="--k:'+k[1]+'"><span class="eyebrow">'+esc(d.folio)+'</span><b>'+k[0]+'</b><span>'+esc(tl(d.tipo)+" "+String(d.cap||"").toLowerCase())+(d.ubicacion?" · "+esc(d.ubicacion):"")+'</span></div>'+
     '<div class="card"><h2>Fechas</h2><dl><dt>Última recarga</dt><dd>'+fm(d.recarga)+'</dd><dt>Próxima recarga</dt><dd style="color:'+(venc?"var(--rose)":"inherit")+'">'+fm(d.vence)+'</dd><dt>Prueba hidrostática</dt><dd style="color:'+(phv?"var(--amber)":"inherit")+'">'+fm(d.ph)+'</dd></dl><span class="foot">Deben coincidir con la etiqueta de servicio pegada en el extintor.</span></div>'+
     '<div class="card"><h2>Última revisión</h2>'+(u.fecha?'<dl><dt>Fecha</dt><dd>'+fd(u.fecha)+'</dd><dt>Resultado</dt><dd style="color:'+(u.resultado==="Conforme"?"var(--green)":"var(--amber)")+'">'+esc(u.resultado||"")+'</dd><dt>Detectado</dt><dd>'+(malos.length?'<ul>'+malos.map(function(x){return '<li>'+esc(x)+'</li>';}).join("")+'</ul>':'Todo en buen estado')+'</dd>'+(u.comentario?'<dt>Comentarios</dt><dd>'+esc(u.comentario)+'</dd>':'')+'</dl>':'<p>Todavía no tiene revisiones registradas.</p>')+'</div>'+
-    '<a class="btn" target="_blank" rel="noopener" href="'+jasaWaLink()+'?text='+encodeURIComponent("Hola, escaneé el extintor "+d.folio+" y quiero información sobre su servicio.")+'">Escribir a JASA por WhatsApp</a>'+
-    '<a class="foot" href="/tecnico/#'+esc(d.folio)+'">¿Eres técnico de JASA? Revisar en la app</a>';
+    '<a class="btn" target="_blank" rel="noopener" href="'+jasaWaLink()+'?text='+encodeURIComponent("Hola, escaneé el extintor "+d.folio+" y quiero información sobre su servicio.")+'">Escribir a '+esc(JASA_EMPRESA.etqMarca)+' por WhatsApp</a>'+
+    '<a class="foot" href="/tecnico/#'+esc(d.folio)+'">¿Eres técnico de '+esc(JASA_EMPRESA.etqMarca)+'? Revisar en la app</a>';
 }).catch(function(){out.innerHTML='<div class="card"><h2>Sin conexión</h2><p>No pudimos cargar la ficha. Revisa tu internet e inténtalo de nuevo.</p></div>';});
 })();
 </script>

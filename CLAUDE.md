@@ -19,6 +19,7 @@ barras y encabezados de tabla, franja roja, Saira Condensed / Barlow / IBM Plex 
 | Avisos con diseño (formularios) | — | `netlify/functions/submission-created.mjs` (Resend; sin `RESEND_API_KEY` no hace nada) | Netlify Functions |
 | Facturas recibidas del SAT | — | `netlify/functions/sat-recibidos.mjs` (cada hora; npm `@nodecfdi/sat-ws-descarga-masiva`, `package.json`, `netlify.toml`) | Netlify Functions |
 | Envío de reportes por correo con PDF | — | `netlify/functions/enviar-reporte.mjs` (`/api/enviar-reporte`, valida sesión y staff; Resend con adjunto; marco en `netlify/lib/correo.mjs`) | Netlify Functions |
+| Sitio de ventas Extin360 | https://extin360.com | `extin360/` (página estática, su propio `netlify.toml`; formulario Netlify Forms `demo-extin360`) | Proyecto Netlify `extin360` del equipo Extin360, Base directory = `extin360` |
 | Base de datos | Supabase `psggoagcdokwrkykgufr` | `supabase/*.sql` (se pegan en SQL Editor) | Supabase |
 | Panel viejo (solo lectura) | claude.ai artifact BHJcxnzgNkVbLfyVe49MNu | `admin.html` en modo claude.ai | Artifact |
 

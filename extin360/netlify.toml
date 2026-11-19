@@ -1,0 +1,4 @@
+# Sitio de ventas de Extin360 (https://extin360.com). En Netlify: Base directory = extin360.
+# Páginas estáticas, sin build.
+[build]
+  publish = "."
