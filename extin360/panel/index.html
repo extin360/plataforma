@@ -1,0 +1,440 @@
+<!doctype html>
+<html lang="es-MX">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Extin360 · Panel</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="/config.js"></script>
+<style>
+:root{
+  --tinta:#0E1726;--rojo:#E8321F;--verde:#1DB46C;--amarillo:#F59E0B;--niebla:#EEF1F4;--pizarra:#4A5566;
+  --borde:#E4E7EC;--blanco:#fff;--sans:'Inter',system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--sans);background:var(--niebla);color:var(--tinta);min-height:100dvh;display:flex;flex-direction:column}
+
+header{background:var(--blanco);border-bottom:1px solid var(--borde);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+.logo{font-size:18px;font-weight:800;letter-spacing:-0.5px}
+.logo span{color:var(--rojo)}
+.negocio-name{font-size:.85rem;font-weight:600;color:var(--pizarra);background:var(--niebla);padding:4px 10px;border-radius:6px}
+.header-right{display:flex;align-items:center;gap:10px}
+.btn-sm{background:none;border:1.5px solid var(--borde);border-radius:7px;padding:6px 14px;font:600 13px var(--sans);cursor:pointer;color:var(--pizarra);transition:border-color .15s,color .15s}
+.btn-sm:hover{border-color:var(--rojo);color:var(--rojo)}
+
+.layout{display:flex;flex:1;min-height:0}
+nav{width:220px;background:var(--blanco);border-right:1px solid var(--borde);padding:16px 0;flex-shrink:0}
+.nav-section{padding:4px 12px 2px;font-size:.7rem;font-weight:700;letter-spacing:.06em;color:var(--pizarra);text-transform:uppercase;margin-top:8px}
+.nav-link{display:flex;align-items:center;gap:10px;padding:9px 16px;font-size:.88rem;font-weight:500;color:var(--pizarra);cursor:pointer;border:none;background:none;width:100%;text-align:left;transition:background .12s,color .12s}
+.nav-link:hover{background:var(--niebla);color:var(--tinta)}
+.nav-link.active{background:#FEF0EE;color:var(--rojo);font-weight:600}
+.nav-link .icon{font-size:16px;width:20px;text-align:center;flex-shrink:0}
+.nav-badge{margin-left:auto;background:var(--rojo);color:#fff;border-radius:99px;font-size:.7rem;font-weight:700;padding:1px 7px}
+
+main{flex:1;padding:28px 32px;overflow-y:auto;min-width:0}
+@media(max-width:700px){nav{display:none}main{padding:20px 16px}}
+
+.page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;gap:12px;flex-wrap:wrap}
+.page-header h1{font-size:1.4rem;font-weight:800;margin-bottom:2px}
+.page-header p{font-size:.88rem;color:var(--pizarra)}
+.btn-primary{background:var(--rojo);color:#fff;border:none;border-radius:8px;padding:9px 18px;font:600 14px var(--sans);cursor:pointer;display:flex;align-items:center;gap:6px;transition:background .15s;white-space:nowrap}
+.btn-primary:hover{background:#cf2a18}
+
+/* KPIs */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+@media(max-width:700px){.kpis{grid-template-columns:repeat(2,1fr)}}
+.kpi{background:var(--blanco);border-radius:12px;border:1px solid var(--borde);padding:16px 18px}
+.kpi-label{font-size:.72rem;font-weight:700;color:var(--pizarra);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px}
+.kpi-value{font-size:1.7rem;font-weight:800;line-height:1}
+.kpi-value.verde{color:var(--verde)}
+.kpi-value.amarillo{color:var(--amarillo)}
+.kpi-value.rojo{color:var(--rojo)}
+
+/* Filtros */
+.filtros{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
+.filtro-btn{background:var(--blanco);border:1.5px solid var(--borde);border-radius:8px;padding:6px 14px;font:600 13px var(--sans);color:var(--pizarra);cursor:pointer;transition:all .15s}
+.filtro-btn.active{background:var(--tinta);border-color:var(--tinta);color:#fff}
+.search-wrap{position:relative;margin-left:auto}
+.search-wrap input{padding:7px 12px 7px 32px;border:1.5px solid var(--borde);border-radius:8px;font:400 13px var(--sans);color:var(--tinta);outline:none;width:200px;transition:border-color .15s}
+.search-wrap input:focus{border-color:var(--rojo)}
+.search-wrap::before{content:"🔍";position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:12px;pointer-events:none}
+
+/* Tabla */
+.card{background:var(--blanco);border-radius:14px;border:1px solid var(--borde);overflow:hidden}
+table{width:100%;border-collapse:collapse}
+th{font-size:.72rem;font-weight:700;color:var(--pizarra);text-transform:uppercase;letter-spacing:.05em;padding:10px 16px;text-align:left;border-bottom:1px solid var(--borde);white-space:nowrap;background:#FAFBFC}
+td{padding:12px 16px;font-size:.875rem;border-bottom:1px solid #F2F4F7;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr.clickable:hover td{background:#FAFBFC;cursor:pointer}
+
+.chip{display:inline-flex;align-items:center;gap:5px;border-radius:99px;padding:3px 10px;font-size:.72rem;font-weight:700;white-space:nowrap}
+.chip::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor}
+.chip-vigente{background:#ECFDF5;color:#15803D}
+.chip-por-vencer{background:#FFFBEB;color:#B45309}
+.chip-vencido{background:#FEF2F2;color:#991B1B}
+
+.mono{font-family:ui-monospace,monospace;font-size:.8rem;background:#F3F4F6;border-radius:4px;padding:2px 6px;color:var(--pizarra)}
+.empty-state{text-align:center;padding:60px 20px;color:var(--pizarra)}
+.empty-state .e-icon{font-size:40px;margin-bottom:12px}
+.empty-state h3{font-size:1rem;font-weight:600;margin-bottom:4px;color:var(--tinta)}
+.loading{text-align:center;padding:48px;color:var(--pizarra)}
+
+/* Modal */
+.overlay{position:fixed;inset:0;background:rgba(14,23,38,.45);z-index:100;display:flex;align-items:center;justify-content:center;padding:16px}
+.modal{background:var(--blanco);border-radius:16px;padding:28px;width:100%;max-width:500px;box-shadow:0 8px 40px rgba(14,23,38,.18)}
+.modal h2{font-size:1.1rem;font-weight:800;margin-bottom:20px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:460px){.form-row{grid-template-columns:1fr}}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:.8rem;font-weight:600;color:var(--pizarra);margin-bottom:5px}
+.field input,.field select{width:100%;padding:9px 12px;border:1.5px solid var(--borde);border-radius:8px;font:400 14px var(--sans);color:var(--tinta);outline:none;transition:border-color .15s;background:var(--blanco)}
+.field input:focus,.field select:focus{border-color:var(--rojo)}
+.modal-footer{display:flex;gap:10px;justify-content:flex-end;margin-top:20px}
+.btn-cancel{background:none;border:1.5px solid var(--borde);border-radius:8px;padding:9px 18px;font:600 14px var(--sans);cursor:pointer;color:var(--pizarra)}
+.btn-cancel:hover{border-color:var(--pizarra)}
+.err-msg{color:var(--rojo);font-size:.8rem;margin-top:8px;min-height:1em}
+
+/* Próx vencer banner */
+.banner{background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;padding:12px 16px;margin-bottom:20px;display:flex;align-items:center;gap:10px;font-size:.85rem;color:#92400E}
+.banner strong{font-weight:700}
+</style>
+</head>
+<body>
+<header>
+  <span class="logo">EXTIN<span>360</span></span>
+  <div class="header-right">
+    <span class="negocio-name" id="negocio-name">—</span>
+    <button class="btn-sm" id="btn-salir">Cerrar sesión</button>
+  </div>
+</header>
+
+<div class="layout">
+  <nav>
+    <div class="nav-section">Gestión</div>
+    <button class="nav-link active" data-view="extintores">
+      <span class="icon">🧯</span>Extintores
+      <span class="nav-badge" id="badge-vencidos" style="display:none"></span>
+    </button>
+    <button class="nav-link" data-view="clientes" style="opacity:.5;pointer-events:none">
+      <span class="icon">👥</span>Clientes <span style="font-size:.7rem;margin-left:4px">(pronto)</span>
+    </button>
+    <button class="nav-link" data-view="ordenes" style="opacity:.5;pointer-events:none">
+      <span class="icon">📋</span>Órdenes <span style="font-size:.7rem;margin-left:4px">(pronto)</span>
+    </button>
+  </nav>
+
+  <main>
+    <!-- Vista extintores -->
+    <div id="vista-extintores">
+      <div class="page-header">
+        <div>
+          <h1>Extintores</h1>
+          <p>Inventario y estado de vigencia</p>
+        </div>
+        <button class="btn-primary" onclick="abrirModal()">+ Agregar extintor</button>
+      </div>
+
+      <div id="banner-vencer" style="display:none" class="banner">
+        <span>⚠️</span>
+        <span><strong id="banner-count"></strong> extintor(es) vence(n) en los próximos 30 días.</span>
+      </div>
+
+      <div class="kpis">
+        <div class="kpi"><div class="kpi-label">Total</div><div class="kpi-value" id="k-total">—</div></div>
+        <div class="kpi"><div class="kpi-label">Vigentes</div><div class="kpi-value verde" id="k-vigentes">—</div></div>
+        <div class="kpi"><div class="kpi-label">Por vencer</div><div class="kpi-value amarillo" id="k-por-vencer">—</div></div>
+        <div class="kpi"><div class="kpi-label">Vencidos</div><div class="kpi-value rojo" id="k-vencidos">—</div></div>
+      </div>
+
+      <div class="filtros">
+        <button class="filtro-btn active" onclick="setFiltro('todos',this)">Todos</button>
+        <button class="filtro-btn" onclick="setFiltro('vigente',this)">Vigentes</button>
+        <button class="filtro-btn" onclick="setFiltro('por-vencer',this)">Por vencer</button>
+        <button class="filtro-btn" onclick="setFiltro('vencido',this)">Vencidos</button>
+        <div class="search-wrap">
+          <input type="text" id="search" placeholder="Serie o ubicación…" oninput="renderTabla()">
+        </div>
+      </div>
+
+      <div class="card">
+        <div id="tabla-wrap"><div class="loading">Cargando…</div></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Modal agregar/editar extintor -->
+<div class="overlay" id="modal" style="display:none" onclick="if(event.target===this)cerrarModal()">
+  <div class="modal">
+    <h2 id="modal-title">Agregar extintor</h2>
+    <div class="form-row">
+      <div class="field">
+        <label>Número de serie *</label>
+        <input type="text" id="f-serie" placeholder="EX-001">
+      </div>
+      <div class="field">
+        <label>Tipo *</label>
+        <select id="f-tipo">
+          <option value="">Seleccionar…</option>
+          <option>PQS</option>
+          <option>CO₂</option>
+          <option>Agua</option>
+          <option>Espuma</option>
+          <option>Halón</option>
+          <option>Otro</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="field">
+        <label>Capacidad (kg / L)</label>
+        <input type="text" id="f-capacidad" placeholder="6 kg">
+      </div>
+      <div class="field">
+        <label>Ubicación</label>
+        <input type="text" id="f-ubicacion" placeholder="Bodega norte">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="field">
+        <label>Última recarga</label>
+        <input type="date" id="f-recarga">
+      </div>
+      <div class="field">
+        <label>Vencimiento *</label>
+        <input type="date" id="f-vencimiento">
+      </div>
+    </div>
+    <div class="field">
+      <label>Cliente / responsable</label>
+      <input type="text" id="f-cliente" placeholder="Empresa o persona">
+    </div>
+    <p class="err-msg" id="modal-err"></p>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="cerrarModal()">Cancelar</button>
+      <button class="btn-primary" onclick="guardarExtintor()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var sb = window.supabase.createClient(SUPA_URL, SUPA_KEY);
+  var negocioId = null;
+  var extintores = [];
+  var filtroActivo = 'todos';
+  var editandoId = null;
+
+  // ── Auth ─────────────────────────────────────────────────────────────────────
+  sb.auth.getSession().then(async function(r){
+    if(!r.data || !r.data.session){ location.replace('/app'); return; }
+    var email = r.data.session.user.email;
+
+    // Obtener negocio del usuario
+    var { data: staff } = await sb.from('staff')
+      .select('negocio_id, negocios(config)')
+      .eq('email', email)
+      .eq('activo', true)
+      .not('negocio_id', 'is', null)
+      .maybeSingle();
+
+    if(!staff){ location.replace('/app'); return; }
+
+    negocioId = staff.negocio_id;
+    var nombre = (staff.negocios && staff.negocios.config && staff.negocios.config.nombre)
+      ? staff.negocios.config.nombre : 'Mi negocio';
+    document.getElementById('negocio-name').textContent = nombre;
+    cargarExtintores();
+  });
+
+  document.getElementById('btn-salir').addEventListener('click', async function(){
+    await sb.auth.signOut();
+    location.replace('/app');
+  });
+
+  // ── Cargar extintores ────────────────────────────────────────────────────────
+  async function cargarExtintores(){
+    var { data, error } = await sb.from('docs')
+      .select('id, data, updated_at')
+      .eq('negocio_id', negocioId)
+      .eq('col', 'extintores')
+      .order('updated_at', { ascending: false });
+
+    if(error){
+      document.getElementById('tabla-wrap').innerHTML =
+        '<div class="empty-state"><div class="e-icon">⚠️</div><h3>Error</h3><p>' + esc(error.message) + '</p></div>';
+      return;
+    }
+    extintores = (data || []).map(function(d){ return Object.assign({ _id: d.id }, d.data) });
+    actualizarKPIs();
+    renderTabla();
+  }
+
+  // ── Estado ────────────────────────────────────────────────────────────────────
+  function estadoExtintor(venc){
+    if(!venc) return 'sin-fecha';
+    var hoy  = new Date(); hoy.setHours(0,0,0,0);
+    var date = new Date(venc + 'T00:00:00');
+    var diff = Math.round((date - hoy) / 86400000);
+    if(diff < 0)   return 'vencido';
+    if(diff <= 30) return 'por-vencer';
+    return 'vigente';
+  }
+
+  function labelEstado(e){
+    if(e === 'vencido')    return '<span class="chip chip-vencido">vencido</span>';
+    if(e === 'por-vencer') return '<span class="chip chip-por-vencer">por vencer</span>';
+    if(e === 'vigente')    return '<span class="chip chip-vigente">vigente</span>';
+    return '<span class="chip" style="background:#F3F4F6;color:var(--pizarra)">sin fecha</span>';
+  }
+
+  function actualizarKPIs(){
+    var total = extintores.length;
+    var vigentes  = extintores.filter(function(e){ return estadoExtintor(e.vencimiento) === 'vigente' }).length;
+    var porVencer = extintores.filter(function(e){ return estadoExtintor(e.vencimiento) === 'por-vencer' }).length;
+    var vencidos  = extintores.filter(function(e){ return estadoExtintor(e.vencimiento) === 'vencido' }).length;
+
+    document.getElementById('k-total').textContent     = total;
+    document.getElementById('k-vigentes').textContent  = vigentes;
+    document.getElementById('k-por-vencer').textContent= porVencer;
+    document.getElementById('k-vencidos').textContent  = vencidos;
+
+    if(porVencer > 0){
+      document.getElementById('banner-vencer').style.display = 'flex';
+      document.getElementById('banner-count').textContent = porVencer;
+    }
+    if(vencidos > 0){
+      var b = document.getElementById('badge-vencidos');
+      b.textContent = vencidos;
+      b.style.display = 'inline-block';
+    }
+  }
+
+  // ── Render tabla ──────────────────────────────────────────────────────────────
+  window.setFiltro = function(f, btn){
+    filtroActivo = f;
+    document.querySelectorAll('.filtro-btn').forEach(function(b){ b.classList.remove('active') });
+    btn.classList.add('active');
+    renderTabla();
+  };
+
+  window.renderTabla = function(){
+    var q = (document.getElementById('search').value || '').toLowerCase();
+    var lista = extintores.filter(function(e){
+      var estado = estadoExtintor(e.vencimiento);
+      if(filtroActivo !== 'todos' && estado !== filtroActivo) return false;
+      if(q){
+        var haystack = [(e.serie||''),(e.ubicacion||''),(e.cliente||''),(e.tipo||'')].join(' ').toLowerCase();
+        if(!haystack.includes(q)) return false;
+      }
+      return true;
+    });
+
+    if(lista.length === 0){
+      document.getElementById('tabla-wrap').innerHTML =
+        '<div class="empty-state"><div class="e-icon">🧯</div>' +
+        '<h3>' + (extintores.length === 0 ? 'Sin extintores' : 'Sin resultados') + '</h3>' +
+        '<p>' + (extintores.length === 0 ? 'Agrega el primer extintor con el botón de arriba.' : 'Prueba con otros filtros.') + '</p></div>';
+      return;
+    }
+
+    var rows = lista.map(function(e){
+      var estado = estadoExtintor(e.vencimiento);
+      var vencStr = e.vencimiento
+        ? new Date(e.vencimiento + 'T00:00:00').toLocaleDateString('es-MX', {day:'2-digit',month:'short',year:'numeric'})
+        : '—';
+      return '<tr class="clickable" onclick="editarExtintor(\'' + e._id + '\')">' +
+        '<td><span class="mono">' + esc(e.serie || '—') + '</span></td>' +
+        '<td>' + esc(e.tipo || '—') + '</td>' +
+        '<td>' + esc(e.capacidad || '—') + '</td>' +
+        '<td>' + esc(e.ubicacion || '—') + '</td>' +
+        '<td>' + esc(e.cliente || '—') + '</td>' +
+        '<td>' + labelEstado(estado) + '</td>' +
+        '<td style="color:var(--pizarra);font-size:.82rem">' + vencStr + '</td>' +
+        '</tr>';
+    }).join('');
+
+    document.getElementById('tabla-wrap').innerHTML =
+      '<div style="overflow-x:auto"><table>' +
+      '<thead><tr><th>Serie</th><th>Tipo</th><th>Capacidad</th><th>Ubicación</th><th>Cliente</th><th>Estado</th><th>Vencimiento</th></tr></thead>' +
+      '<tbody>' + rows + '</tbody></table></div>';
+  };
+
+  // ── Modal ─────────────────────────────────────────────────────────────────────
+  window.abrirModal = function(){
+    editandoId = null;
+    document.getElementById('modal-title').textContent = 'Agregar extintor';
+    ['serie','tipo','capacidad','ubicacion','recarga','vencimiento','cliente'].forEach(function(f){
+      var el = document.getElementById('f-' + f);
+      if(el) el.value = '';
+    });
+    document.getElementById('modal-err').textContent = '';
+    document.getElementById('modal').style.display = 'flex';
+    document.getElementById('f-serie').focus();
+  };
+
+  window.editarExtintor = function(id){
+    var e = extintores.find(function(x){ return x._id === id });
+    if(!e) return;
+    editandoId = id;
+    document.getElementById('modal-title').textContent = 'Editar extintor';
+    document.getElementById('f-serie').value       = e.serie || '';
+    document.getElementById('f-tipo').value        = e.tipo || '';
+    document.getElementById('f-capacidad').value   = e.capacidad || '';
+    document.getElementById('f-ubicacion').value   = e.ubicacion || '';
+    document.getElementById('f-recarga').value     = e.recarga || '';
+    document.getElementById('f-vencimiento').value = e.vencimiento || '';
+    document.getElementById('f-cliente').value     = e.cliente || '';
+    document.getElementById('modal-err').textContent = '';
+    document.getElementById('modal').style.display = 'flex';
+  };
+
+  window.cerrarModal = function(){
+    document.getElementById('modal').style.display = 'none';
+  };
+
+  window.guardarExtintor = async function(){
+    var serie = document.getElementById('f-serie').value.trim();
+    var tipo  = document.getElementById('f-tipo').value;
+    var venc  = document.getElementById('f-vencimiento').value;
+    var err   = document.getElementById('modal-err');
+
+    if(!serie){ err.textContent = 'El número de serie es obligatorio.'; return; }
+    if(!tipo){  err.textContent = 'Selecciona el tipo de extintor.'; return; }
+    if(!venc){  err.textContent = 'La fecha de vencimiento es obligatoria.'; return; }
+    err.textContent = '';
+
+    var data = {
+      serie:       serie,
+      tipo:        tipo,
+      capacidad:   document.getElementById('f-capacidad').value.trim(),
+      ubicacion:   document.getElementById('f-ubicacion').value.trim(),
+      recarga:     document.getElementById('f-recarga').value,
+      vencimiento: venc,
+      cliente:     document.getElementById('f-cliente').value.trim(),
+    };
+
+    var docId = editandoId || serie.toLowerCase().replace(/[^a-z0-9]/g, '-');
+
+    var { error } = await sb.from('docs').upsert({
+      negocio_id: negocioId,
+      col: 'extintores',
+      id: docId,
+      data: data,
+      updated_at: new Date().toISOString()
+    }, { onConflict: 'negocio_id,col,id' });
+
+    if(error){ err.textContent = error.message; return; }
+    cerrarModal();
+    cargarExtintores();
+  };
+
+  function esc(s){
+    return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+})();
+</script>
+</body>
+</html>

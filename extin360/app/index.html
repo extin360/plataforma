@@ -82,9 +82,19 @@ input:focus{border-color:var(--rojo)}
 (function(){
   var sb = window.supabase.createClient(SUPA_URL, SUPA_KEY);
 
-  // Si ya tiene sesión activa, redirige directo al panel
+  async function redirigir(session){
+    var { data: staff } = await sb.from('staff')
+      .select('negocio_id')
+      .eq('email', session.user.email)
+      .eq('activo', true)
+      .maybeSingle();
+    if(staff && staff.negocio_id === null) location.replace('/admin');
+    else location.replace('/panel');
+  }
+
+  // Si ya tiene sesión activa, redirige según rol
   sb.auth.getSession().then(function(r){
-    if(r.data && r.data.session) location.replace('/admin');
+    if(r.data && r.data.session) redirigir(r.data.session);
   });
 
   document.getElementById('form').addEventListener('submit', async function(e){
@@ -106,7 +116,7 @@ input:focus{border-color:var(--rojo)}
       btn.textContent = 'Iniciar sesión';
       return;
     }
-    location.replace('/admin');
+    redirigir(r.data.session);
   });
 })();
 </script>
