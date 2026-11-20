@@ -217,10 +217,12 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:now
       <div class="nav-sec">Operaciones</div>
       <button class="nav-b" id="nav-extintores" onclick="ir('extintores')">Extintores <span class="badge" id="badge-ext" hidden></span></button>
       <button class="nav-b" id="nav-clientes" onclick="ir('clientes')">Clientes</button>
-      <button class="nav-b soon">Cotizaciones</button>
-      <button class="nav-b soon">Inspecciones</button>
-      <button class="nav-b soon">Taller</button>
+      <button class="nav-b" id="nav-cotizaciones" onclick="ir('cotizaciones')">Cotizaciones <span class="badge" id="badge-cot" hidden></span></button>
+      <button class="nav-b" id="nav-inspecciones" onclick="ir('inspecciones')">Inspecciones <span class="badge" id="badge-ins" hidden></span></button>
+      <button class="nav-b" id="nav-taller" onclick="ir('taller')">Taller <span class="badge" id="badge-tal" hidden></span></button>
+      <button class="nav-b" id="nav-pendientes" onclick="ir('pendientes')">Pendientes <span class="badge" id="badge-pend" hidden></span></button>
       <div class="nav-sec">Empresa</div>
+      <button class="nav-b" id="nav-precios" onclick="ir('precios')">Costos y precios</button>
       <button class="nav-b soon">Reportes</button>
       <button class="nav-b soon">Personal</button>
       <button class="nav-b" id="nav-colores" onclick="ir('colores')">Mi empresa</button>
@@ -248,28 +250,33 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:now
       </div>
       <div class="content">
         <div class="kpis" id="kpis-dash">
-          <div class="kpi" style="--k:var(--line)"><div class="kv" id="d-total">—</div><div class="kn">Total extintores</div></div>
+          <div class="kpi" style="--k:var(--amber-f);cursor:pointer" onclick="ir('cotizaciones')"><div class="kv" style="color:var(--amber)" id="d-cot-nuevas">—</div><div class="kn">Cotizaciones nuevas</div><div class="ks">por contestar</div></div>
           <div class="kpi" style="--k:var(--verde)"><div class="kv" style="color:var(--verde)" id="d-vigentes">—</div><div class="kn">Vigentes</div></div>
           <div class="kpi" style="--k:var(--amber-f)"><div class="kv" style="color:var(--amber)" id="d-por-vencer">—</div><div class="kn">Por vencer</div><div class="ks">próximos 30 días</div></div>
           <div class="kpi" style="--k:var(--accent)"><div class="kv" style="color:var(--accent)" id="d-vencidos">—</div><div class="kn">Vencidos</div></div>
         </div>
 
         <div class="dash-grid">
-          <!-- Extintores por vencer -->
+          <!-- Cotizaciones por contestar -->
           <div class="box">
             <div class="box-h">
-              <h2>Recargas por programar</h2>
-              <span class="meta">próximos 2 meses</span>
+              <h2>Cotizaciones por contestar</h2>
+              <button class="link-btn" onclick="ir('cotizaciones')">Ver todas →</button>
             </div>
-            <div id="dash-por-vencer"><div class="empty-row">Cargando…</div></div>
+            <div id="dash-cot-pendientes"><div class="empty-row">Cargando…</div></div>
           </div>
 
           <!-- Columna derecha -->
           <div style="display:flex;flex-direction:column;gap:16px">
-            <!-- Vencidos -->
+            <!-- Recargas por vencer con avisar -->
             <div class="box">
-              <div class="box-h"><h2>Vencidos</h2><button class="link-btn" onclick="ir('extintores');setFiltroExt('vencido')">Ver todos →</button></div>
-              <div id="dash-vencidos"><div class="empty-row">Cargando…</div></div>
+              <div class="box-h"><h2>Recargas por vencer</h2><span class="meta">próximos 2 meses</span></div>
+              <div id="dash-por-vencer"><div class="empty-row">Cargando…</div></div>
+            </div>
+            <!-- Pendientes del día -->
+            <div class="box">
+              <div class="box-h"><h2>Pendientes de hoy</h2><button class="link-btn" onclick="ir('pendientes')">Agenda →</button></div>
+              <div id="dash-pendientes-hoy"><div class="empty-row">Cargando…</div></div>
             </div>
           </div>
         </div>
@@ -329,6 +336,132 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:now
       </div>
     </div>
 
+    <!-- ══ Vista: Inspecciones ══ -->
+    <div id="vista-inspecciones" hidden>
+      <div class="topbar">
+        <div class="topbar-left">
+          <button class="mob-btn" onclick="toggleSidebar()">☰</button>
+          <div><div class="section-label">Operaciones</div><h1>Inspecciones</h1></div>
+        </div>
+        <div class="topbar-actions">
+          <input class="search" type="text" id="ins-search" placeholder="Cliente, técnico…" oninput="renderIns()">
+          <button class="btn" onclick="abrirDrawerVis(null)">+ Programar visita</button>
+        </div>
+      </div>
+      <div class="content">
+        <div class="box">
+          <div class="box-h">
+            <div class="tabs">
+              <button class="tab" aria-pressed="true"  onclick="setFiltroIns('todas',this)">Todas</button>
+              <button class="tab" aria-pressed="false" onclick="setFiltroIns('programada',this)">Programadas</button>
+              <button class="tab" aria-pressed="false" onclick="setFiltroIns('por-revisar',this)">Por revisar</button>
+              <button class="tab" aria-pressed="false" onclick="setFiltroIns('revisada',this)">Revisadas</button>
+            </div>
+          </div>
+          <div class="tbl-wrap" id="ins-tabla"><div class="empty-row">Cargando…</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ Vista: Cotizaciones ══ -->
+    <div id="vista-cotizaciones" hidden>
+      <div class="topbar">
+        <div class="topbar-left">
+          <button class="mob-btn" onclick="toggleSidebar()">☰</button>
+          <div><div class="section-label">Operaciones</div><h1>Cotizaciones</h1></div>
+        </div>
+        <div class="topbar-actions">
+          <input class="search" type="text" id="cot-search" placeholder="Folio, cliente…" oninput="renderCot()">
+          <button class="btn" onclick="abrirDrawerCot(null)">+ Nueva cotización</button>
+        </div>
+      </div>
+      <div class="content">
+        <div class="box">
+          <div class="box-h">
+            <div class="tabs">
+              <button class="tab" aria-pressed="true"  onclick="setFiltroCot('todas',this)">Todas</button>
+              <button class="tab" aria-pressed="false" onclick="setFiltroCot('Nueva',this)">Nuevas</button>
+              <button class="tab" aria-pressed="false" onclick="setFiltroCot('Enviada',this)">Enviadas</button>
+              <button class="tab" aria-pressed="false" onclick="setFiltroCot('Autorizada',this)">Autorizadas</button>
+            </div>
+          </div>
+          <div class="tbl-wrap" id="cot-tabla"><div class="empty-row">Cargando…</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ Vista: Taller ══ -->
+    <div id="vista-taller" hidden>
+      <div class="topbar">
+        <div class="topbar-left">
+          <button class="mob-btn" onclick="toggleSidebar()">☰</button>
+          <div><div class="section-label">Operaciones</div><h1>Taller</h1></div>
+        </div>
+        <div class="topbar-actions">
+          <input class="search" type="text" id="tal-search" placeholder="Folio, cliente…" oninput="renderTal()">
+          <button class="btn" onclick="abrirDrawerOrden(null)">+ Nueva orden</button>
+        </div>
+      </div>
+      <div class="content">
+        <div class="box">
+          <div class="box-h">
+            <div class="tabs">
+              <button class="tab" aria-pressed="true"  onclick="setFiltroTal('todas',this)">Todas</button>
+              <button class="tab" aria-pressed="false" onclick="setFiltroTal('0',this)">Por recoger</button>
+              <button class="tab" aria-pressed="false" onclick="setFiltroTal('1',this)">Recibidas</button>
+              <button class="tab" aria-pressed="false" onclick="setFiltroTal('2',this)">En reparación</button>
+              <button class="tab" aria-pressed="false" onclick="setFiltroTal('3',this)">En entrega</button>
+              <button class="tab" aria-pressed="false" onclick="setFiltroTal('4',this)">Entregadas</button>
+            </div>
+          </div>
+          <div class="tbl-wrap" id="tal-tabla"><div class="empty-row">Cargando…</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ Vista: Pendientes ══ -->
+    <div id="vista-pendientes" hidden>
+      <div class="topbar">
+        <div class="topbar-left">
+          <button class="mob-btn" onclick="toggleSidebar()">☰</button>
+          <div><div class="section-label">Agenda</div><h1>Pendientes</h1></div>
+        </div>
+        <div class="topbar-actions">
+          <button class="btn" onclick="abrirDrawerPend(null)">+ Agregar</button>
+        </div>
+      </div>
+      <div class="content">
+        <div class="box">
+          <div class="box-h">
+            <div class="tabs">
+              <button class="tab" aria-pressed="true"  onclick="setFiltroPend('hoy',this)">Hoy</button>
+              <button class="tab" aria-pressed="false" onclick="setFiltroPend('pendientes',this)">Pendientes</button>
+              <button class="tab" aria-pressed="false" onclick="setFiltroPend('todos',this)">Todos</button>
+            </div>
+          </div>
+          <div id="pend-lista"><div class="empty-row">Cargando…</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ Vista: Costos y Precios ══ -->
+    <div id="vista-precios" hidden>
+      <div class="topbar">
+        <div class="topbar-left">
+          <button class="mob-btn" onclick="toggleSidebar()">☰</button>
+          <div><div class="section-label">Empresa</div><h1>Costos y precios</h1></div>
+        </div>
+        <div class="topbar-actions">
+          <button class="btn" onclick="abrirDrawerPrecio(null)">+ Agregar</button>
+        </div>
+      </div>
+      <div class="content">
+        <div class="box">
+          <div class="tbl-wrap" id="prec-tabla"><div class="empty-row">Cargando…</div></div>
+        </div>
+      </div>
+    </div>
+
     <!-- ══ Vista: Mi empresa / Colores ══ -->
     <div id="vista-colores" hidden>
       <div class="topbar">
@@ -353,6 +486,186 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:now
     </div>
 
   </main>
+</div>
+
+<!-- Drawer: Visita/Inspección -->
+<div class="overlay" id="drawer-vis-overlay" hidden onclick="if(event.target===this)cerrarDrawerVis()">
+  <div class="drawer">
+    <div class="drawer-head">
+      <h2 id="drawer-vis-title">Programar visita</h2>
+      <button class="btn ghost sm" onclick="cerrarDrawerVis()">✕</button>
+    </div>
+    <form onsubmit="return false">
+      <div class="field"><label>Cliente *</label>
+        <input class="inp" id="fv-cli" placeholder="Nombre del cliente" list="vis-cli-datalist" autocomplete="off">
+        <datalist id="vis-cli-datalist"></datalist>
+      </div>
+      <div class="f2">
+        <div class="field"><label>Fecha *</label><input class="inp" type="date" id="fv-fecha"></div>
+        <div class="field"><label>Técnico</label><input class="inp" id="fv-tec" placeholder="Nombre"></div>
+      </div>
+      <div class="field"><label>Tipo</label>
+        <select class="inp" id="fv-tipo">
+          <option>Inspección</option><option>Recolección</option><option>Entrega</option><option>Visita comercial</option><option>Otro</option>
+        </select>
+      </div>
+      <div class="field"><label>Notas</label><input class="inp" id="fv-notas" placeholder="Observaciones"></div>
+    </form>
+    <p class="err-msg" id="vis-err"></p>
+    <div class="drawer-foot">
+      <button class="btn ghost" id="btn-eliminar-vis" style="color:var(--accent);border-color:var(--accent)" onclick="eliminarVis()" hidden>Eliminar</button>
+      <div style="flex:1"></div>
+      <button class="btn ghost" onclick="cerrarDrawerVis()">Cancelar</button>
+      <button class="btn" onclick="guardarVis()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Drawer: Cotización -->
+<div class="overlay" id="drawer-cot-overlay" hidden onclick="if(event.target===this)cerrarDrawerCot()">
+  <div class="drawer" style="width:min(560px,100%)">
+    <div class="drawer-head">
+      <h2 id="drawer-cot-title">Nueva cotización</h2>
+      <button class="btn ghost sm" onclick="cerrarDrawerCot()">✕</button>
+    </div>
+    <form onsubmit="return false">
+      <div class="field"><label>Cliente *</label>
+        <input class="inp" id="fc2-cli" placeholder="Nombre del cliente" list="cot-cli-datalist" autocomplete="off">
+        <datalist id="cot-cli-datalist"></datalist>
+      </div>
+      <div class="f2">
+        <div class="field"><label>Fecha</label><input class="inp" type="date" id="fc2-fecha"></div>
+        <div class="field"><label>Estado</label>
+          <select class="inp" id="fc2-estado"><option>Nueva</option><option>Enviada</option><option>Autorizada</option><option>Rechazada</option></select>
+        </div>
+      </div>
+      <div style="border-top:1px solid var(--line);padding-top:12px;margin-top:4px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <span style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)">Partidas</span>
+          <button class="btn ghost sm" type="button" onclick="agregarLineaCot()">+ Línea</button>
+        </div>
+        <div id="cot-lineas"></div>
+        <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:10px;font-family:var(--mono);font-size:13px">
+          <span style="color:var(--muted)">Total:</span>
+          <b id="cot-total-label">$0.00</b>
+        </div>
+      </div>
+      <div class="field"><label>Notas</label><input class="inp" id="fc2-notas" placeholder="Condiciones, vigencia…"></div>
+    </form>
+    <p class="err-msg" id="cot-err"></p>
+    <div class="drawer-foot">
+      <button class="btn ghost" id="btn-eliminar-cot" style="color:var(--accent);border-color:var(--accent)" onclick="eliminarCot()" hidden>Eliminar</button>
+      <div style="flex:1"></div>
+      <button class="btn ghost" onclick="cerrarDrawerCot()">Cancelar</button>
+      <button class="btn" onclick="guardarCot()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Drawer: Orden de taller -->
+<div class="overlay" id="drawer-ord-overlay" hidden onclick="if(event.target===this)cerrarDrawerOrden()">
+  <div class="drawer">
+    <div class="drawer-head">
+      <h2 id="drawer-ord-title">Nueva orden</h2>
+      <button class="btn ghost sm" onclick="cerrarDrawerOrden()">✕</button>
+    </div>
+    <form onsubmit="return false">
+      <div class="field"><label>Cliente *</label>
+        <input class="inp" id="fo-cli" placeholder="Nombre del cliente" list="ord-cli-datalist" autocomplete="off">
+        <datalist id="ord-cli-datalist"></datalist>
+      </div>
+      <div class="f2">
+        <div class="field"><label>Técnico</label><input class="inp" id="fo-tec" placeholder="Asignar técnico"></div>
+        <div class="field"><label>Fecha visita</label><input class="inp" type="date" id="fo-fecha"></div>
+      </div>
+      <div class="field"><label>Equipos / descripción</label><input class="inp" id="fo-equipos" placeholder="5 extintores PQS 6kg"></div>
+      <div class="f2">
+        <div class="field"><label>Etapa</label>
+          <select class="inp" id="fo-etapa">
+            <option value="0">Por recoger</option><option value="1">Recibido</option>
+            <option value="2">En reparación</option><option value="3">En entrega</option><option value="4">Entregado</option>
+          </select>
+        </div>
+        <div class="field"><label>Prioridad</label>
+          <select class="inp" id="fo-prior"><option>Normal</option><option>Urgente</option><option>Programada</option></select>
+        </div>
+      </div>
+      <div class="field"><label>Notas</label><input class="inp" id="fo-notas" placeholder="Observaciones"></div>
+    </form>
+    <p class="err-msg" id="ord-err"></p>
+    <div class="drawer-foot">
+      <button class="btn ghost" id="btn-eliminar-ord" style="color:var(--accent);border-color:var(--accent)" onclick="eliminarOrden()" hidden>Eliminar</button>
+      <div style="flex:1"></div>
+      <button class="btn ghost" onclick="cerrarDrawerOrden()">Cancelar</button>
+      <button class="btn" onclick="guardarOrden()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Drawer: Pendiente -->
+<div class="overlay" id="drawer-pend-overlay" hidden onclick="if(event.target===this)cerrarDrawerPend()">
+  <div class="drawer">
+    <div class="drawer-head">
+      <h2 id="drawer-pend-title">Agregar pendiente</h2>
+      <button class="btn ghost sm" onclick="cerrarDrawerPend()">✕</button>
+    </div>
+    <form onsubmit="return false">
+      <div class="field"><label>Título *</label><input class="inp" id="fp-titulo" placeholder="Qué hay que hacer"></div>
+      <div class="field"><label>Cliente</label><input class="inp" id="fp-cli" placeholder="Nombre del cliente" list="pend-cli-datalist" autocomplete="off"><datalist id="pend-cli-datalist"></datalist></div>
+      <div class="f2">
+        <div class="field"><label>Fecha</label><input class="inp" type="date" id="fp-fecha"></div>
+        <div class="field"><label>Hora</label><input class="inp" type="time" id="fp-hora"></div>
+      </div>
+      <div class="field"><label>Tipo</label>
+        <select class="inp" id="fp-tipo">
+          <option>Administrativo</option><option>Visita a cliente</option><option>Cobro</option><option>Entrega</option><option>Otro</option>
+        </select>
+      </div>
+      <div class="field"><label>Notas</label><input class="inp" id="fp-notas" placeholder="Observaciones"></div>
+    </form>
+    <p class="err-msg" id="pend-err"></p>
+    <div class="drawer-foot">
+      <button class="btn ghost" id="btn-eliminar-pend" style="color:var(--accent);border-color:var(--accent)" onclick="eliminarPend()" hidden>Eliminar</button>
+      <div style="flex:1"></div>
+      <button class="btn ghost" onclick="cerrarDrawerPend()">Cancelar</button>
+      <button class="btn" onclick="guardarPend()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Drawer: Precio -->
+<div class="overlay" id="drawer-prec-overlay" hidden onclick="if(event.target===this)cerrarDrawerPrecio()">
+  <div class="drawer">
+    <div class="drawer-head">
+      <h2 id="drawer-prec-title">Agregar precio</h2>
+      <button class="btn ghost sm" onclick="cerrarDrawerPrecio()">✕</button>
+    </div>
+    <form onsubmit="return false">
+      <div class="field"><label>Descripción *</label><input class="inp" id="fpr-desc" placeholder="Recarga PQS 6kg"></div>
+      <div class="f2">
+        <div class="field"><label>Categoría</label>
+          <select class="inp" id="fpr-cat">
+            <option>Recarga</option><option>Prueba hidrostática</option><option>Mantenimiento</option>
+            <option>Señalamiento</option><option>Extintor nuevo</option><option>Otro</option>
+          </select>
+        </div>
+        <div class="field"><label>Unidad</label>
+          <select class="inp" id="fpr-unidad"><option>Pieza</option><option>Kg</option><option>Servicio</option></select>
+        </div>
+      </div>
+      <div class="f2">
+        <div class="field"><label>Precio unitario *</label><input class="inp" type="number" min="0" step="0.01" id="fpr-precio" placeholder="0.00"></div>
+        <div class="field"><label>Costo</label><input class="inp" type="number" min="0" step="0.01" id="fpr-costo" placeholder="0.00"></div>
+      </div>
+    </form>
+    <p class="err-msg" id="prec-err"></p>
+    <div class="drawer-foot">
+      <button class="btn ghost" id="btn-eliminar-prec" style="color:var(--accent);border-color:var(--accent)" onclick="eliminarPrecio()" hidden>Eliminar</button>
+      <div style="flex:1"></div>
+      <button class="btn ghost" onclick="cerrarDrawerPrecio()">Cancelar</button>
+      <button class="btn" onclick="guardarPrecio()">Guardar</button>
+    </div>
+  </div>
 </div>
 
 <!-- Drawer: Cliente -->
@@ -447,13 +760,41 @@ var negocioId   = null;
 var negocioData = null;
 var extintores  = [];
 var clientes    = [];
+var visitas     = [];
+var cotizaciones = [];
+var ordenes     = [];
+var pendientesList = [];
+var precios     = [];
 var filtroExt   = 'todos';
+var filtroIns   = 'todas';
+var filtroCot   = 'todas';
+var filtroTal   = 'todas';
+var filtroPend  = 'hoy';
 var editandoId  = null;
 var editandoCliId = null;
+var editandoVisId = null;
+var editandoCotId = null;
+var editandoOrdId = null;
+var editandoPendId = null;
+var editandoPrecId = null;
+var cotLineas   = [];
 var paletaActual = 'extin360';
 
 /* ── NOM-154: vigencia por tipo (meses) ─────────────────────────────────────── */
 var NOM_VIGENCIA = { 'PQS':12, 'CO₂':12, 'Agua':12, 'Espuma':12, 'Halón':12 };
+
+/* ── Folio helpers ──────────────────────────────────────────────────────────── */
+function siguienteFolio(lista, prefijo){
+  var nums = lista.map(function(x){
+    var m = (x.folio||'').match(/(\d+)$/);
+    return m ? parseInt(m[1],10) : 0;
+  });
+  var n = nums.length ? Math.max.apply(null,nums) + 1 : 1;
+  return prefijo + String(n).padStart(4,'0');
+}
+
+/* ── Etapas taller ──────────────────────────────────────────────────────────── */
+var ETAPAS = ['Por recoger','Recibido','En reparación','En entrega','Entregado'];
 
 /* ── Auth ──────────────────────────────────────────────────────────────────── */
 sb.auth.getSession().then(async function(r){
@@ -484,8 +825,13 @@ sb.auth.getSession().then(async function(r){
 
   // Renderizar selector de paletas
   renderPaletas();
-  cargarClientes();     // carga primero para tener datalist listo
+  cargarClientes();
   cargarExtintores();
+  cargarVisitas();
+  cargarCotizaciones();
+  cargarOrdenes();
+  cargarPendientes();
+  cargarPrecios();
 });
 
 window.cerrarSesion = async function(){
@@ -550,7 +896,7 @@ window.guardarPaleta = async function(){
 
 /* ── Navegación ─────────────────────────────────────────────────────────────── */
 window.ir = function(vista){
-  ['panel','extintores','clientes','colores'].forEach(function(v){
+  ['panel','extintores','clientes','inspecciones','cotizaciones','taller','pendientes','precios','colores'].forEach(function(v){
     document.getElementById('vista-' + v).hidden = v !== vista;
     var nb = document.getElementById('nav-' + v);
     if(nb) nb[v === vista ? 'setAttribute' : 'removeAttribute']('aria-current', 'page');
@@ -890,6 +1236,667 @@ window.eliminarCli = async function(){
   cerrarDrawerCli();
   mostrarToast('Cliente eliminado.');
   cargarClientes();
+};
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   INSPECCIONES / VISITAS
+   ══════════════════════════════════════════════════════════════════════════════ */
+async function cargarVisitas(){
+  var { data, error } = await sb.from('docs')
+    .select('id, data')
+    .eq('negocio_id', negocioId)
+    .eq('col', 'visitas');
+  if(error){ console.error(error); return; }
+  visitas = (data || []).map(function(d){ return Object.assign({ _id: d.id }, d.data) });
+  visitas.sort(function(a,b){ return (b.fecha||'').localeCompare(a.fecha||'') });
+  renderIns();
+  actualizarBadgeIns();
+}
+
+function actualizarBadgeIns(){
+  var n = visitas.filter(function(v){ return v.estado === 'por-revisar' }).length;
+  var b = document.getElementById('badge-ins');
+  if(b){ b.hidden = !n; b.textContent = n || ''; }
+}
+
+window.setFiltroIns = function(f, btn){
+  filtroIns = f;
+  document.querySelectorAll('#vista-inspecciones .tab').forEach(function(b){ b.setAttribute('aria-pressed','false') });
+  if(btn) btn.setAttribute('aria-pressed','true');
+  renderIns();
+};
+
+window.renderIns = function(){
+  var q = (document.getElementById('ins-search').value || '').toLowerCase();
+  var lista = visitas.filter(function(v){
+    if(filtroIns !== 'todas' && v.estado !== filtroIns) return false;
+    if(q){
+      var h = [(v.cliente||''),(v.tecnico||''),(v.tipo||'')].join(' ').toLowerCase();
+      if(!h.includes(q)) return false;
+    }
+    return true;
+  });
+  if(lista.length === 0){
+    document.getElementById('ins-tabla').innerHTML =
+      '<div class="empty-row">' + (visitas.length === 0
+        ? 'Sin visitas programadas. Usa el botón Programar visita.'
+        : 'Sin resultados.') + '</div>';
+    return;
+  }
+  var ESTADO_PILL = {
+    'programada': '<span class="pill pill-gray">Programada</span>',
+    'en-curso':   '<span class="pill pill-amber">En curso</span>',
+    'por-revisar':'<span class="pill pill-amber">Por revisar</span>',
+    'revisada':   '<span class="pill pill-verde">Revisada</span>',
+    'completa':   '<span class="pill pill-verde">Completa</span>',
+  };
+  document.getElementById('ins-tabla').innerHTML =
+    '<table><thead><tr><th>Fecha</th><th>Cliente</th><th>Tipo</th><th>Técnico</th><th>Estado</th></tr></thead><tbody>' +
+    lista.map(function(v){
+      var fechaStr = v.fecha ? new Date(v.fecha+'T00:00:00').toLocaleDateString('es-MX',{day:'2-digit',month:'short',year:'numeric'}) : '—';
+      return '<tr class="clickable" onclick="abrirDrawerVis(\'' + v._id + '\')">' +
+        '<td class="mono">' + fechaStr + '</td>' +
+        '<td><b>' + esc(v.cliente||'—') + '</b></td>' +
+        '<td>' + esc(v.tipo||'Inspección') + '</td>' +
+        '<td>' + esc(v.tecnico||'—') + '</td>' +
+        '<td>' + (ESTADO_PILL[v.estado] || '<span class="pill pill-gray">' + esc(v.estado||'—') + '</span>') + '</td>' +
+        '</tr>';
+    }).join('') + '</tbody></table>';
+};
+
+window.abrirDrawerVis = function(id){
+  editandoVisId = id;
+  var v = id ? visitas.find(function(x){ return x._id === id }) : null;
+  document.getElementById('drawer-vis-title').textContent = v ? 'Editar visita' : 'Programar visita';
+  document.getElementById('fv-cli').value   = v ? (v.cliente||'') : '';
+  document.getElementById('fv-fecha').value = v ? (v.fecha||'')   : '';
+  document.getElementById('fv-tec').value   = v ? (v.tecnico||'') : '';
+  document.getElementById('fv-tipo').value  = v ? (v.tipo||'Inspección') : 'Inspección';
+  document.getElementById('fv-notas').value = v ? (v.notas||'')   : '';
+  // datalist clientes
+  document.getElementById('vis-cli-datalist').innerHTML = clientes.map(function(c){
+    return '<option value="' + esc(c.nombre) + '">';
+  }).join('');
+  document.getElementById('vis-err').textContent = '';
+  document.getElementById('btn-eliminar-vis').hidden = !id;
+  document.getElementById('drawer-vis-overlay').hidden = false;
+  document.getElementById('fv-cli').focus();
+};
+window.cerrarDrawerVis = function(){ document.getElementById('drawer-vis-overlay').hidden = true; };
+
+window.guardarVis = async function(){
+  var cliente = document.getElementById('fv-cli').value.trim();
+  var fecha   = document.getElementById('fv-fecha').value;
+  var err = document.getElementById('vis-err');
+  if(!cliente){ err.textContent = 'El cliente es obligatorio.'; return; }
+  if(!fecha)  { err.textContent = 'La fecha es obligatoria.'; return; }
+  err.textContent = '';
+  var data = {
+    cliente: cliente, fecha: fecha,
+    tecnico: document.getElementById('fv-tec').value.trim(),
+    tipo:    document.getElementById('fv-tipo').value,
+    notas:   document.getElementById('fv-notas').value.trim(),
+    estado:  editandoVisId ? (visitas.find(function(x){ return x._id===editandoVisId; }) || {}).estado || 'programada' : 'programada',
+  };
+  var docId = editandoVisId || ('vis-' + Date.now());
+  var { error } = await sb.from('docs').upsert(
+    { negocio_id: negocioId, col: 'visitas', id: docId, data: data, updated_at: new Date().toISOString() },
+    { onConflict: 'negocio_id,col,id' }
+  );
+  if(error){ err.textContent = error.message; return; }
+  cerrarDrawerVis();
+  mostrarToast(editandoVisId ? 'Visita actualizada.' : 'Visita programada.');
+  cargarVisitas();
+};
+
+window.eliminarVis = async function(){
+  if(!editandoVisId) return;
+  var v = visitas.find(function(x){ return x._id === editandoVisId });
+  if(!confirm('¿Eliminar visita de ' + (v && v.cliente ? v.cliente : editandoVisId) + '?')) return;
+  var { error } = await sb.from('docs').delete()
+    .eq('negocio_id', negocioId).eq('col', 'visitas').eq('id', editandoVisId);
+  if(error){ document.getElementById('vis-err').textContent = error.message; return; }
+  cerrarDrawerVis();
+  mostrarToast('Visita eliminada.');
+  cargarVisitas();
+};
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   COTIZACIONES
+   ══════════════════════════════════════════════════════════════════════════════ */
+async function cargarCotizaciones(){
+  var { data, error } = await sb.from('docs')
+    .select('id, data')
+    .eq('negocio_id', negocioId)
+    .eq('col', 'cotizaciones');
+  if(error){ console.error(error); return; }
+  cotizaciones = (data || []).map(function(d){ return Object.assign({ _id: d.id }, d.data) });
+  cotizaciones.sort(function(a,b){ return (b.fecha||'').localeCompare(a.fecha||'') });
+  renderCot();
+  actualizarBadgeCot();
+  renderDashCot();
+}
+
+function actualizarBadgeCot(){
+  var n = cotizaciones.filter(function(c){ return c.estado === 'Nueva' }).length;
+  var b = document.getElementById('badge-cot');
+  if(b){ b.hidden = !n; b.textContent = n || ''; }
+  var kpi = document.getElementById('d-cot-nuevas');
+  if(kpi) kpi.textContent = n;
+}
+
+function renderDashCot(){
+  var pendCot = cotizaciones.filter(function(c){ return c.estado === 'Nueva' }).slice(0,6);
+  var el = document.getElementById('dash-cot-pendientes');
+  if(!el) return;
+  el.innerHTML = pendCot.length === 0
+    ? '<div class="empty-row">Sin cotizaciones por contestar. ✓</div>'
+    : pendCot.map(function(c){
+        var diasStr = c.fecha ? diasLabel(c.fecha) : '';
+        return '<div class="row-item" onclick="ir(\'cotizaciones\');abrirDrawerCot(\'' + c._id + '\')">' +
+          '<div><div class="rt">' + esc(c.cliente||'—') + '</div>' +
+          '<div class="rs mono">' + esc(c.folio||'') + (c.lineas ? ' · ' + c.lineas.length + ' partidas' : '') + '</div></div>' +
+          '<div class="rr">' + diasStr + '</div></div>';
+      }).join('');
+}
+
+window.setFiltroCot = function(f, btn){
+  filtroCot = f;
+  document.querySelectorAll('#vista-cotizaciones .tab').forEach(function(b){ b.setAttribute('aria-pressed','false') });
+  if(btn) btn.setAttribute('aria-pressed','true');
+  renderCot();
+};
+
+window.renderCot = function(){
+  var q = (document.getElementById('cot-search').value || '').toLowerCase();
+  var lista = cotizaciones.filter(function(c){
+    if(filtroCot !== 'todas' && c.estado !== filtroCot) return false;
+    if(q){
+      var h = [(c.folio||''),(c.cliente||'')].join(' ').toLowerCase();
+      if(!h.includes(q)) return false;
+    }
+    return true;
+  });
+  if(lista.length === 0){
+    document.getElementById('cot-tabla').innerHTML =
+      '<div class="empty-row">' + (cotizaciones.length === 0 ? 'Sin cotizaciones.' : 'Sin resultados.') + '</div>';
+    return;
+  }
+  var CPILL = {
+    'Nueva':'<span class="pill pill-amber">Nueva</span>',
+    'Enviada':'<span class="pill pill-gray">Enviada</span>',
+    'Autorizada':'<span class="pill pill-verde">Autorizada</span>',
+    'Rechazada':'<span class="pill pill-red">Rechazada</span>',
+  };
+  document.getElementById('cot-tabla').innerHTML =
+    '<table><thead><tr><th>Folio</th><th>Fecha</th><th>Cliente</th><th>Partidas</th><th class="num">Total</th><th>Estado</th></tr></thead><tbody>' +
+    lista.map(function(c){
+      var fechaStr = c.fecha ? new Date(c.fecha+'T00:00:00').toLocaleDateString('es-MX',{day:'2-digit',month:'short',year:'numeric'}) : '—';
+      var total = (c.lineas || []).reduce(function(s,l){ return s + (parseFloat(l.total)||0) }, 0);
+      return '<tr class="clickable" onclick="abrirDrawerCot(\'' + c._id + '\')">' +
+        '<td class="mono">' + esc(c.folio||'—') + '</td>' +
+        '<td class="mono">' + fechaStr + '</td>' +
+        '<td><b>' + esc(c.cliente||'—') + '</b></td>' +
+        '<td>' + ((c.lineas||[]).length) + '</td>' +
+        '<td class="num mono">$' + total.toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2}) + '</td>' +
+        '<td>' + (CPILL[c.estado] || esc(c.estado||'—')) + '</td>' +
+        '</tr>';
+    }).join('') + '</tbody></table>';
+};
+
+/* Drawer cotización */
+window.abrirDrawerCot = function(id){
+  editandoCotId = id;
+  var c = id ? cotizaciones.find(function(x){ return x._id === id }) : null;
+  document.getElementById('drawer-cot-title').textContent = c ? 'Editar cotización' : 'Nueva cotización';
+  document.getElementById('fc2-cli').value    = c ? (c.cliente||'') : '';
+  document.getElementById('fc2-fecha').value  = c ? (c.fecha||new Date().toISOString().slice(0,10)) : new Date().toISOString().slice(0,10);
+  document.getElementById('fc2-estado').value = c ? (c.estado||'Nueva') : 'Nueva';
+  document.getElementById('fc2-notas').value  = c ? (c.notas||'') : '';
+  cotLineas = c ? JSON.parse(JSON.stringify(c.lineas || [])) : [];
+  document.getElementById('cot-cli-datalist').innerHTML = clientes.map(function(cl){ return '<option value="' + esc(cl.nombre) + '">'; }).join('');
+  document.getElementById('cot-err').textContent = '';
+  document.getElementById('btn-eliminar-cot').hidden = !id;
+  renderLineasCot();
+  document.getElementById('drawer-cot-overlay').hidden = false;
+  document.getElementById('fc2-cli').focus();
+};
+window.cerrarDrawerCot = function(){ document.getElementById('drawer-cot-overlay').hidden = true; };
+
+window.agregarLineaCot = function(){
+  cotLineas.push({ desc:'', qty:1, precio:0, total:0 });
+  renderLineasCot();
+};
+
+function renderLineasCot(){
+  var html = cotLineas.map(function(l, i){
+    // datalist de precios registrados
+    var opts = precios.map(function(p){ return '<option value="' + esc(p.descripcion) + '">'; }).join('');
+    return '<div style="display:grid;grid-template-columns:1fr 60px 90px 80px 28px;gap:6px;margin-bottom:6px;align-items:center">' +
+      '<input class="inp" value="' + esc(l.desc) + '" placeholder="Descripción" list="prec-datalist-' + i + '" oninput="cotLineaDesc(' + i + ',this.value)">' +
+      '<datalist id="prec-datalist-' + i + '">' + opts + '</datalist>' +
+      '<input class="inp" type="number" min="1" value="' + (l.qty||1) + '" oninput="cotLineaQty(' + i + ',this.value)">' +
+      '<input class="inp" type="number" min="0" step="0.01" value="' + (l.precio||0) + '" oninput="cotLineaPrecio(' + i + ',this.value)">' +
+      '<span style="font-family:var(--mono);font-size:12px;text-align:right">$' + (l.total||0).toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2}) + '</span>' +
+      '<button class="btn ghost sm" type="button" onclick="quitarLineaCot(' + i + ')" style="padding:4px 6px">✕</button>' +
+      '</div>';
+  }).join('');
+  document.getElementById('cot-lineas').innerHTML = html || '<div style="font-size:13px;color:var(--muted);padding:4px 0">Sin partidas. Agrega con + Línea.</div>';
+  var total = cotLineas.reduce(function(s,l){ return s+(l.total||0) },0);
+  document.getElementById('cot-total-label').textContent = '$' + total.toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+
+window.cotLineaDesc = function(i, v){
+  cotLineas[i].desc = v;
+  // auto-completar precio desde lista
+  var p = precios.find(function(pr){ return pr.descripcion.toLowerCase() === v.toLowerCase() });
+  if(p){ cotLineas[i].precio = parseFloat(p.precio)||0; cotLineas[i].total = cotLineas[i].qty * cotLineas[i].precio; }
+  renderLineasCot();
+};
+window.cotLineaQty = function(i, v){
+  cotLineas[i].qty = parseFloat(v)||0;
+  cotLineas[i].total = cotLineas[i].qty * (cotLineas[i].precio||0);
+  renderLineasCot();
+};
+window.cotLineaPrecio = function(i, v){
+  cotLineas[i].precio = parseFloat(v)||0;
+  cotLineas[i].total = (cotLineas[i].qty||0) * cotLineas[i].precio;
+  renderLineasCot();
+};
+window.quitarLineaCot = function(i){
+  cotLineas.splice(i,1);
+  renderLineasCot();
+};
+
+window.guardarCot = async function(){
+  var cliente = document.getElementById('fc2-cli').value.trim();
+  var err = document.getElementById('cot-err');
+  if(!cliente){ err.textContent = 'El cliente es obligatorio.'; return; }
+  err.textContent = '';
+  var folio = editandoCotId
+    ? (cotizaciones.find(function(x){ return x._id === editandoCotId; }) || {}).folio
+    : siguienteFolio(cotizaciones, 'COT-');
+  var data = {
+    folio: folio,
+    cliente: cliente,
+    fecha:   document.getElementById('fc2-fecha').value,
+    estado:  document.getElementById('fc2-estado').value,
+    lineas:  cotLineas,
+    notas:   document.getElementById('fc2-notas').value.trim(),
+  };
+  var docId = editandoCotId || ('cot-' + Date.now());
+  var { error } = await sb.from('docs').upsert(
+    { negocio_id: negocioId, col: 'cotizaciones', id: docId, data: data, updated_at: new Date().toISOString() },
+    { onConflict: 'negocio_id,col,id' }
+  );
+  if(error){ err.textContent = error.message; return; }
+  cerrarDrawerCot();
+  mostrarToast(editandoCotId ? 'Cotización actualizada.' : 'Cotización creada: ' + folio);
+  cargarCotizaciones();
+};
+
+window.eliminarCot = async function(){
+  if(!editandoCotId) return;
+  var c = cotizaciones.find(function(x){ return x._id === editandoCotId });
+  if(!confirm('¿Eliminar cotización ' + (c && c.folio ? c.folio : editandoCotId) + '?')) return;
+  var { error } = await sb.from('docs').delete()
+    .eq('negocio_id', negocioId).eq('col', 'cotizaciones').eq('id', editandoCotId);
+  if(error){ document.getElementById('cot-err').textContent = error.message; return; }
+  cerrarDrawerCot();
+  mostrarToast('Cotización eliminada.');
+  cargarCotizaciones();
+};
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   TALLER / ÓRDENES
+   ══════════════════════════════════════════════════════════════════════════════ */
+async function cargarOrdenes(){
+  var { data, error } = await sb.from('docs')
+    .select('id, data')
+    .eq('negocio_id', negocioId)
+    .eq('col', 'ordenes');
+  if(error){ console.error(error); return; }
+  ordenes = (data || []).map(function(d){ return Object.assign({ _id: d.id }, d.data) });
+  ordenes.sort(function(a,b){ return (b.fecha||b.folio||'').localeCompare(a.fecha||a.folio||'') });
+  renderTal();
+  actualizarBadgeTal();
+}
+
+function actualizarBadgeTal(){
+  var n = ordenes.filter(function(o){ return (o.etapa||0) < 4 }).length;
+  var b = document.getElementById('badge-tal');
+  if(b){ b.hidden = !n; b.textContent = n || ''; }
+}
+
+window.setFiltroTal = function(f, btn){
+  filtroTal = f;
+  document.querySelectorAll('#vista-taller .tab').forEach(function(b){ b.setAttribute('aria-pressed','false') });
+  if(btn) btn.setAttribute('aria-pressed','true');
+  renderTal();
+};
+
+window.renderTal = function(){
+  var q = (document.getElementById('tal-search').value || '').toLowerCase();
+  var lista = ordenes.filter(function(o){
+    if(filtroTal !== 'todas' && String(o.etapa||0) !== filtroTal) return false;
+    if(q){
+      var h = [(o.folio||''),(o.cliente||'')].join(' ').toLowerCase();
+      if(!h.includes(q)) return false;
+    }
+    return true;
+  });
+  if(lista.length === 0){
+    document.getElementById('tal-tabla').innerHTML =
+      '<div class="empty-row">' + (ordenes.length === 0 ? 'Sin órdenes.' : 'Sin resultados.') + '</div>';
+    return;
+  }
+  document.getElementById('tal-tabla').innerHTML =
+    '<table><thead><tr><th>Folio</th><th>Cliente</th><th>Técnico</th><th>Fecha</th><th>Equipos</th><th>Etapa</th><th>Prioridad</th></tr></thead><tbody>' +
+    lista.map(function(o){
+      var etapaN = o.etapa||0;
+      var etapaPill = etapaN === 4
+        ? '<span class="pill pill-verde">Entregado</span>'
+        : etapaN === 3 ? '<span class="pill pill-amber">En entrega</span>'
+        : '<span class="pill pill-gray">' + (ETAPAS[etapaN]||'—') + '</span>';
+      var priorPill = o.prioridad === 'Urgente'
+        ? '<span class="pill pill-red">Urgente</span>'
+        : '<span class="pill pill-gray">' + esc(o.prioridad||'Normal') + '</span>';
+      var fechaStr = o.fecha_visita ? new Date(o.fecha_visita+'T00:00:00').toLocaleDateString('es-MX',{day:'2-digit',month:'short'}) : '—';
+      return '<tr class="clickable" onclick="abrirDrawerOrden(\'' + o._id + '\')">' +
+        '<td class="mono">' + esc(o.folio||'—') + '</td>' +
+        '<td><b>' + esc(o.cliente||'—') + '</b></td>' +
+        '<td>' + esc(o.tecnico||'—') + '</td>' +
+        '<td class="mono">' + fechaStr + '</td>' +
+        '<td>' + esc(o.equipos||'—') + '</td>' +
+        '<td>' + etapaPill + '</td>' +
+        '<td>' + priorPill + '</td>' +
+        '</tr>';
+    }).join('') + '</tbody></table>';
+};
+
+window.abrirDrawerOrden = function(id){
+  editandoOrdId = id;
+  var o = id ? ordenes.find(function(x){ return x._id === id }) : null;
+  document.getElementById('drawer-ord-title').textContent = o ? 'Editar orden ' + (o.folio||'') : 'Nueva orden';
+  document.getElementById('fo-cli').value      = o ? (o.cliente||'') : '';
+  document.getElementById('fo-tec').value      = o ? (o.tecnico||'') : '';
+  document.getElementById('fo-fecha').value    = o ? (o.fecha_visita||'') : '';
+  document.getElementById('fo-equipos').value  = o ? (o.equipos||'') : '';
+  document.getElementById('fo-etapa').value    = o ? String(o.etapa||0) : '0';
+  document.getElementById('fo-prior').value    = o ? (o.prioridad||'Normal') : 'Normal';
+  document.getElementById('fo-notas').value    = o ? (o.notas||'') : '';
+  document.getElementById('ord-cli-datalist').innerHTML = clientes.map(function(c){ return '<option value="' + esc(c.nombre) + '">'; }).join('');
+  document.getElementById('ord-err').textContent = '';
+  document.getElementById('btn-eliminar-ord').hidden = !id;
+  document.getElementById('drawer-ord-overlay').hidden = false;
+  document.getElementById('fo-cli').focus();
+};
+window.cerrarDrawerOrden = function(){ document.getElementById('drawer-ord-overlay').hidden = true; };
+
+window.guardarOrden = async function(){
+  var cliente = document.getElementById('fo-cli').value.trim();
+  var err = document.getElementById('ord-err');
+  if(!cliente){ err.textContent = 'El cliente es obligatorio.'; return; }
+  err.textContent = '';
+  var folio = editandoOrdId
+    ? (ordenes.find(function(x){ return x._id === editandoOrdId; }) || {}).folio
+    : siguienteFolio(ordenes, 'OT-');
+  var data = {
+    folio: folio, cliente: cliente,
+    tecnico:      document.getElementById('fo-tec').value.trim(),
+    fecha_visita: document.getElementById('fo-fecha').value,
+    equipos:      document.getElementById('fo-equipos').value.trim(),
+    etapa:        parseInt(document.getElementById('fo-etapa').value),
+    prioridad:    document.getElementById('fo-prior').value,
+    notas:        document.getElementById('fo-notas').value.trim(),
+  };
+  var docId = editandoOrdId || ('ord-' + Date.now());
+  var { error } = await sb.from('docs').upsert(
+    { negocio_id: negocioId, col: 'ordenes', id: docId, data: data, updated_at: new Date().toISOString() },
+    { onConflict: 'negocio_id,col,id' }
+  );
+  if(error){ err.textContent = error.message; return; }
+  cerrarDrawerOrden();
+  mostrarToast(editandoOrdId ? 'Orden actualizada.' : 'Orden creada: ' + folio);
+  cargarOrdenes();
+};
+
+window.eliminarOrden = async function(){
+  if(!editandoOrdId) return;
+  var o = ordenes.find(function(x){ return x._id === editandoOrdId });
+  if(!confirm('¿Eliminar orden ' + (o && o.folio ? o.folio : editandoOrdId) + '?')) return;
+  var { error } = await sb.from('docs').delete()
+    .eq('negocio_id', negocioId).eq('col', 'ordenes').eq('id', editandoOrdId);
+  if(error){ document.getElementById('ord-err').textContent = error.message; return; }
+  cerrarDrawerOrden();
+  mostrarToast('Orden eliminada.');
+  cargarOrdenes();
+};
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   PENDIENTES
+   ══════════════════════════════════════════════════════════════════════════════ */
+async function cargarPendientes(){
+  var { data, error } = await sb.from('docs')
+    .select('id, data')
+    .eq('negocio_id', negocioId)
+    .eq('col', 'pendientes');
+  if(error){ console.error(error); return; }
+  pendientesList = (data || []).map(function(d){ return Object.assign({ _id: d.id }, d.data) });
+  pendientesList.sort(function(a,b){
+    var da = (a.fecha||'9999') + (a.hora||'00:00');
+    var db = (b.fecha||'9999') + (b.hora||'00:00');
+    return da.localeCompare(db);
+  });
+  renderPendientesPanel();
+  renderPend();
+  actualizarBadgePend();
+}
+
+function actualizarBadgePend(){
+  var hoy = new Date().toISOString().slice(0,10);
+  var n = pendientesList.filter(function(p){ return !p.completado && (p.fecha||'') <= hoy }).length;
+  var b = document.getElementById('badge-pend');
+  if(b){ b.hidden = !n; b.textContent = n || ''; }
+}
+
+function renderPendientesPanel(){
+  var hoy = new Date().toISOString().slice(0,10);
+  var lista = pendientesList.filter(function(p){ return !p.completado && p.fecha === hoy }).slice(0,6);
+  var el = document.getElementById('dash-pendientes-hoy');
+  if(!el) return;
+  el.innerHTML = lista.length === 0
+    ? '<div class="empty-row">Sin pendientes para hoy. ✓</div>'
+    : lista.map(function(p){
+        return '<div class="pend-item">' +
+          '<input type="checkbox" ' + (p.completado ? 'checked' : '') + ' onchange="togglePend(\'' + p._id + '\',this.checked)">' +
+          '<div><div class="pt">' + esc(p.titulo||'—') + '</div>' +
+          (p.cliente ? '<div class="ps">' + esc(p.tipo||'') + ' · ' + esc(p.cliente) + '</div>' : '') +
+          (p.hora ? '<div class="ph">' + p.hora + '</div>' : '') +
+          '</div></div>';
+      }).join('');
+}
+
+window.setFiltroPend = function(f, btn){
+  filtroPend = f;
+  document.querySelectorAll('#vista-pendientes .tab').forEach(function(b){ b.setAttribute('aria-pressed','false') });
+  if(btn) btn.setAttribute('aria-pressed','true');
+  renderPend();
+};
+
+window.renderPend = function(){
+  var hoy = new Date().toISOString().slice(0,10);
+  var lista = pendientesList.filter(function(p){
+    if(filtroPend === 'hoy') return p.fecha === hoy && !p.completado;
+    if(filtroPend === 'pendientes') return !p.completado;
+    return true;
+  });
+  if(lista.length === 0){
+    document.getElementById('pend-lista').innerHTML = '<div class="empty-row">Sin pendientes.</div>';
+    return;
+  }
+  document.getElementById('pend-lista').innerHTML = lista.map(function(p){
+    return '<div class="pend-item">' +
+      '<input type="checkbox" ' + (p.completado ? 'checked' : '') + ' onchange="togglePend(\'' + p._id + '\',this.checked)">' +
+      '<div style="flex:1"><div class="pt" style="' + (p.completado ? 'text-decoration:line-through;color:var(--muted)' : '') + '">' + esc(p.titulo||'—') + '</div>' +
+      (p.cliente ? '<div class="ps">' + esc(p.tipo||'') + ' · ' + esc(p.cliente) + '</div>' : '') +
+      (p.hora ? '<div class="ph">' + (p.fecha||'') + ' ' + p.hora + '</div>' : (p.fecha ? '<div class="ph">' + p.fecha + '</div>' : '')) +
+      '</div>' +
+      '<button class="link-btn" onclick="abrirDrawerPend(\'' + p._id + '\')">Editar</button>' +
+      '</div>';
+  }).join('');
+};
+
+window.togglePend = async function(id, checked){
+  var p = pendientesList.find(function(x){ return x._id === id });
+  if(!p) return;
+  var data = Object.assign({}, p);
+  delete data._id;
+  data.completado = checked;
+  await sb.from('docs').upsert(
+    { negocio_id: negocioId, col: 'pendientes', id: id, data: data, updated_at: new Date().toISOString() },
+    { onConflict: 'negocio_id,col,id' }
+  );
+  cargarPendientes();
+};
+
+window.abrirDrawerPend = function(id){
+  editandoPendId = id;
+  var p = id ? pendientesList.find(function(x){ return x._id === id }) : null;
+  document.getElementById('drawer-pend-title').textContent = p ? 'Editar pendiente' : 'Agregar pendiente';
+  document.getElementById('fp-titulo').value = p ? (p.titulo||'') : '';
+  document.getElementById('fp-cli').value    = p ? (p.cliente||'') : '';
+  document.getElementById('fp-fecha').value  = p ? (p.fecha||new Date().toISOString().slice(0,10)) : new Date().toISOString().slice(0,10);
+  document.getElementById('fp-hora').value   = p ? (p.hora||'') : '';
+  document.getElementById('fp-tipo').value   = p ? (p.tipo||'Administrativo') : 'Administrativo';
+  document.getElementById('fp-notas').value  = p ? (p.notas||'') : '';
+  document.getElementById('pend-cli-datalist').innerHTML = clientes.map(function(c){ return '<option value="' + esc(c.nombre) + '">'; }).join('');
+  document.getElementById('pend-err').textContent = '';
+  document.getElementById('btn-eliminar-pend').hidden = !id;
+  document.getElementById('drawer-pend-overlay').hidden = false;
+  document.getElementById('fp-titulo').focus();
+};
+window.cerrarDrawerPend = function(){ document.getElementById('drawer-pend-overlay').hidden = true; };
+
+window.guardarPend = async function(){
+  var titulo = document.getElementById('fp-titulo').value.trim();
+  var err = document.getElementById('pend-err');
+  if(!titulo){ err.textContent = 'El título es obligatorio.'; return; }
+  err.textContent = '';
+  var data = {
+    titulo: titulo,
+    cliente:    document.getElementById('fp-cli').value.trim(),
+    fecha:      document.getElementById('fp-fecha').value,
+    hora:       document.getElementById('fp-hora').value,
+    tipo:       document.getElementById('fp-tipo').value,
+    notas:      document.getElementById('fp-notas').value.trim(),
+    completado: editandoPendId ? (pendientesList.find(function(x){ return x._id===editandoPendId; }) || {}).completado || false : false,
+  };
+  var docId = editandoPendId || ('pend-' + Date.now());
+  var { error } = await sb.from('docs').upsert(
+    { negocio_id: negocioId, col: 'pendientes', id: docId, data: data, updated_at: new Date().toISOString() },
+    { onConflict: 'negocio_id,col,id' }
+  );
+  if(error){ err.textContent = error.message; return; }
+  cerrarDrawerPend();
+  mostrarToast(editandoPendId ? 'Pendiente actualizado.' : 'Pendiente agregado.');
+  cargarPendientes();
+};
+
+window.eliminarPend = async function(){
+  if(!editandoPendId) return;
+  var p = pendientesList.find(function(x){ return x._id === editandoPendId });
+  if(!confirm('¿Eliminar "' + (p && p.titulo ? p.titulo : editandoPendId) + '"?')) return;
+  var { error } = await sb.from('docs').delete()
+    .eq('negocio_id', negocioId).eq('col', 'pendientes').eq('id', editandoPendId);
+  if(error){ document.getElementById('pend-err').textContent = error.message; return; }
+  cerrarDrawerPend();
+  mostrarToast('Pendiente eliminado.');
+  cargarPendientes();
+};
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   COSTOS Y PRECIOS
+   ══════════════════════════════════════════════════════════════════════════════ */
+async function cargarPrecios(){
+  var { data, error } = await sb.from('docs')
+    .select('id, data')
+    .eq('negocio_id', negocioId)
+    .eq('col', 'precios');
+  if(error){ console.error(error); return; }
+  precios = (data || []).map(function(d){ return Object.assign({ _id: d.id }, d.data) });
+  precios.sort(function(a,b){ return (a.categoria||'').localeCompare(b.categoria||'') || (a.descripcion||'').localeCompare(b.descripcion||'') });
+  renderPrecios();
+}
+
+window.renderPrecios = function(){
+  if(precios.length === 0){
+    document.getElementById('prec-tabla').innerHTML = '<div class="empty-row">Sin precios. Agrega tus servicios con el botón Agregar.</div>';
+    return;
+  }
+  document.getElementById('prec-tabla').innerHTML =
+    '<table><thead><tr><th>Categoría</th><th>Descripción</th><th>Unidad</th><th class="num">Precio</th><th class="num">Costo</th></tr></thead><tbody>' +
+    precios.map(function(p){
+      return '<tr class="clickable" onclick="abrirDrawerPrecio(\'' + p._id + '\')">' +
+        '<td>' + esc(p.categoria||'—') + '</td>' +
+        '<td><b>' + esc(p.descripcion||'—') + '</b></td>' +
+        '<td>' + esc(p.unidad||'Pieza') + '</td>' +
+        '<td class="num mono">$' + parseFloat(p.precio||0).toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2}) + '</td>' +
+        '<td class="num mono">' + (p.costo ? '$'+parseFloat(p.costo).toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2}) : '—') + '</td>' +
+        '</tr>';
+    }).join('') + '</tbody></table>';
+};
+
+window.abrirDrawerPrecio = function(id){
+  editandoPrecId = id;
+  var p = id ? precios.find(function(x){ return x._id === id }) : null;
+  document.getElementById('drawer-prec-title').textContent = p ? 'Editar precio' : 'Agregar precio';
+  document.getElementById('fpr-desc').value   = p ? (p.descripcion||'') : '';
+  document.getElementById('fpr-cat').value    = p ? (p.categoria||'Recarga') : 'Recarga';
+  document.getElementById('fpr-unidad').value = p ? (p.unidad||'Pieza') : 'Pieza';
+  document.getElementById('fpr-precio').value = p ? (p.precio||'') : '';
+  document.getElementById('fpr-costo').value  = p ? (p.costo||'') : '';
+  document.getElementById('prec-err').textContent = '';
+  document.getElementById('btn-eliminar-prec').hidden = !id;
+  document.getElementById('drawer-prec-overlay').hidden = false;
+  document.getElementById('fpr-desc').focus();
+};
+window.cerrarDrawerPrecio = function(){ document.getElementById('drawer-prec-overlay').hidden = true; };
+
+window.guardarPrecio = async function(){
+  var desc = document.getElementById('fpr-desc').value.trim();
+  var err = document.getElementById('prec-err');
+  if(!desc){ err.textContent = 'La descripción es obligatoria.'; return; }
+  if(!document.getElementById('fpr-precio').value){ err.textContent = 'El precio es obligatorio.'; return; }
+  err.textContent = '';
+  var data = {
+    descripcion: desc,
+    categoria:   document.getElementById('fpr-cat').value,
+    unidad:      document.getElementById('fpr-unidad').value,
+    precio:      parseFloat(document.getElementById('fpr-precio').value)||0,
+    costo:       parseFloat(document.getElementById('fpr-costo').value)||0,
+  };
+  var docId = editandoPrecId || ('prec-' + Date.now());
+  var { error } = await sb.from('docs').upsert(
+    { negocio_id: negocioId, col: 'precios', id: docId, data: data, updated_at: new Date().toISOString() },
+    { onConflict: 'negocio_id,col,id' }
+  );
+  if(error){ err.textContent = error.message; return; }
+  cerrarDrawerPrecio();
+  mostrarToast(editandoPrecId ? 'Precio actualizado.' : 'Precio agregado.');
+  cargarPrecios();
+};
+
+window.eliminarPrecio = async function(){
+  if(!editandoPrecId) return;
+  var p = precios.find(function(x){ return x._id === editandoPrecId });
+  if(!confirm('¿Eliminar "' + (p && p.descripcion ? p.descripcion : editandoPrecId) + '"?')) return;
+  var { error } = await sb.from('docs').delete()
+    .eq('negocio_id', negocioId).eq('col', 'precios').eq('id', editandoPrecId);
+  if(error){ document.getElementById('prec-err').textContent = error.message; return; }
+  cerrarDrawerPrecio();
+  mostrarToast('Precio eliminado.');
+  cargarPrecios();
 };
 
 window.eliminarExt = async function(){
