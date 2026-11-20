@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="es-MX">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Extin360 · Panel</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="/config.js"></script>
+<style>
+:root{--tinta:#0E1726;--rojo:#E8321F;--verde:#1DB46C;--niebla:#EEF1F4;--pizarra:#4A5566;--sans:'Inter',system-ui,sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--sans);background:var(--niebla);color:var(--tinta);min-height:100dvh}
+header{background:#fff;border-bottom:1px solid #E4E7EC;padding:16px 24px;display:flex;align-items:center;justify-content:space-between}
+.logo{font-size:20px;font-weight:800;letter-spacing:-0.5px}
+.logo span{color:var(--rojo)}
+.btn-salir{background:none;border:1.5px solid #D0D5DD;border-radius:8px;padding:8px 16px;font:600 14px var(--sans);cursor:pointer;color:var(--pizarra)}
+.btn-salir:hover{border-color:var(--rojo);color:var(--rojo)}
+main{max-width:640px;margin:60px auto;padding:0 16px;text-align:center}
+.icon{font-size:48px;margin-bottom:16px}
+h1{font-size:1.6rem;font-weight:800;margin-bottom:8px}
+p{color:var(--pizarra);line-height:1.6}
+.badge{display:inline-block;margin-top:24px;background:var(--verde);color:#fff;border-radius:99px;padding:6px 18px;font-size:.85rem;font-weight:600}
+#email-label{margin-top:12px;font-size:.85rem;color:var(--pizarra)}
+</style>
+</head>
+<body>
+<header>
+  <span class="logo">EXTIN<span>360</span></span>
+  <button class="btn-salir" id="salir">Cerrar sesión</button>
+</header>
+<main>
+  <div class="icon">🔥</div>
+  <h1>Panel en construcción</h1>
+  <p>El login funciona correctamente. Estamos construyendo el panel de administración.</p>
+  <span class="badge">✓ Sesión activa</span>
+  <p id="email-label"></p>
+</main>
+<script>
+(function(){
+  var sb = window.supabase.createClient(SUPA_URL, SUPA_KEY);
+  sb.auth.getSession().then(function(r){
+    if(!r.data || !r.data.session){ location.replace('/app'); return; }
+    document.getElementById('email-label').textContent = r.data.session.user.email;
+  });
+  document.getElementById('salir').addEventListener('click', async function(){
+    await sb.auth.signOut();
+    location.replace('/app');
+  });
+})();
+</script>
+</body>
+</html>
