@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="es-MX">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Extin360 · Iniciar sesión</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="/config.js"></script>
+<style>
+:root{
+  --tinta:#0E1726;--rojo:#E8321F;--verde:#1DB46C;--niebla:#EEF1F4;--pizarra:#4A5566;
+  --sans:'Inter',system-ui,sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:var(--sans);background:var(--niebla);color:var(--tinta);
+  min-height:100dvh;display:flex;flex-direction:column;
+  padding:env(safe-area-inset-top,0) env(safe-area-inset-right,0) env(safe-area-inset-bottom,0) env(safe-area-inset-left,0);
+}
+header{
+  padding:16px max(16px,env(safe-area-inset-left,0px));
+  display:flex;align-items:center;
+}
+.logo{font-size:22px;font-weight:800;letter-spacing:-0.5px;color:var(--tinta);text-decoration:none}
+.logo span{color:var(--rojo)}
+main{
+  flex:1;display:flex;align-items:center;justify-content:center;
+  padding:24px max(16px,env(safe-area-inset-left,0px));
+}
+.card{
+  background:#fff;border-radius:16px;padding:36px 32px;width:100%;max-width:400px;
+  box-shadow:0 2px 24px rgba(14,23,38,.08);
+}
+h1{font-size:1.4rem;font-weight:800;margin-bottom:4px}
+.sub{color:var(--pizarra);font-size:.9rem;margin-bottom:28px}
+label{display:block;font-size:.85rem;font-weight:600;margin-bottom:6px;color:var(--pizarra)}
+input[type=email],input[type=password]{
+  width:100%;padding:11px 14px;border:1.5px solid #D0D5DD;border-radius:8px;
+  font:400 15px var(--sans);color:var(--tinta);outline:none;transition:border-color .15s;
+}
+input:focus{border-color:var(--rojo)}
+.field{margin-bottom:18px}
+.btn{
+  width:100%;padding:13px;background:var(--rojo);color:#fff;border:none;border-radius:8px;
+  font:600 15px var(--sans);cursor:pointer;transition:background .15s;margin-top:4px;
+}
+.btn:hover{background:#cf2a18}
+.btn:disabled{opacity:.6;cursor:not-allowed}
+.error{color:var(--rojo);font-size:.82rem;margin-top:12px;min-height:1.2em}
+.back{display:block;text-align:center;margin-top:20px;font-size:.85rem;color:var(--pizarra);text-decoration:none}
+.back:hover{color:var(--tinta)}
+</style>
+</head>
+<body>
+<header>
+  <a class="logo" href="/">EXTIN<span>360</span></a>
+</header>
+<main>
+  <div class="card">
+    <h1>Bienvenido</h1>
+    <p class="sub">Entra con tu correo y contraseña</p>
+    <form id="form" novalidate>
+      <div class="field">
+        <label for="email">Correo electrónico</label>
+        <input type="email" id="email" autocomplete="email" placeholder="tu@correo.com" required>
+      </div>
+      <div class="field">
+        <label for="pass">Contraseña</label>
+        <input type="password" id="pass" autocomplete="current-password" placeholder="••••••••" required>
+      </div>
+      <button class="btn" type="submit" id="btn">Iniciar sesión</button>
+      <p class="error" id="err" aria-live="polite"></p>
+    </form>
+    <a class="back" href="/">← Volver al inicio</a>
+  </div>
+</main>
+<script>
+(function(){
+  var sb = window.supabase.createClient(SUPA_URL, SUPA_KEY);
+
+  // Si ya tiene sesión activa, redirige directo al panel
+  sb.auth.getSession().then(function(r){
+    if(r.data && r.data.session) location.replace('/admin');
+  });
+
+  document.getElementById('form').addEventListener('submit', async function(e){
+    e.preventDefault();
+    var email = document.getElementById('email').value.trim();
+    var pass  = document.getElementById('pass').value;
+    var btn   = document.getElementById('btn');
+    var err   = document.getElementById('err');
+    err.textContent = '';
+    if(!email || !pass){ err.textContent = 'Escribe tu correo y contraseña.'; return; }
+    btn.disabled = true;
+    btn.textContent = 'Entrando…';
+    var r = await sb.auth.signInWithPassword({ email: email, password: pass });
+    if(r.error){
+      err.textContent = r.error.message === 'Invalid login credentials'
+        ? 'Correo o contraseña incorrectos.'
+        : r.error.message;
+      btn.disabled = false;
+      btn.textContent = 'Iniciar sesión';
+      return;
+    }
+    location.replace('/admin');
+  });
+})();
+</script>
+</body>
+</html>

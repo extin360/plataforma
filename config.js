@@ -2,5 +2,5 @@
    Extin360: c21 — reemplaza los 9 valores fijos que había antes.
    Para producción, Netlify reemplaza estos valores en build (ver netlify.toml).
    Para desarrollo local, edita SUPA_URL y SUPA_KEY directamente aquí. */
-var SUPA_URL = "https://psggoagcdokwrkykgufr.supabase.co";
-var SUPA_KEY = "sb_publishable_jwx2IRxOqdCW-SjmKcYW2A_lrJTFJa3";
+var SUPA_URL = "https://lwgupziuifubfbzxadmv.supabase.co";
+var SUPA_KEY = "sb_publishable_OFiX4s1fGSIOvL5xtQRzyw_QAXiEhWo";
