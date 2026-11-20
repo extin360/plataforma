@@ -83,12 +83,13 @@ input:focus{border-color:var(--rojo)}
   var sb = window.supabase.createClient(SUPA_URL, SUPA_KEY);
 
   async function redirigir(session){
-    var { data: staff } = await sb.from('staff')
+    var { data: filas } = await sb.from('staff')
       .select('negocio_id')
       .eq('email', session.user.email)
       .eq('activo', true)
-      .maybeSingle();
-    if(staff && staff.negocio_id === null) location.replace('/admin');
+      .limit(5);
+    var esAdmin = filas && filas.some(function(f){ return f.negocio_id === null });
+    if(esAdmin) location.replace('/admin');
     else location.replace('/panel');
   }
 
