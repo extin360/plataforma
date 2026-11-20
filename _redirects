@@ -1,4 +1,6 @@
 /admin.html  /admin/  301
 /e/*  /e/index.html  200
 /q/*  /q/index.html  200
+/app     /app/index.html  200
+/app/*   /app/index.html  200
 /extin360/*  https://extin360.com/:splat  301
