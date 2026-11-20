@@ -367,6 +367,8 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:now
     </form>
     <p class="err-msg" id="ext-err"></p>
     <div class="drawer-foot">
+      <button class="btn ghost" id="btn-eliminar-ext" style="color:var(--accent);border-color:var(--accent)" onclick="eliminarExt()" hidden>Eliminar</button>
+      <div style="flex:1"></div>
       <button class="btn ghost" onclick="cerrarDrawerExt()">Cancelar</button>
       <button class="btn" onclick="guardarExt()">Guardar</button>
     </div>
@@ -671,6 +673,7 @@ window.abrirDrawerExt = function(id){
   document.getElementById('f-cli').value   = e ? (e.cliente||'')  : '';
   document.getElementById('f-nota').value  = e ? (e.notas||'')    : '';
   document.getElementById('ext-err').textContent = '';
+  document.getElementById('btn-eliminar-ext').hidden = !id;
   document.getElementById('drawer-ext-overlay').hidden = false;
   document.getElementById('f-serie').focus();
 };
@@ -707,6 +710,22 @@ window.guardarExt = async function(){
   if(error){ err.textContent = error.message; return; }
   cerrarDrawerExt();
   mostrarToast(editandoId ? 'Extintor actualizado.' : 'Extintor agregado.');
+  cargarExtintores();
+};
+
+window.eliminarExt = async function(){
+  if(!editandoId) return;
+  var e = extintores.find(function(x){ return x._id === editandoId });
+  if(!confirm('¿Eliminar extintor ' + (e && e.serie ? e.serie : editandoId) + '? Esta acción no se puede deshacer.')) return;
+  var err = document.getElementById('ext-err');
+  var { error } = await sb.from('docs')
+    .delete()
+    .eq('negocio_id', negocioId)
+    .eq('col', 'extintores')
+    .eq('id', editandoId);
+  if(error){ err.textContent = error.message; return; }
+  cerrarDrawerExt();
+  mostrarToast('Extintor eliminado.');
   cargarExtintores();
 };
 
