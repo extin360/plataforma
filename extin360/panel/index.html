@@ -216,7 +216,7 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:now
       <button class="nav-b" id="nav-panel" aria-current="page" onclick="ir('panel')">Panel</button>
       <div class="nav-sec">Operaciones</div>
       <button class="nav-b" id="nav-extintores" onclick="ir('extintores')">Extintores <span class="badge" id="badge-ext" hidden></span></button>
-      <button class="nav-b soon">Clientes</button>
+      <button class="nav-b" id="nav-clientes" onclick="ir('clientes')">Clientes</button>
       <button class="nav-b soon">Cotizaciones</button>
       <button class="nav-b soon">Inspecciones</button>
       <button class="nav-b soon">Taller</button>
@@ -310,6 +310,25 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:now
       </div>
     </div>
 
+    <!-- ══ Vista: Clientes ══ -->
+    <div id="vista-clientes" hidden>
+      <div class="topbar">
+        <div class="topbar-left">
+          <button class="mob-btn" onclick="toggleSidebar()">☰</button>
+          <div><div class="section-label">Operaciones</div><h1>Clientes</h1></div>
+        </div>
+        <div class="topbar-actions">
+          <input class="search" type="text" id="cli-search" placeholder="Nombre, RFC, teléfono…" oninput="renderCli()">
+          <button class="btn" onclick="abrirDrawerCli(null)">+ Agregar</button>
+        </div>
+      </div>
+      <div class="content">
+        <div class="box">
+          <div class="tbl-wrap" id="cli-tabla"><div class="empty-row">Cargando…</div></div>
+        </div>
+      </div>
+    </div>
+
     <!-- ══ Vista: Mi empresa / Colores ══ -->
     <div id="vista-colores" hidden>
       <div class="topbar">
@@ -336,6 +355,33 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:now
   </main>
 </div>
 
+<!-- Drawer: Cliente -->
+<div class="overlay" id="drawer-cli-overlay" hidden onclick="if(event.target===this)cerrarDrawerCli()">
+  <div class="drawer">
+    <div class="drawer-head">
+      <h2 id="drawer-cli-title">Agregar cliente</h2>
+      <button class="btn ghost sm" onclick="cerrarDrawerCli()">✕</button>
+    </div>
+    <form onsubmit="return false">
+      <div class="field"><label>Nombre *</label><input class="inp" id="fc-nombre" placeholder="Empresa o persona"></div>
+      <div class="f2">
+        <div class="field"><label>RFC</label><input class="inp" id="fc-rfc" placeholder="RFC123456ABC"></div>
+        <div class="field"><label>Teléfono</label><input class="inp" id="fc-tel" placeholder="55 1234 5678"></div>
+      </div>
+      <div class="field"><label>Correo</label><input class="inp" type="email" id="fc-email" placeholder="contacto@empresa.com"></div>
+      <div class="field"><label>Dirección</label><input class="inp" id="fc-dir" placeholder="Calle, No., Col., Ciudad"></div>
+      <div class="field"><label>Notas</label><input class="inp" id="fc-notas" placeholder="Observaciones"></div>
+    </form>
+    <p class="err-msg" id="cli-err"></p>
+    <div class="drawer-foot">
+      <button class="btn ghost" id="btn-eliminar-cli" style="color:var(--accent);border-color:var(--accent)" onclick="eliminarCli()" hidden>Eliminar</button>
+      <div style="flex:1"></div>
+      <button class="btn ghost" onclick="cerrarDrawerCli()">Cancelar</button>
+      <button class="btn" onclick="guardarCli()">Guardar</button>
+    </div>
+  </div>
+</div>
+
 <!-- Drawer: Extintor -->
 <div class="overlay" id="drawer-ext-overlay" hidden onclick="if(event.target===this)cerrarDrawerExt()">
   <div class="drawer">
@@ -347,7 +393,7 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:now
       <div class="f2">
         <div class="field"><label>Serie *</label><input class="inp" id="f-serie" placeholder="EX-001"></div>
         <div class="field"><label>Tipo *</label>
-          <select class="inp" id="f-tipo">
+          <select class="inp" id="f-tipo" onchange="autoVencimiento()">
             <option value="">Seleccionar…</option>
             <option>PQS</option><option>CO₂</option><option>Agua</option>
             <option>Espuma</option><option>Halón</option><option>Otro</option>
@@ -359,10 +405,13 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:now
         <div class="field"><label>Ubicación</label><input class="inp" id="f-ubi" placeholder="Bodega norte"></div>
       </div>
       <div class="f2">
-        <div class="field"><label>Última recarga</label><input class="inp" type="date" id="f-rec"></div>
-        <div class="field"><label>Vencimiento *</label><input class="inp" type="date" id="f-venc"></div>
+        <div class="field"><label>Última recarga</label><input class="inp" type="date" id="f-rec" onchange="autoVencimiento()"></div>
+        <div class="field"><label>Vencimiento *</label><input class="inp" type="date" id="f-venc"><div id="venc-hint" style="font-size:11px;color:var(--muted);margin-top:3px"></div></div>
       </div>
-      <div class="field"><label>Cliente / responsable</label><input class="inp" id="f-cli" placeholder="Empresa o persona"></div>
+      <div class="field"><label>Cliente / responsable</label>
+        <input class="inp" id="f-cli" placeholder="Escribe o elige un cliente…" list="cli-datalist" autocomplete="off">
+        <datalist id="cli-datalist"></datalist>
+      </div>
       <div class="field"><label>Notas</label><input class="inp" id="f-nota" placeholder="Observaciones"></div>
     </form>
     <p class="err-msg" id="ext-err"></p>
@@ -397,9 +446,14 @@ var sb = window.supabase.createClient(SUPA_URL, SUPA_KEY);
 var negocioId   = null;
 var negocioData = null;
 var extintores  = [];
+var clientes    = [];
 var filtroExt   = 'todos';
 var editandoId  = null;
+var editandoCliId = null;
 var paletaActual = 'extin360';
+
+/* ── NOM-154: vigencia por tipo (meses) ─────────────────────────────────────── */
+var NOM_VIGENCIA = { 'PQS':12, 'CO₂':12, 'Agua':12, 'Espuma':12, 'Halón':12 };
 
 /* ── Auth ──────────────────────────────────────────────────────────────────── */
 sb.auth.getSession().then(async function(r){
@@ -430,6 +484,7 @@ sb.auth.getSession().then(async function(r){
 
   // Renderizar selector de paletas
   renderPaletas();
+  cargarClientes();     // carga primero para tener datalist listo
   cargarExtintores();
 });
 
@@ -495,7 +550,7 @@ window.guardarPaleta = async function(){
 
 /* ── Navegación ─────────────────────────────────────────────────────────────── */
 window.ir = function(vista){
-  ['panel','extintores','colores'].forEach(function(v){
+  ['panel','extintores','clientes','colores'].forEach(function(v){
     document.getElementById('vista-' + v).hidden = v !== vista;
     var nb = document.getElementById('nav-' + v);
     if(nb) nb[v === vista ? 'setAttribute' : 'removeAttribute']('aria-current', 'page');
@@ -711,6 +766,130 @@ window.guardarExt = async function(){
   cerrarDrawerExt();
   mostrarToast(editandoId ? 'Extintor actualizado.' : 'Extintor agregado.');
   cargarExtintores();
+};
+
+/* ── Auto-vencimiento NOM-154 ───────────────────────────────────────────────── */
+window.autoVencimiento = function(){
+  var tipo  = document.getElementById('f-tipo').value;
+  var rec   = document.getElementById('f-rec').value;
+  var hint  = document.getElementById('venc-hint');
+  var meses = NOM_VIGENCIA[tipo];
+  if(!meses || !rec){ hint.textContent = ''; return; }
+  var d = new Date(rec + 'T00:00:00');
+  d.setMonth(d.getMonth() + meses);
+  var iso = d.toISOString().slice(0,10);
+  document.getElementById('f-venc').value = iso;
+  hint.textContent = 'Calculado según NOM-154 (' + meses + ' meses)';
+};
+
+/* ── Clientes ────────────────────────────────────────────────────────────────── */
+async function cargarClientes(){
+  var { data, error } = await sb.from('docs')
+    .select('id, data')
+    .eq('negocio_id', negocioId)
+    .eq('col', 'clientes');
+  if(error){ console.error(error); return; }
+  clientes = (data || []).map(function(d){ return Object.assign({ _id: d.id }, d.data) });
+  clientes.sort(function(a,b){ return (a.nombre||'').localeCompare(b.nombre||'','es') });
+  renderCli();
+  actualizarDatalistCli();
+}
+
+function actualizarDatalistCli(){
+  var dl = document.getElementById('cli-datalist');
+  if(!dl) return;
+  dl.innerHTML = clientes.map(function(c){
+    return '<option value="' + esc(c.nombre) + '">';
+  }).join('');
+}
+
+window.renderCli = function(){
+  var q = (document.getElementById('cli-search').value || '').toLowerCase();
+  var lista = clientes.filter(function(c){
+    if(!q) return true;
+    return [(c.nombre||''),(c.rfc||''),(c.telefono||''),(c.email||'')].join(' ').toLowerCase().includes(q);
+  });
+  if(lista.length === 0){
+    document.getElementById('cli-tabla').innerHTML =
+      '<div class="empty-row">' + (clientes.length === 0
+        ? 'Sin clientes. Agrega el primero con el botón Agregar.'
+        : 'Sin resultados.') + '</div>';
+    return;
+  }
+  document.getElementById('cli-tabla').innerHTML =
+    '<table><thead><tr>' +
+    '<th>Nombre</th><th>RFC</th><th>Teléfono</th><th>Correo</th><th>Dirección</th>' +
+    '</tr></thead><tbody>' +
+    lista.map(function(c){
+      return '<tr class="clickable" onclick="abrirDrawerCli(\'' + c._id + '\')">' +
+        '<td><b>' + esc(c.nombre||'—') + '</b></td>' +
+        '<td class="mono">' + esc(c.rfc||'—') + '</td>' +
+        '<td>' + esc(c.telefono||'—') + '</td>' +
+        '<td>' + esc(c.email||'—') + '</td>' +
+        '<td>' + esc(c.direccion||'—') + '</td>' +
+        '</tr>';
+    }).join('') +
+    '</tbody></table>';
+};
+
+window.abrirDrawerCli = function(id){
+  editandoCliId = id;
+  var c = id ? clientes.find(function(x){ return x._id === id }) : null;
+  document.getElementById('drawer-cli-title').textContent = c ? 'Editar cliente' : 'Agregar cliente';
+  document.getElementById('fc-nombre').value = c ? (c.nombre||'') : '';
+  document.getElementById('fc-rfc').value    = c ? (c.rfc||'')    : '';
+  document.getElementById('fc-tel').value    = c ? (c.telefono||'') : '';
+  document.getElementById('fc-email').value  = c ? (c.email||'')  : '';
+  document.getElementById('fc-dir').value    = c ? (c.direccion||'') : '';
+  document.getElementById('fc-notas').value  = c ? (c.notas||'')  : '';
+  document.getElementById('cli-err').textContent = '';
+  document.getElementById('btn-eliminar-cli').hidden = !id;
+  document.getElementById('drawer-cli-overlay').hidden = false;
+  document.getElementById('fc-nombre').focus();
+};
+
+window.cerrarDrawerCli = function(){
+  document.getElementById('drawer-cli-overlay').hidden = true;
+};
+
+window.guardarCli = async function(){
+  var nombre = document.getElementById('fc-nombre').value.trim();
+  var err = document.getElementById('cli-err');
+  if(!nombre){ err.textContent = 'El nombre es obligatorio.'; return; }
+  err.textContent = '';
+  var data = {
+    nombre:    nombre,
+    rfc:       document.getElementById('fc-rfc').value.trim().toUpperCase(),
+    telefono:  document.getElementById('fc-tel').value.trim(),
+    email:     document.getElementById('fc-email').value.trim(),
+    direccion: document.getElementById('fc-dir').value.trim(),
+    notas:     document.getElementById('fc-notas').value.trim(),
+  };
+  var docId = editandoCliId || ('cli-' + nombre.toLowerCase().replace(/[^a-z0-9]/g,'-') + '-' + Date.now());
+  var { error } = await sb.from('docs').upsert(
+    { negocio_id: negocioId, col: 'clientes', id: docId, data: data, updated_at: new Date().toISOString() },
+    { onConflict: 'negocio_id,col,id' }
+  );
+  if(error){ err.textContent = error.message; return; }
+  cerrarDrawerCli();
+  mostrarToast(editandoCliId ? 'Cliente actualizado.' : 'Cliente agregado.');
+  cargarClientes();
+};
+
+window.eliminarCli = async function(){
+  if(!editandoCliId) return;
+  var c = clientes.find(function(x){ return x._id === editandoCliId });
+  if(!confirm('¿Eliminar cliente ' + (c && c.nombre ? c.nombre : editandoCliId) + '?')) return;
+  var err = document.getElementById('cli-err');
+  var { error } = await sb.from('docs')
+    .delete()
+    .eq('negocio_id', negocioId)
+    .eq('col', 'clientes')
+    .eq('id', editandoCliId);
+  if(error){ err.textContent = error.message; return; }
+  cerrarDrawerCli();
+  mostrarToast('Cliente eliminado.');
+  cargarClientes();
 };
 
 window.eliminarExt = async function(){
