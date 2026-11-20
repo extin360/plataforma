@@ -3,181 +3,227 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Extin360 · Panel</title>
+<title>Panel</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="robots" content="noindex,nofollow">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@600;800;900&family=Barlow+Condensed:wght@600&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Condensed:ital,wght@0,600;0,800;0,900;1,900&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="/config.js"></script>
 <style>
+/* ── Tokens — se sobreescriben con la paleta del negocio ── */
 :root{
-  --bg:#EEF1F4; --side:#0E1726; --panel:#ffffff; --panel-2:#EEF1F4; --line:#E4E7EC; --line-2:#D0D5DD;
-  --ink:#0E1726; --muted:#4A5566; --faint:#8a9ab0; --carbon:#0E1726;
-  --red:#E8321F; --red-2:#cf2a18; --verde:#1DB46C; --amber:#8f6100; --amber-f:#f2b01e; --rose:#c0262d;
+  --side:#0E1726;       /* sidebar bg        */
+  --accent:#E8321F;     /* color principal   */
+  --accent-h:#cf2a18;   /* hover del accent  */
+  --side-ink:#ffffff;   /* texto sidebar     */
+  --side-muted:#a8b4c4; /* texto muted sidebar */
+  --side-line:#243040;  /* bordes sidebar    */
+  --side-hover:#1a2538; /* hover nav item    */
+  /* superficie */
+  --bg:#EEF1F4; --panel:#ffffff; --panel-2:#f5f6f8;
+  --ink:#0E1726; --muted:#4A5566; --faint:#8a9ab0;
+  --line:#E4E7EC; --line-2:#D0D5DD; --carbon:#0E1726;
+  /* semánticos */
+  --verde:#1DB46C; --amber:#a16207; --amber-f:#f2b01e;
+  /* tipografía */
   --display:'Saira Condensed','Arial Narrow',Impact,sans-serif;
   --body:'Barlow',-apple-system,'Segoe UI',Roboto,sans-serif;
-  --mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
   color-scheme:light;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--ink);font:15px/1.45 var(--body)}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--body)}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
 button,input,select,textarea{font:inherit;color:inherit}
-a{color:inherit}
-:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+a{color:inherit;text-decoration:none}
 img{max-width:100%}
 [hidden]{display:none!important}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
-/* ── Layout ── */
-.app{display:grid;grid-template-columns:232px minmax(0,1fr);min-height:100vh}
+/* ── Shell ── */
+.app{display:grid;grid-template-columns:220px minmax(0,1fr);min-height:100dvh}
 
 /* ── Sidebar ── */
 aside{
-  --ink:#ffffff;--muted:#a8b4c4;--faint:#6b7f99;--panel-2:#1a2538;--line:#243040;--red-2:#ff4a35;
-  color:var(--ink);background:var(--side);border-right:1px solid var(--line);
-  display:flex;flex-direction:column;gap:20px;padding:20px 14px;
-  position:sticky;top:env(safe-area-inset-top,0px);height:100vh;overflow-y:auto
+  background:var(--side);color:var(--side-ink);
+  border-right:1px solid var(--side-line);
+  display:flex;flex-direction:column;
+  position:sticky;top:env(safe-area-inset-top,0px);height:100dvh;
+  overflow-y:auto;overflow-x:hidden
 }
-.brand{display:flex;flex-direction:column;gap:4px;padding:0 8px}
-.brand-logo{font-family:var(--display);font-weight:900;font-size:34px;line-height:.9;letter-spacing:-.5px}
-.brand-logo span{color:var(--red-2);font-style:italic}
-.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
-#negocio-name{font-family:var(--mono);font-size:11px;color:var(--faint);text-transform:uppercase;letter-spacing:.08em;padding:0 8px;margin-top:-12px}
+.brand{padding:20px 16px 12px;border-bottom:1px solid var(--side-line)}
+.brand-logo{display:block;font-family:var(--display);font-weight:900;font-size:30px;line-height:.9;letter-spacing:-.5px;font-style:italic;color:var(--accent)}
+.brand-sub{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--side-muted);margin-top:4px}
+.brand-neg{font-family:var(--mono);font-size:10px;color:var(--side-muted);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
-nav{display:flex;flex-direction:column;gap:2px}
-.nav-sec{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);padding:12px 10px 4px}
-.nav-b{display:flex;align-items:center;justify-content:space-between;gap:8px;background:transparent;color:var(--muted);border:0;border-radius:3px;padding:10px;cursor:pointer;text-align:left;font-family:var(--display);font-weight:800;text-transform:uppercase;font-size:17px;letter-spacing:.03em;white-space:nowrap;width:100%}
-.nav-b:hover{background:var(--panel-2);color:var(--ink)}
-.nav-b[aria-current="page"]{background:var(--red);color:#fff}
-.nav-b .cnt{font-family:var(--mono);font-size:11px;font-weight:500;color:var(--amber-f)}
-.nav-b[aria-current="page"] .cnt{color:#fff}
-.nav-b.disabled{opacity:.35;cursor:not-allowed;pointer-events:none}
+nav{flex:1;padding:8px 0}
+.nav-sec{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--side-muted);opacity:.6;padding:14px 16px 4px}
+.nav-b{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;background:transparent;border:0;border-radius:0;padding:9px 16px;cursor:pointer;text-align:left;font-family:var(--display);font-weight:800;text-transform:uppercase;font-size:16px;letter-spacing:.03em;color:var(--side-muted);white-space:nowrap;transition:background .1s,color .1s}
+.nav-b:hover{background:var(--side-hover);color:var(--side-ink)}
+.nav-b[aria-current="page"]{background:var(--accent);color:#fff}
+.nav-b .badge{font-family:var(--mono);font-size:10px;font-weight:500;color:var(--amber-f);line-height:1}
+.nav-b[aria-current="page"] .badge{color:#fff}
+.nav-b.soon{opacity:.35;cursor:default;pointer-events:none}
 
-.side-foot{margin-top:auto;display:flex;flex-direction:column;gap:6px;padding:12px 8px 0;border-top:1px solid var(--line);font-size:12px;color:var(--faint)}
-.side-foot button{background:none;border:0;color:var(--faint);cursor:pointer;text-align:left;font-size:12px;padding:4px 2px}
-.side-foot button:hover{color:var(--ink)}
+.side-foot{padding:14px 16px;border-top:1px solid var(--side-line);font-size:12px;color:var(--side-muted);display:flex;flex-direction:column;gap:4px}
+.side-foot span{font-family:var(--mono);font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.side-foot button{background:none;border:0;color:var(--side-muted);cursor:pointer;text-align:left;font-size:12px;padding:2px 0;transition:color .1s}
+.side-foot button:hover{color:var(--side-ink)}
 
 /* ── Main ── */
 main{min-width:0;display:flex;flex-direction:column}
 
-header.top{
-  display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;
-  padding-block:18px;
-  padding-left:max(28px,env(safe-area-inset-left,0px));
-  padding-right:max(28px,env(safe-area-inset-right,0px));
-  border-bottom:4px solid var(--red);background:rgba(255,255,255,.97);
+/* Top bar */
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+  padding:16px max(28px,env(safe-area-inset-right,0px)) 16px max(28px,env(safe-area-inset-left,0px));
+  border-bottom:4px solid var(--accent);background:rgba(255,255,255,.97);
   position:sticky;top:env(safe-area-inset-top,0px);z-index:5
 }
-h1{font-family:var(--display);font-weight:900;text-transform:uppercase;font-size:34px;line-height:.95;text-wrap:balance}
-h2{font-family:var(--display);font-weight:800;text-transform:uppercase;font-size:22px;letter-spacing:.01em}
-.top-act{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-.search{background:var(--panel);border:1px solid var(--line-2);border-radius:3px;padding:9px 12px;width:240px;max-width:100%}
-.search:focus{outline:2px solid var(--red);outline-offset:2px}
+.topbar-left{display:flex;align-items:center;gap:12px}
+.mob-btn{display:none;background:none;border:0;padding:6px;cursor:pointer;font-size:20px;line-height:1;color:var(--ink)}
+.section-label{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+h1{font-family:var(--display);font-weight:900;text-transform:uppercase;font-size:32px;line-height:.95;text-wrap:balance}
+.topbar-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.search{background:var(--panel);border:1px solid var(--line-2);border-radius:3px;padding:9px 12px;width:260px;max-width:100%}
+.search:focus{outline:2px solid var(--accent)}
 
+/* Content */
 .content{
-  padding-block:24px 56px;
-  padding-left:max(28px,env(safe-area-inset-left,0px));
-  padding-right:max(28px,env(safe-area-inset-right,0px));
+  padding:24px max(28px,env(safe-area-inset-right,0px)) 56px max(28px,env(safe-area-inset-left,0px));
   display:flex;flex-direction:column;gap:20px
 }
 
-/* ── Buttons ── */
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;background:var(--red);border:0;color:#fff;border-radius:3px;padding:10px 16px;cursor:pointer;font-family:var(--display);font-weight:800;text-transform:uppercase;font-size:16px;letter-spacing:.03em;text-decoration:none;white-space:nowrap}
-.btn:hover{background:var(--red-2)}
+/* Buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;background:var(--accent);border:0;color:#fff;border-radius:3px;padding:10px 18px;cursor:pointer;font-family:var(--display);font-weight:800;text-transform:uppercase;font-size:16px;letter-spacing:.03em;white-space:nowrap;transition:background .15s}
+.btn:hover{background:var(--accent-h)}
 .btn.ghost{background:var(--panel);border:1px solid var(--line-2);color:var(--ink)}
 .btn.ghost:hover{background:var(--panel-2)}
-.btn.sm{padding:6px 10px;font-size:14px}
-.btn[disabled]{opacity:.45;cursor:not-allowed}
+.btn.sm{padding:6px 12px;font-size:13px}
+.btn[disabled]{opacity:.4;cursor:not-allowed}
+.link-btn{background:none;border:0;color:var(--accent);cursor:pointer;font-size:13px;font-weight:600;padding:0;white-space:nowrap}
+.link-btn:hover{opacity:.8}
 
-/* ── KPIs ── */
-.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
-.kpi{background:var(--panel);border:1px solid var(--line);border-top:3px solid var(--k,var(--line));border-radius:6px;padding:16px 18px;display:flex;flex-direction:column;gap:6px}
-.kpi .v{font-family:var(--display);font-weight:900;font-size:38px;line-height:.9;font-variant-numeric:tabular-nums}
-.kpi .n{font-size:13px;color:var(--muted)}
+/* KPIs */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-top:3px solid var(--k,var(--line));border-radius:4px;padding:16px 18px}
+.kpi .kv{font-family:var(--display);font-weight:900;font-size:38px;line-height:.9;font-variant-numeric:tabular-nums}
+.kpi .kn{font-size:13px;color:var(--muted);margin-top:5px}
+.kpi .ks{font-size:12px;color:var(--faint);margin-top:2px}
 
-/* ── Box / card ── */
-.box{background:var(--panel);border:1px solid var(--line);border-radius:6px;box-shadow:0 1px 2px rgba(14,23,38,.05);overflow:hidden;min-width:0}
+/* Two-col dashboard */
+.dash-grid{display:grid;grid-template-columns:1fr 380px;gap:16px;align-items:start}
+@media(max-width:900px){.dash-grid{grid-template-columns:1fr}}
+
+/* Box */
+.box{background:var(--panel);border:1px solid var(--line);border-radius:4px;overflow:hidden}
 .box-h{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:14px 18px;border-bottom:1px solid var(--line)}
+.box-h h2{font-family:var(--display);font-weight:900;text-transform:uppercase;font-size:20px;letter-spacing:.02em}
+.box-h .meta{font-family:var(--mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
 
-/* ── Tabs ── */
-.tabs{display:flex;gap:6px;flex-wrap:wrap}
-.tab{background:var(--panel);border:1px solid var(--line-2);color:var(--ink);border-radius:3px;padding:6px 12px;cursor:pointer;font-family:var(--display);font-weight:800;text-transform:uppercase;font-size:15px}
-.tab[aria-pressed="true"]{background:var(--red);border-color:var(--red);color:#fff}
+/* Rows */
+.row-item{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 18px;border-bottom:1px solid var(--line);cursor:pointer;transition:background .1s}
+.row-item:last-child{border-bottom:0}
+.row-item:hover{background:var(--panel-2)}
+.row-item .rt{font-weight:600;font-size:14px}
+.row-item .rs{font-size:12px;color:var(--muted);margin-top:2px}
+.row-item .rr{font-family:var(--mono);font-size:12px;color:var(--accent);white-space:nowrap}
+.empty-row{padding:18px;font-size:14px;color:var(--muted)}
 
-/* ── Table ── */
+/* Table */
 .tbl-wrap{overflow-x:auto}
 table{width:100%;border-collapse:collapse;font-size:14px}
-th{font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:#ffffff;background:var(--carbon);text-align:left;font-weight:500;padding:9px 14px;white-space:nowrap}
+th{font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:#fff;background:var(--carbon);text-align:left;font-weight:400;padding:9px 14px;white-space:nowrap}
 td{padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:middle}
 tr:last-child td{border-bottom:0}
 tr.clickable{cursor:pointer}
 tr.clickable:hover td{background:var(--panel-2)}
 td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 
-/* ── Pills ── */
-.pill{display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;border:1px solid currentColor;border-radius:999px;padding:2px 8px;white-space:nowrap}
+/* Pills */
+.pill{display:inline-block;font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;border:1px solid currentColor;border-radius:999px;padding:2px 8px;white-space:nowrap}
 .pill-verde{color:var(--verde)}
-.pill-amber{color:#a16207}
-.pill-rojo{color:var(--red)}
+.pill-amber{color:var(--amber)}
+.pill-red{color:var(--accent)}
 .pill-gray{color:var(--muted)}
 
-/* ── Misc ── */
-.mono{font-family:var(--mono);font-size:12px;font-variant-numeric:tabular-nums}
-.empty{padding:22px 18px;color:var(--muted);font-size:14px;display:flex;flex-direction:column;gap:10px;align-items:flex-start}
-.empty b{color:var(--ink);font-weight:600}
-.notice{border:1px solid var(--line);border-left:4px solid var(--amber-f);background:var(--panel);border-radius:6px;padding:14px 18px;font-size:14px;color:var(--muted)}
+/* Checklist pendientes */
+.pend-item{display:flex;align-items:flex-start;gap:10px;padding:11px 18px;border-bottom:1px solid var(--line)}
+.pend-item:last-child{border-bottom:0}
+.pend-item input[type=checkbox]{width:15px;height:15px;margin-top:2px;accent-color:var(--accent);flex-shrink:0;cursor:pointer}
+.pend-item .pt{font-weight:600;font-size:13px}
+.pend-item .ps{font-family:var(--mono);font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:.06em}
+.pend-item .ph{font-size:12px;color:var(--muted)}
+
+/* Misc */
+.mono{font-family:var(--mono);font-size:12px}
+.notice{border:1px solid var(--line);border-left:4px solid var(--amber-f);background:var(--panel);border-radius:4px;padding:13px 18px;font-size:13px;color:var(--muted)}
 .notice b{color:var(--ink)}
-.link{background:none;border:0;color:var(--red-2);cursor:pointer;font-size:14px;padding:4px;white-space:nowrap}
 
-/* ── Drawer ── */
-.overlay{position:fixed;inset:0;background:rgba(14,23,38,.45);z-index:20;display:flex;justify-content:flex-end}
-.drawer{background:var(--panel);border-left:4px solid var(--red);width:min(480px,100%);height:100%;overflow-y:auto;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);padding-right:env(safe-area-inset-right,0px)}
-.drawer-head{display:flex;align-items:center;justify-content:space-between;padding:18px;border-bottom:1px solid var(--line)}
-.drawer-head h2{font-size:20px}
-.drawer form{display:flex;flex-direction:column;gap:14px;padding:18px}
+/* Tabs */
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
+.tab{background:var(--panel);border:1px solid var(--line-2);color:var(--ink);border-radius:3px;padding:6px 12px;cursor:pointer;font-family:var(--display);font-weight:800;text-transform:uppercase;font-size:14px;transition:all .1s}
+.tab[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+
+/* Drawer */
+.overlay{position:fixed;inset:0;background:rgba(14,23,38,.5);z-index:20;display:flex;justify-content:flex-end}
+.drawer{background:var(--panel);border-left:4px solid var(--accent);width:min(480px,100%);height:100%;overflow-y:auto;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);padding-right:env(safe-area-inset-right,0px)}
+.drawer-head{display:flex;align-items:center;justify-content:space-between;padding:18px;border-bottom:1px solid var(--line);flex-shrink:0}
+.drawer-head h2{font-family:var(--display);font-weight:900;text-transform:uppercase;font-size:22px}
+.drawer form,.drawer-body{display:flex;flex-direction:column;gap:14px;padding:18px}
 .field{display:flex;flex-direction:column;gap:4px}
-.field label{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
-.field small{color:var(--faint);font-size:12px}
-.inp{background:#ffffff;border:1px solid var(--line-2);border-radius:3px;padding:8px 10px;width:100%;min-width:0}
-.inp:focus{border-color:var(--ink);outline:none}
+.field label{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.inp{background:#fff;border:1px solid var(--line-2);border-radius:3px;padding:9px 10px;width:100%}
+.inp:focus{border-color:var(--accent);outline:none}
 .f2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.drawer-foot{padding:14px 18px;border-top:1px solid var(--line);display:flex;gap:10px;justify-content:flex-end;margin-top:auto}
-.err-msg{color:var(--red);font-size:13px;padding:0 18px}
+.drawer-foot{padding:14px 18px;border-top:1px solid var(--line);display:flex;gap:10px;justify-content:flex-end;margin-top:auto;flex-shrink:0}
+.err-msg{color:var(--accent);font-size:13px;padding:0 18px;min-height:1em}
 
-/* ── Toast ── */
-.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--carbon);color:#ffffff;padding:10px 16px;border-radius:4px;font-weight:600;z-index:30;max-width:calc(100% - 32px);font-family:var(--mono);font-size:13px}
+/* Toast */
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--carbon);color:#fff;padding:10px 18px;border-radius:3px;font-family:var(--mono);font-size:12px;font-weight:500;z-index:30;max-width:calc(100% - 32px)}
 
-/* ── Mobile ── */
+/* Paletas selector (en drawer) */
+.palettes{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.pal-opt{border:2px solid var(--line);border-radius:4px;overflow:hidden;cursor:pointer;transition:border-color .15s}
+.pal-opt.selected{border-color:var(--accent)}
+.pal-swatch{height:36px;display:flex}
+.pal-swatch span{flex:1}
+.pal-name{font-family:var(--mono);font-size:10px;text-align:center;padding:4px;color:var(--muted);letter-spacing:.04em}
+
+/* Mobile */
 @media(max-width:720px){
   .app{grid-template-columns:1fr}
-  aside{position:fixed;left:-232px;z-index:15;transition:left .2s;height:100%;top:0}
-  aside.open{left:0}
-  .mob-toggle{display:flex!important}
+  aside{position:fixed;left:-220px;z-index:15;transition:left .2s;height:100%;top:0}
+  aside.open{left:0;box-shadow:4px 0 24px rgba(14,23,38,.3)}
+  .mob-btn{display:flex!important}
+  .mob-overlay{position:fixed;inset:0;z-index:14;background:transparent}
 }
-.mob-toggle{display:none;background:none;border:0;padding:8px;cursor:pointer;color:var(--ink)}
 </style>
 </head>
 <body>
-<div class="app">
+<div class="app" id="app">
   <!-- Sidebar -->
   <aside id="sidebar">
     <div class="brand">
-      <div class="brand-logo">EXTIN<span>360</span></div>
-      <div class="eyebrow">Panel de gestión</div>
+      <span class="brand-logo" id="brand-logo">EXTIN360</span>
+      <div class="brand-sub">Panel de gestión</div>
+      <div class="brand-neg" id="brand-neg">—</div>
     </div>
-    <div id="negocio-name">—</div>
 
-    <nav>
-      <div class="nav-sec">Gestión</div>
-      <button class="nav-b" id="nav-extintores" aria-current="page" onclick="mostrarVista('extintores')">
-        🧯 Extintores
-        <span class="cnt" id="cnt-vencidos" hidden></span>
-      </button>
-      <button class="nav-b disabled">👥 Clientes</button>
-      <button class="nav-b disabled">📋 Órdenes</button>
-      <button class="nav-b disabled">📊 Reportes</button>
+    <nav id="nav">
+      <button class="nav-b" id="nav-panel" aria-current="page" onclick="ir('panel')">Panel</button>
+      <div class="nav-sec">Operaciones</div>
+      <button class="nav-b" id="nav-extintores" onclick="ir('extintores')">Extintores <span class="badge" id="badge-ext" hidden></span></button>
+      <button class="nav-b soon">Clientes</button>
+      <button class="nav-b soon">Cotizaciones</button>
+      <button class="nav-b soon">Inspecciones</button>
+      <button class="nav-b soon">Taller</button>
+      <div class="nav-sec">Empresa</div>
+      <button class="nav-b soon">Reportes</button>
+      <button class="nav-b soon">Personal</button>
+      <button class="nav-b" id="nav-colores" onclick="ir('colores')">Mi empresa</button>
     </nav>
 
     <div class="side-foot">
@@ -187,113 +233,142 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:now
   </aside>
 
   <!-- Main -->
-  <main>
-    <!-- Vista: Extintores -->
-    <div id="vista-extintores">
-      <header class="top">
-        <div style="display:flex;align-items:center;gap:12px">
-          <button class="mob-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
-          <h1>Extintores</h1>
-        </div>
-        <div class="top-act">
-          <input class="search" type="text" placeholder="Buscar serie, tipo, ubicación…" oninput="renderTabla()" id="search">
-          <button class="btn" onclick="abrirDrawer(null)">+ Agregar</button>
-        </div>
-      </header>
+  <main id="main-area">
 
+    <!-- ══ Vista: Panel (dashboard) ══ -->
+    <div id="vista-panel">
+      <div class="topbar">
+        <div class="topbar-left">
+          <button class="mob-btn" onclick="toggleSidebar()">☰</button>
+          <div><div class="section-label">Resumen</div><h1>Panel</h1></div>
+        </div>
+        <div class="topbar-actions">
+          <button class="btn" onclick="ir('extintores');abrirDrawerExt(null)">+ Extintor</button>
+        </div>
+      </div>
       <div class="content">
-        <!-- Alerta vencidos -->
-        <div class="notice" id="notice-vencer" hidden>
-          ⚠️ <b id="notice-txt"></b>
+        <div class="kpis" id="kpis-dash">
+          <div class="kpi" style="--k:var(--line)"><div class="kv" id="d-total">—</div><div class="kn">Total extintores</div></div>
+          <div class="kpi" style="--k:var(--verde)"><div class="kv" style="color:var(--verde)" id="d-vigentes">—</div><div class="kn">Vigentes</div></div>
+          <div class="kpi" style="--k:var(--amber-f)"><div class="kv" style="color:var(--amber)" id="d-por-vencer">—</div><div class="kn">Por vencer</div><div class="ks">próximos 30 días</div></div>
+          <div class="kpi" style="--k:var(--accent)"><div class="kv" style="color:var(--accent)" id="d-vencidos">—</div><div class="kn">Vencidos</div></div>
         </div>
 
-        <!-- KPIs -->
-        <div class="kpis">
-          <div class="kpi" style="--k:var(--carbon)"><div class="v" id="k-total">—</div><div class="n">Total extintores</div></div>
-          <div class="kpi" style="--k:var(--verde)"><div class="v" style="color:var(--verde)" id="k-vigentes">—</div><div class="n">Vigentes</div></div>
-          <div class="kpi" style="--k:var(--amber-f)"><div class="v" style="color:#a16207" id="k-por-vencer">—</div><div class="n">Por vencer (30 días)</div></div>
-          <div class="kpi" style="--k:var(--red)"><div class="v" style="color:var(--red)" id="k-vencidos">—</div><div class="n">Vencidos</div></div>
-        </div>
-
-        <!-- Filtros + tabla -->
-        <div class="box">
-          <div class="box-h">
-            <h2 style="font-size:18px">Inventario</h2>
-            <div class="tabs">
-              <button class="tab" aria-pressed="true"  onclick="setFiltro('todos',this)">Todos</button>
-              <button class="tab" aria-pressed="false" onclick="setFiltro('vigente',this)">Vigentes</button>
-              <button class="tab" aria-pressed="false" onclick="setFiltro('por-vencer',this)">Por vencer</button>
-              <button class="tab" aria-pressed="false" onclick="setFiltro('vencido',this)">Vencidos</button>
+        <div class="dash-grid">
+          <!-- Extintores por vencer -->
+          <div class="box">
+            <div class="box-h">
+              <h2>Recargas por programar</h2>
+              <span class="meta">próximos 2 meses</span>
             </div>
+            <div id="dash-por-vencer"><div class="empty-row">Cargando…</div></div>
           </div>
-          <div class="tbl-wrap" id="tabla-wrap">
-            <div class="empty"><b>Cargando…</b></div>
+
+          <!-- Columna derecha -->
+          <div style="display:flex;flex-direction:column;gap:16px">
+            <!-- Vencidos -->
+            <div class="box">
+              <div class="box-h"><h2>Vencidos</h2><button class="link-btn" onclick="ir('extintores');setFiltroExt('vencido')">Ver todos →</button></div>
+              <div id="dash-vencidos"><div class="empty-row">Cargando…</div></div>
+            </div>
           </div>
         </div>
       </div>
     </div>
+
+    <!-- ══ Vista: Extintores ══ -->
+    <div id="vista-extintores" hidden>
+      <div class="topbar">
+        <div class="topbar-left">
+          <button class="mob-btn" onclick="toggleSidebar()">☰</button>
+          <div><div class="section-label">Operaciones</div><h1>Extintores</h1></div>
+        </div>
+        <div class="topbar-actions">
+          <input class="search" type="text" id="ext-search" placeholder="Serie, tipo, ubicación…" oninput="renderExt()">
+          <button class="btn" onclick="abrirDrawerExt(null)">+ Agregar</button>
+        </div>
+      </div>
+      <div class="content">
+        <div class="notice" id="ext-notice" hidden></div>
+        <div class="kpis">
+          <div class="kpi" style="--k:var(--line)"><div class="kv" id="e-total">—</div><div class="kn">Total</div></div>
+          <div class="kpi" style="--k:var(--verde)"><div class="kv" style="color:var(--verde)" id="e-vigentes">—</div><div class="kn">Vigentes</div></div>
+          <div class="kpi" style="--k:var(--amber-f)"><div class="kv" style="color:var(--amber)" id="e-por-vencer">—</div><div class="kn">Por vencer</div></div>
+          <div class="kpi" style="--k:var(--accent)"><div class="kv" style="color:var(--accent)" id="e-vencidos">—</div><div class="kn">Vencidos</div></div>
+        </div>
+        <div class="box">
+          <div class="box-h">
+            <div class="tabs">
+              <button class="tab" aria-pressed="true"  onclick="setFiltroExt('todos',this)">Todos</button>
+              <button class="tab" aria-pressed="false" onclick="setFiltroExt('vigente',this)">Vigentes</button>
+              <button class="tab" aria-pressed="false" onclick="setFiltroExt('por-vencer',this)">Por vencer</button>
+              <button class="tab" aria-pressed="false" onclick="setFiltroExt('vencido',this)">Vencidos</button>
+            </div>
+          </div>
+          <div class="tbl-wrap" id="ext-tabla"><div class="empty-row">Cargando…</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ Vista: Mi empresa / Colores ══ -->
+    <div id="vista-colores" hidden>
+      <div class="topbar">
+        <div class="topbar-left">
+          <button class="mob-btn" onclick="toggleSidebar()">☰</button>
+          <div><div class="section-label">Empresa</div><h1>Mi empresa</h1></div>
+        </div>
+      </div>
+      <div class="content">
+        <div class="box">
+          <div class="box-h"><h2>Paleta de colores</h2></div>
+          <div style="padding:20px 18px;display:flex;flex-direction:column;gap:16px">
+            <p style="font-size:14px;color:var(--muted)">Elige la paleta que mejor represente tu marca. Los cambios se aplican inmediatamente.</p>
+            <div class="palettes" id="paletas-grid"></div>
+            <div style="display:flex;gap:10px;margin-top:4px">
+              <button class="btn" onclick="guardarPaleta()">Guardar paleta</button>
+              <span id="paleta-msg" style="font-size:13px;color:var(--verde);align-self:center"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </main>
 </div>
 
-<!-- Drawer: Agregar / Editar extintor -->
-<div class="overlay" id="drawer-overlay" hidden onclick="if(event.target===this)cerrarDrawer()">
+<!-- Drawer: Extintor -->
+<div class="overlay" id="drawer-ext-overlay" hidden onclick="if(event.target===this)cerrarDrawerExt()">
   <div class="drawer">
     <div class="drawer-head">
-      <h2 id="drawer-title">Agregar extintor</h2>
-      <button class="btn ghost sm" onclick="cerrarDrawer()">✕ Cerrar</button>
+      <h2 id="drawer-ext-title">Agregar extintor</h2>
+      <button class="btn ghost sm" onclick="cerrarDrawerExt()">✕</button>
     </div>
     <form onsubmit="return false">
       <div class="f2">
-        <div class="field">
-          <label>Número de serie *</label>
-          <input class="inp" type="text" id="f-serie" placeholder="EX-001">
-        </div>
-        <div class="field">
-          <label>Tipo *</label>
+        <div class="field"><label>Serie *</label><input class="inp" id="f-serie" placeholder="EX-001"></div>
+        <div class="field"><label>Tipo *</label>
           <select class="inp" id="f-tipo">
             <option value="">Seleccionar…</option>
-            <option>PQS</option>
-            <option>CO₂</option>
-            <option>Agua</option>
-            <option>Espuma</option>
-            <option>Halón</option>
-            <option>Otro</option>
+            <option>PQS</option><option>CO₂</option><option>Agua</option>
+            <option>Espuma</option><option>Halón</option><option>Otro</option>
           </select>
         </div>
       </div>
       <div class="f2">
-        <div class="field">
-          <label>Capacidad (kg / L)</label>
-          <input class="inp" type="text" id="f-capacidad" placeholder="6 kg">
-        </div>
-        <div class="field">
-          <label>Ubicación</label>
-          <input class="inp" type="text" id="f-ubicacion" placeholder="Bodega norte">
-        </div>
+        <div class="field"><label>Capacidad</label><input class="inp" id="f-cap" placeholder="6 kg"></div>
+        <div class="field"><label>Ubicación</label><input class="inp" id="f-ubi" placeholder="Bodega norte"></div>
       </div>
       <div class="f2">
-        <div class="field">
-          <label>Última recarga</label>
-          <input class="inp" type="date" id="f-recarga">
-        </div>
-        <div class="field">
-          <label>Vencimiento *</label>
-          <input class="inp" type="date" id="f-vencimiento">
-        </div>
+        <div class="field"><label>Última recarga</label><input class="inp" type="date" id="f-rec"></div>
+        <div class="field"><label>Vencimiento *</label><input class="inp" type="date" id="f-venc"></div>
       </div>
-      <div class="field">
-        <label>Cliente / responsable</label>
-        <input class="inp" type="text" id="f-cliente" placeholder="Empresa o persona">
-      </div>
-      <div class="field">
-        <label>Notas</label>
-        <input class="inp" type="text" id="f-notas" placeholder="Observaciones adicionales">
-      </div>
+      <div class="field"><label>Cliente / responsable</label><input class="inp" id="f-cli" placeholder="Empresa o persona"></div>
+      <div class="field"><label>Notas</label><input class="inp" id="f-nota" placeholder="Observaciones"></div>
     </form>
-    <p class="err-msg" id="drawer-err"></p>
+    <p class="err-msg" id="ext-err"></p>
     <div class="drawer-foot">
-      <button class="btn ghost" onclick="cerrarDrawer()">Cancelar</button>
-      <button class="btn" onclick="guardarExtintor()">Guardar</button>
+      <button class="btn ghost" onclick="cerrarDrawerExt()">Cancelar</button>
+      <button class="btn" onclick="guardarExt()">Guardar</button>
     </div>
   </div>
 </div>
@@ -303,238 +378,385 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:now
 
 <script>
 (function(){
-  var sb = window.supabase.createClient(SUPA_URL, SUPA_KEY);
-  var negocioId = null;
-  var extintores = [];
-  var filtroActivo = 'todos';
-  var editandoId = null;
+/* ── Paletas predefinidas ───────────────────────────────────────────────────── */
+var PALETAS = [
+  {id:'extin360',  nombre:'Extin360',      side:'#0E1726', accent:'#E8321F'},
+  {id:'carbon',    nombre:'Carbon',         side:'#1a1716', accent:'#E8321F'},
+  {id:'navy',      nombre:'Azul marino',    side:'#0a1628', accent:'#2563eb'},
+  {id:'verde',     nombre:'Verde',          side:'#0d2b1e', accent:'#16a34a'},
+  {id:'vino',      nombre:'Vino',           side:'#2d0a14', accent:'#be123c'},
+  {id:'naranja',   nombre:'Naranja',        side:'#1c0e00', accent:'#ea580c'},
+  {id:'gris',      nombre:'Gris pizarra',   side:'#1e2432', accent:'#6366f1'},
+  {id:'teal',      nombre:'Teal',           side:'#042b2b', accent:'#0d9488'},
+  {id:'dorado',    nombre:'Dorado',         side:'#1a1500', accent:'#ca8a04'},
+];
 
-  // ── Auth guard — sin loop ───────────────────────────────────────────────────
-  sb.auth.getSession().then(async function(r){
-    if(!r.data || !r.data.session){
-      location.replace('/app'); return;
+var sb = window.supabase.createClient(SUPA_URL, SUPA_KEY);
+var negocioId   = null;
+var negocioData = null;
+var extintores  = [];
+var filtroExt   = 'todos';
+var editandoId  = null;
+var paletaActual = 'extin360';
+
+/* ── Auth ──────────────────────────────────────────────────────────────────── */
+sb.auth.getSession().then(async function(r){
+  if(!r.data || !r.data.session){ location.replace('/app'); return; }
+  var email = r.data.session.user.email;
+
+  var { data: staff, error } = await sb.from('staff')
+    .select('negocio_id, negocios(config)')
+    .eq('email', email)
+    .eq('activo', true)
+    .not('negocio_id', 'is', null)
+    .limit(1)
+    .maybeSingle();
+
+  if(error || !staff){
+    sinAcceso(sb);
+    return;
+  }
+
+  negocioId   = staff.negocio_id;
+  negocioData = staff.negocios;
+  document.getElementById('email-label').textContent = email;
+
+  var cfg  = (negocioData && negocioData.config) || {};
+  var nombre = cfg.nombre || email;
+  document.getElementById('brand-neg').textContent   = nombre;
+  document.title = nombre + ' · Panel';
+
+  // Aplicar paleta guardada
+  if(cfg.colores && cfg.colores.id){
+    aplicarPaleta(cfg.colores.id, cfg.colores.side, cfg.colores.accent);
+    paletaActual = cfg.colores.id;
+  }
+
+  // Renderizar selector de paletas
+  renderPaletas();
+  cargarExtintores();
+});
+
+window.cerrarSesion = async function(){
+  await sb.auth.signOut();
+  location.replace('/app');
+};
+
+/* ── Paletas ────────────────────────────────────────────────────────────────── */
+function aplicarPaleta(id, side, accent){
+  var r = document.documentElement;
+  r.style.setProperty('--side', side);
+  r.style.setProperty('--accent', accent);
+  // accent-h: versión oscurecida del accent
+  r.style.setProperty('--accent-h', shadeColor(accent, -15));
+  // side derivados
+  r.style.setProperty('--side-hover',  blendColor(side, '#ffffff', 0.08));
+  r.style.setProperty('--side-line',   blendColor(side, '#ffffff', 0.12));
+  r.style.setProperty('--carbon', side);
+  paletaActual = id;
+  document.querySelectorAll('.pal-opt').forEach(function(el){
+    el.classList.toggle('selected', el.dataset.id === id);
+  });
+}
+
+function renderPaletas(){
+  var grid = document.getElementById('paletas-grid');
+  grid.innerHTML = PALETAS.map(function(p){
+    var sel = p.id === paletaActual ? ' selected' : '';
+    return '<div class="pal-opt' + sel + '" data-id="' + p.id + '" onclick="elegirPaleta(\'' + p.id + '\')">' +
+      '<div class="pal-swatch"><span style="background:' + p.side + '"></span><span style="background:' + p.accent + ';flex:0 0 40px"></span></div>' +
+      '<div class="pal-name">' + p.nombre + '</div>' +
+      '</div>';
+  }).join('');
+}
+
+window.elegirPaleta = function(id){
+  var p = PALETAS.find(function(x){ return x.id === id });
+  if(!p) return;
+  aplicarPaleta(p.id, p.side, p.accent);
+};
+
+window.guardarPaleta = async function(){
+  var p = PALETAS.find(function(x){ return x.id === paletaActual });
+  if(!p) return;
+  var msg = document.getElementById('paleta-msg');
+  msg.textContent = 'Guardando…';
+
+  var cfg = ((negocioData && negocioData.config) || {});
+  cfg.colores = { id: p.id, side: p.side, accent: p.accent };
+
+  var { error } = await sb.from('negocios')
+    .update({ config: cfg })
+    .eq('id', negocioId);
+
+  if(error){ msg.style.color='var(--accent)'; msg.textContent = error.message; return; }
+  msg.style.color = 'var(--verde)';
+  msg.textContent = '✓ Guardado';
+  if(negocioData) negocioData.config = cfg;
+  setTimeout(function(){ msg.textContent = '' }, 3000);
+  mostrarToast('Paleta guardada.');
+};
+
+/* ── Navegación ─────────────────────────────────────────────────────────────── */
+window.ir = function(vista){
+  ['panel','extintores','colores'].forEach(function(v){
+    document.getElementById('vista-' + v).hidden = v !== vista;
+    var nb = document.getElementById('nav-' + v);
+    if(nb) nb[v === vista ? 'setAttribute' : 'removeAttribute']('aria-current', 'page');
+  });
+  if(window.innerWidth <= 720) document.getElementById('sidebar').classList.remove('open');
+};
+
+window.toggleSidebar = function(){
+  document.getElementById('sidebar').classList.toggle('open');
+};
+
+/* ── Extintores ─────────────────────────────────────────────────────────────── */
+async function cargarExtintores(){
+  var { data, error } = await sb.from('docs')
+    .select('id, data, updated_at')
+    .eq('negocio_id', negocioId)
+    .eq('col', 'extintores')
+    .order('updated_at', { ascending: false });
+
+  if(error){
+    document.getElementById('ext-tabla').innerHTML = '<div class="empty-row">Error: ' + esc(error.message) + '</div>';
+    return;
+  }
+  extintores = (data || []).map(function(d){ return Object.assign({ _id: d.id }, d.data) });
+  actualizarKPIs();
+  renderDash();
+  renderExt();
+}
+
+function estado(venc){
+  if(!venc) return 'sin-fecha';
+  var hoy = new Date(); hoy.setHours(0,0,0,0);
+  var d   = new Date(venc + 'T00:00:00');
+  var df  = Math.round((d - hoy) / 86400000);
+  if(df < 0)   return 'vencido';
+  if(df <= 30) return 'por-vencer';
+  return 'vigente';
+}
+
+function pill(e){
+  if(e === 'vencido')    return '<span class="pill pill-red">Vencido</span>';
+  if(e === 'por-vencer') return '<span class="pill pill-amber">Por vencer</span>';
+  if(e === 'vigente')    return '<span class="pill pill-verde">Vigente</span>';
+  return '<span class="pill pill-gray">Sin fecha</span>';
+}
+
+function diasLabel(venc){
+  if(!venc) return '';
+  var hoy = new Date(); hoy.setHours(0,0,0,0);
+  var df  = Math.round((new Date(venc + 'T00:00:00') - hoy) / 86400000);
+  if(df < 0)  return 'hace ' + Math.abs(df) + ' días';
+  if(df === 0) return 'hoy';
+  return 'en ' + df + ' días';
+}
+
+function actualizarKPIs(){
+  var total      = extintores.length;
+  var vigentes   = extintores.filter(function(e){ return estado(e.vencimiento) === 'vigente' }).length;
+  var porVencer  = extintores.filter(function(e){ return estado(e.vencimiento) === 'por-vencer' }).length;
+  var vencidos   = extintores.filter(function(e){ return estado(e.vencimiento) === 'vencido' }).length;
+
+  ['d-total','e-total'].forEach(function(id){ var el=document.getElementById(id); if(el) el.textContent=total });
+  ['d-vigentes','e-vigentes'].forEach(function(id){ var el=document.getElementById(id); if(el) el.textContent=vigentes });
+  ['d-por-vencer','e-por-vencer'].forEach(function(id){ var el=document.getElementById(id); if(el) el.textContent=porVencer });
+  ['d-vencidos','e-vencidos'].forEach(function(id){ var el=document.getElementById(id); if(el) el.textContent=vencidos });
+
+  var badge = document.getElementById('badge-ext');
+  if(vencidos > 0){ badge.textContent = vencidos; badge.hidden = false; }
+
+  var notice = document.getElementById('ext-notice');
+  if(porVencer + vencidos > 0){
+    var parts = [];
+    if(vencidos > 0)  parts.push('<b>' + vencidos + ' vencido' + (vencidos>1?'s':'') + '</b>');
+    if(porVencer > 0) parts.push('<b>' + porVencer + ' por vencer</b> en 30 días');
+    notice.innerHTML = '⚠️ ' + parts.join(' · ') + '. Programa las recargas.';
+    notice.hidden = false;
+  }
+}
+
+/* Dashboard cards */
+function renderDash(){
+  // Por vencer (próximos 2 meses)
+  var pv = extintores
+    .filter(function(e){
+      if(!e.vencimiento) return false;
+      var hoy = new Date(); hoy.setHours(0,0,0,0);
+      var df  = Math.round((new Date(e.vencimiento+'T00:00:00') - hoy) / 86400000);
+      return df >= 0 && df <= 60;
+    })
+    .sort(function(a,b){ return a.vencimiento.localeCompare(b.vencimiento) })
+    .slice(0, 8);
+
+  document.getElementById('dash-por-vencer').innerHTML = pv.length === 0
+    ? '<div class="empty-row">Sin extintores por vencer en los próximos 2 meses. ✓</div>'
+    : pv.map(function(e){
+        return '<div class="row-item" onclick="ir(\'extintores\')">' +
+          '<div><div class="rt">' + esc(e.cliente || e.serie || '—') + '</div>' +
+          '<div class="rs mono">' + esc(e.serie||'') + (e.ubicacion ? ' · ' + e.ubicacion : '') + '</div></div>' +
+          '<div class="rr">' + diasLabel(e.vencimiento) + '</div>' +
+          '</div>';
+      }).join('');
+
+  // Vencidos
+  var venc = extintores.filter(function(e){ return estado(e.vencimiento) === 'vencido' }).slice(0, 6);
+  document.getElementById('dash-vencidos').innerHTML = venc.length === 0
+    ? '<div class="empty-row">Sin extintores vencidos. ✓</div>'
+    : venc.map(function(e){
+        return '<div class="row-item" onclick="ir(\'extintores\')">' +
+          '<div><div class="rt">' + esc(e.serie || '—') + '</div>' +
+          '<div class="rs">' + esc(e.ubicacion||'') + '</div></div>' +
+          '<div>' + pill('vencido') + '</div>' +
+          '</div>';
+      }).join('');
+}
+
+/* Tabla extintores */
+window.setFiltroExt = function(f, btn){
+  filtroExt = f;
+  document.querySelectorAll('#vista-extintores .tab').forEach(function(b){ b.setAttribute('aria-pressed','false') });
+  if(btn) btn.setAttribute('aria-pressed','true');
+  renderExt();
+};
+
+window.renderExt = function(){
+  var q = (document.getElementById('ext-search').value || '').toLowerCase();
+  var lista = extintores.filter(function(e){
+    var est = estado(e.vencimiento);
+    if(filtroExt !== 'todos' && est !== filtroExt) return false;
+    if(q){
+      var h = [(e.serie||''),(e.tipo||''),(e.ubicacion||''),(e.cliente||'')].join(' ').toLowerCase();
+      if(!h.includes(q)) return false;
     }
-    var session = r.data.session;
-    var email = session.user.email;
-
-    var { data: staff, error } = await sb.from('staff')
-      .select('negocio_id, negocios(config)')
-      .eq('email', email)
-      .eq('activo', true)
-      .not('negocio_id', 'is', null)
-      .limit(1)
-      .maybeSingle();
-
-    if(error || !staff){
-      // Sin negocio asignado → mostrar error en lugar de redirigir (evita loop)
-      document.querySelector('.app').innerHTML =
-        '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;gap:16px;font-family:Barlow,sans-serif;color:#4A5566">' +
-        '<div style="font-size:48px">🧯</div>' +
-        '<b style="font-size:1.1rem;color:#0E1726">Sin acceso a negocio</b>' +
-        '<p style="font-size:.9rem">Tu cuenta no tiene un negocio asignado. Contacta a Extin360.</p>' +
-        '<button onclick="sb_logout()" style="background:#E8321F;color:#fff;border:0;border-radius:3px;padding:10px 20px;cursor:pointer;font-weight:700">Cerrar sesión</button>' +
-        '</div>';
-      window.sb_logout = async function(){ await sb.auth.signOut(); location.replace('/app'); };
-      return;
-    }
-
-    negocioId = staff.negocio_id;
-    var nombre = (staff.negocios && staff.negocios.config && staff.negocios.config.nombre)
-      ? staff.negocios.config.nombre : email;
-    document.getElementById('negocio-name').textContent = nombre;
-    document.getElementById('email-label').textContent = email;
-    cargarExtintores();
+    return true;
   });
 
-  window.cerrarSesion = async function(){
-    await sb.auth.signOut();
-    location.replace('/app');
-  };
-
-  // ── Vista ─────────────────────────────────────────────────────────────────────
-  window.mostrarVista = function(nombre){
-    document.querySelectorAll('.nav-b').forEach(function(b){ b.removeAttribute('aria-current') });
-    document.getElementById('nav-' + nombre).setAttribute('aria-current','page');
-  };
-
-  // ── Extintores ────────────────────────────────────────────────────────────────
-  async function cargarExtintores(){
-    var { data, error } = await sb.from('docs')
-      .select('id, data, updated_at')
-      .eq('negocio_id', negocioId)
-      .eq('col', 'extintores')
-      .order('updated_at', { ascending: false });
-
-    if(error){
-      document.getElementById('tabla-wrap').innerHTML =
-        '<div class="empty"><b>Error al cargar:</b> ' + esc(error.message) + '</div>';
-      return;
-    }
-    extintores = (data || []).map(function(d){ return Object.assign({ _id: d.id }, d.data) });
-    actualizarKPIs();
-    renderTabla();
+  if(lista.length === 0){
+    document.getElementById('ext-tabla').innerHTML =
+      '<div class="empty-row">' + (extintores.length === 0
+        ? 'Sin extintores. Agrega el primero con el botón Agregar.'
+        : 'Sin resultados para los filtros actuales.') + '</div>';
+    return;
   }
-
-  function estadoExtintor(venc){
-    if(!venc) return 'sin-fecha';
-    var hoy  = new Date(); hoy.setHours(0,0,0,0);
-    var date = new Date(venc + 'T00:00:00');
-    var diff = Math.round((date - hoy) / 86400000);
-    if(diff < 0)   return 'vencido';
-    if(diff <= 30) return 'por-vencer';
-    return 'vigente';
-  }
-
-  function pillEstado(e){
-    if(e === 'vencido')    return '<span class="pill pill-rojo">Vencido</span>';
-    if(e === 'por-vencer') return '<span class="pill pill-amber">Por vencer</span>';
-    if(e === 'vigente')    return '<span class="pill pill-verde">Vigente</span>';
-    return '<span class="pill pill-gray">Sin fecha</span>';
-  }
-
-  function actualizarKPIs(){
-    var total     = extintores.length;
-    var vigentes  = extintores.filter(function(e){ return estadoExtintor(e.vencimiento) === 'vigente' }).length;
-    var porVencer = extintores.filter(function(e){ return estadoExtintor(e.vencimiento) === 'por-vencer' }).length;
-    var vencidos  = extintores.filter(function(e){ return estadoExtintor(e.vencimiento) === 'vencido' }).length;
-    document.getElementById('k-total').textContent      = total;
-    document.getElementById('k-vigentes').textContent   = vigentes;
-    document.getElementById('k-por-vencer').textContent = porVencer;
-    document.getElementById('k-vencidos').textContent   = vencidos;
-
-    if(porVencer + vencidos > 0){
-      var txt = [];
-      if(vencidos > 0)  txt.push(vencidos + ' vencido' + (vencidos > 1 ? 's' : ''));
-      if(porVencer > 0) txt.push(porVencer + ' por vencer en 30 días');
-      var n = document.getElementById('notice-vencer');
-      document.getElementById('notice-txt').textContent = txt.join(' · ') + '. Programa recargas.';
-      n.hidden = false;
-    }
-    var cnt = document.getElementById('cnt-vencidos');
-    if(vencidos > 0){ cnt.textContent = vencidos; cnt.hidden = false; }
-  }
-
-  window.setFiltro = function(f, btn){
-    filtroActivo = f;
-    document.querySelectorAll('.tab').forEach(function(b){ b.setAttribute('aria-pressed','false') });
-    btn.setAttribute('aria-pressed','true');
-    renderTabla();
-  };
-
-  window.renderTabla = function(){
-    var q = (document.getElementById('search').value || '').toLowerCase();
-    var lista = extintores.filter(function(e){
-      var estado = estadoExtintor(e.vencimiento);
-      if(filtroActivo !== 'todos' && estado !== filtroActivo) return false;
-      if(q){
-        var h = [(e.serie||''),(e.tipo||''),(e.ubicacion||''),(e.cliente||'')].join(' ').toLowerCase();
-        if(!h.includes(q)) return false;
-      }
-      return true;
-    });
-
-    if(lista.length === 0){
-      document.getElementById('tabla-wrap').innerHTML =
-        '<div class="empty">' +
-        (extintores.length === 0
-          ? '<b>Sin extintores registrados.</b><span>Agrega el primero con el botón Agregar.</span>'
-          : '<b>Sin resultados.</b><span>Prueba con otros filtros o términos de búsqueda.</span>') +
-        '</div>';
-      return;
-    }
-
-    var rows = lista.map(function(e){
-      var estado = estadoExtintor(e.vencimiento);
+  document.getElementById('ext-tabla').innerHTML =
+    '<table><thead><tr>' +
+    '<th>Serie</th><th>Tipo</th><th>Capacidad</th><th>Ubicación</th><th>Cliente</th><th>Estado</th><th class="num">Vencimiento</th>' +
+    '</tr></thead><tbody>' +
+    lista.map(function(e){
       var vencStr = e.vencimiento
-        ? new Date(e.vencimiento + 'T00:00:00').toLocaleDateString('es-MX',{day:'2-digit',month:'short',year:'numeric'})
+        ? new Date(e.vencimiento+'T00:00:00').toLocaleDateString('es-MX',{day:'2-digit',month:'short',year:'numeric'})
         : '—';
-      return '<tr class="clickable" onclick="abrirDrawer(\'' + e._id + '\')">' +
-        '<td><span class="mono">' + esc(e.serie||'—') + '</span></td>' +
+      return '<tr class="clickable" onclick="abrirDrawerExt(\'' + e._id + '\')">' +
+        '<td class="mono">' + esc(e.serie||'—') + '</td>' +
         '<td>' + esc(e.tipo||'—') + '</td>' +
         '<td>' + esc(e.capacidad||'—') + '</td>' +
         '<td>' + esc(e.ubicacion||'—') + '</td>' +
         '<td>' + esc(e.cliente||'—') + '</td>' +
-        '<td>' + pillEstado(estado) + '</td>' +
+        '<td>' + pill(estado(e.vencimiento)) + '</td>' +
         '<td class="num mono">' + vencStr + '</td>' +
         '</tr>';
-    }).join('');
+    }).join('') +
+    '</tbody></table>';
+};
 
-    document.getElementById('tabla-wrap').innerHTML =
-      '<table>' +
-      '<thead><tr><th>Serie</th><th>Tipo</th><th>Capacidad</th><th>Ubicación</th><th>Cliente</th><th>Estado</th><th class="num">Vencimiento</th></tr></thead>' +
-      '<tbody>' + rows + '</tbody>' +
-      '</table>';
+/* ── Drawer extintor ─────────────────────────────────────────────────────────── */
+window.abrirDrawerExt = function(id){
+  editandoId = id;
+  var e = id ? extintores.find(function(x){ return x._id === id }) : null;
+  document.getElementById('drawer-ext-title').textContent = e ? 'Editar extintor' : 'Agregar extintor';
+  document.getElementById('f-serie').value = e ? (e.serie||'') : '';
+  document.getElementById('f-tipo').value  = e ? (e.tipo||'')  : '';
+  document.getElementById('f-cap').value   = e ? (e.capacidad||'') : '';
+  document.getElementById('f-ubi').value   = e ? (e.ubicacion||'') : '';
+  document.getElementById('f-rec').value   = e ? (e.recarga||'')   : '';
+  document.getElementById('f-venc').value  = e ? (e.vencimiento||'') : '';
+  document.getElementById('f-cli').value   = e ? (e.cliente||'')  : '';
+  document.getElementById('f-nota').value  = e ? (e.notas||'')    : '';
+  document.getElementById('ext-err').textContent = '';
+  document.getElementById('drawer-ext-overlay').hidden = false;
+  document.getElementById('f-serie').focus();
+};
+
+window.cerrarDrawerExt = function(){
+  document.getElementById('drawer-ext-overlay').hidden = true;
+};
+
+window.guardarExt = async function(){
+  var serie = document.getElementById('f-serie').value.trim();
+  var tipo  = document.getElementById('f-tipo').value;
+  var venc  = document.getElementById('f-venc').value;
+  var err   = document.getElementById('ext-err');
+  if(!serie){ err.textContent = 'El número de serie es obligatorio.'; return; }
+  if(!tipo){  err.textContent = 'Selecciona el tipo.'; return; }
+  if(!venc){  err.textContent = 'La fecha de vencimiento es obligatoria.'; return; }
+  err.textContent = '';
+
+  var data = {
+    serie: serie, tipo: tipo,
+    capacidad: document.getElementById('f-cap').value.trim(),
+    ubicacion: document.getElementById('f-ubi').value.trim(),
+    recarga:   document.getElementById('f-rec').value,
+    vencimiento: venc,
+    cliente:   document.getElementById('f-cli').value.trim(),
+    notas:     document.getElementById('f-nota').value.trim(),
   };
+  var docId = editandoId || (serie.toLowerCase().replace(/[^a-z0-9]/g,'-') + '-' + Date.now());
 
-  // ── Drawer ────────────────────────────────────────────────────────────────────
-  window.abrirDrawer = function(id){
-    editandoId = id;
-    var e = id ? extintores.find(function(x){ return x._id === id }) : null;
-    document.getElementById('drawer-title').textContent = e ? 'Editar extintor' : 'Agregar extintor';
-    document.getElementById('f-serie').value       = e ? (e.serie||'') : '';
-    document.getElementById('f-tipo').value        = e ? (e.tipo||'') : '';
-    document.getElementById('f-capacidad').value   = e ? (e.capacidad||'') : '';
-    document.getElementById('f-ubicacion').value   = e ? (e.ubicacion||'') : '';
-    document.getElementById('f-recarga').value     = e ? (e.recarga||'') : '';
-    document.getElementById('f-vencimiento').value = e ? (e.vencimiento||'') : '';
-    document.getElementById('f-cliente').value     = e ? (e.cliente||'') : '';
-    document.getElementById('f-notas').value       = e ? (e.notas||'') : '';
-    document.getElementById('drawer-err').textContent = '';
-    document.getElementById('drawer-overlay').hidden = false;
-    document.getElementById('f-serie').focus();
-  };
+  var { error } = await sb.from('docs').upsert(
+    { negocio_id: negocioId, col: 'extintores', id: docId, data: data, updated_at: new Date().toISOString() },
+    { onConflict: 'negocio_id,col,id' }
+  );
+  if(error){ err.textContent = error.message; return; }
+  cerrarDrawerExt();
+  mostrarToast(editandoId ? 'Extintor actualizado.' : 'Extintor agregado.');
+  cargarExtintores();
+};
 
-  window.cerrarDrawer = function(){
-    document.getElementById('drawer-overlay').hidden = true;
-  };
+/* ── Utilities ───────────────────────────────────────────────────────────────── */
+function sinAcceso(sb){
+  document.querySelector('.app').innerHTML =
+    '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100dvh;gap:14px;font-family:Barlow,sans-serif;color:#4A5566;padding:24px">' +
+    '<div style="font-size:48px">🧯</div>' +
+    '<b style="font-size:1.1rem;color:#0E1726">Sin acceso</b>' +
+    '<p style="font-size:.9rem;text-align:center">Tu cuenta no tiene un negocio asignado. Contacta a Extin360.</p>' +
+    '<button onclick="window._sb_out()" style="background:#E8321F;color:#fff;border:0;border-radius:3px;padding:10px 20px;cursor:pointer;font-weight:700;font-family:Barlow,sans-serif">Cerrar sesión</button>' +
+    '</div>';
+  window._sb_out = async function(){ await sb.auth.signOut(); location.replace('/app'); };
+}
 
-  window.guardarExtintor = async function(){
-    var serie = document.getElementById('f-serie').value.trim();
-    var tipo  = document.getElementById('f-tipo').value;
-    var venc  = document.getElementById('f-vencimiento').value;
-    var err   = document.getElementById('drawer-err');
-    if(!serie){ err.textContent = 'El número de serie es obligatorio.'; return; }
-    if(!tipo){  err.textContent = 'Selecciona el tipo de extintor.'; return; }
-    if(!venc){  err.textContent = 'La fecha de vencimiento es obligatoria.'; return; }
-    err.textContent = '';
+var toastTimer;
+function mostrarToast(msg){
+  var t = document.getElementById('toast');
+  t.textContent = msg; t.hidden = false;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ t.hidden = true; }, 3000);
+}
 
-    var data = {
-      serie:       serie,
-      tipo:        tipo,
-      capacidad:   document.getElementById('f-capacidad').value.trim(),
-      ubicacion:   document.getElementById('f-ubicacion').value.trim(),
-      recarga:     document.getElementById('f-recarga').value,
-      vencimiento: venc,
-      cliente:     document.getElementById('f-cliente').value.trim(),
-      notas:       document.getElementById('f-notas').value.trim(),
-    };
+function esc(s){
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
 
-    var docId = editandoId || serie.toLowerCase().replace(/[^a-z0-9]/g,'-') + '-' + Date.now();
+// Ajusta brillo de un color hex
+function shadeColor(hex, pct){
+  var n = parseInt(hex.replace('#',''), 16);
+  var r = Math.min(255, Math.max(0, (n>>16) + pct));
+  var g = Math.min(255, Math.max(0, ((n>>8)&0xff) + pct));
+  var b = Math.min(255, Math.max(0, (n&0xff) + pct));
+  return '#' + [r,g,b].map(function(c){ return c.toString(16).padStart(2,'0') }).join('');
+}
 
-    var { error } = await sb.from('docs').upsert(
-      { negocio_id: negocioId, col: 'extintores', id: docId, data: data, updated_at: new Date().toISOString() },
-      { onConflict: 'negocio_id,col,id' }
-    );
-
-    if(error){ err.textContent = error.message; return; }
-    cerrarDrawer();
-    mostrarToast(editandoId ? 'Extintor actualizado.' : 'Extintor agregado.');
-    cargarExtintores();
-  };
-
-  // ── Toast ─────────────────────────────────────────────────────────────────────
-  var toastTimer;
-  function mostrarToast(msg){
-    var t = document.getElementById('toast');
-    t.textContent = msg;
-    t.hidden = false;
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(function(){ t.hidden = true; }, 3000);
-  }
-
-  function esc(s){
-    return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  }
+// Mezcla dos colores hex
+function blendColor(c1, c2, t){
+  var p1 = parseInt(c1.replace('#',''),16), p2 = parseInt(c2.replace('#',''),16);
+  var r = Math.round(((p1>>16)*(1-t)) + ((p2>>16)*t));
+  var g = Math.round((((p1>>8)&0xff)*(1-t)) + (((p2>>8)&0xff)*t));
+  var b = Math.round(((p1&0xff)*(1-t)) + ((p2&0xff)*t));
+  return '#' + [r,g,b].map(function(c){ return c.toString(16).padStart(2,'0') }).join('');
+}
 })();
 </script>
 </body>
