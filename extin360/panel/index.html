@@ -404,24 +404,30 @@ sb.auth.getSession().then(async function(r){
   if(!r.data || !r.data.session){ location.replace('/app'); return; }
   var email = r.data.session.user.email;
 
-  var { data: staff, error } = await sb.from('staff')
-    .select('negocio_id, negocios(config)')
+  var { data: staff, error: errStaff } = await sb.from('staff')
+    .select('negocio_id')
     .eq('email', email)
     .eq('activo', true)
     .not('negocio_id', 'is', null)
     .limit(1)
     .maybeSingle();
 
-  if(error || !staff){
+  if(errStaff || !staff){
     sinAcceso(sb);
     return;
   }
 
-  negocioId   = staff.negocio_id;
-  negocioData = staff.negocios;
+  negocioId = staff.negocio_id;
+
+  // Cargar config del negocio por separado
+  var { data: negocio } = await sb.from('negocios')
+    .select('config')
+    .eq('id', negocioId)
+    .maybeSingle();
+  negocioData = negocio;
   document.getElementById('email-label').textContent = email;
 
-  var cfg  = (negocioData && negocioData.config) || {};
+  var cfg  = (negocioData && negocioData.config) ? negocioData.config : {};
   var nombre = cfg.nombre || email;
   document.getElementById('brand-neg').textContent   = nombre;
   document.title = nombre + ' · Panel';
@@ -482,7 +488,7 @@ window.guardarPaleta = async function(){
   var msg = document.getElementById('paleta-msg');
   msg.textContent = 'Guardando…';
 
-  var cfg = ((negocioData && negocioData.config) || {});
+  var cfg = (negocioData && negocioData.config) ? Object.assign({}, negocioData.config) : {};
   cfg.colores = { id: p.id, side: p.side, accent: p.accent };
 
   var { error } = await sb.from('negocios')
