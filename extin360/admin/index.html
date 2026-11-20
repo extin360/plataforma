@@ -2,52 +2,398 @@
 <html lang="es-MX">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Extin360 · Panel</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Extin360 · Consola</title>
 <meta name="robots" content="noindex">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="/config.js"></script>
 <style>
-:root{--tinta:#0E1726;--rojo:#E8321F;--verde:#1DB46C;--niebla:#EEF1F4;--pizarra:#4A5566;--sans:'Inter',system-ui,sans-serif}
+:root{
+  --tinta:#0E1726;--rojo:#E8321F;--verde:#1DB46C;--niebla:#EEF1F4;--pizarra:#4A5566;
+  --borde:#E4E7EC;--blanco:#fff;--sombra:rgba(14,23,38,.07);
+  --sans:'Inter',system-ui,sans-serif;
+}
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:var(--sans);background:var(--niebla);color:var(--tinta);min-height:100dvh}
-header{background:#fff;border-bottom:1px solid #E4E7EC;padding:16px 24px;display:flex;align-items:center;justify-content:space-between}
-.logo{font-size:20px;font-weight:800;letter-spacing:-0.5px}
+body{font-family:var(--sans);background:var(--niebla);color:var(--tinta);min-height:100dvh;display:flex;flex-direction:column}
+
+/* ── Header ── */
+header{background:var(--blanco);border-bottom:1px solid var(--borde);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+.logo{font-size:18px;font-weight:800;letter-spacing:-0.5px}
 .logo span{color:var(--rojo)}
-.btn-salir{background:none;border:1.5px solid #D0D5DD;border-radius:8px;padding:8px 16px;font:600 14px var(--sans);cursor:pointer;color:var(--pizarra)}
-.btn-salir:hover{border-color:var(--rojo);color:var(--rojo)}
-main{max-width:640px;margin:60px auto;padding:0 16px;text-align:center}
-.icon{font-size:48px;margin-bottom:16px}
-h1{font-size:1.6rem;font-weight:800;margin-bottom:8px}
-p{color:var(--pizarra);line-height:1.6}
-.badge{display:inline-block;margin-top:24px;background:var(--verde);color:#fff;border-radius:99px;padding:6px 18px;font-size:.85rem;font-weight:600}
-#email-label{margin-top:12px;font-size:.85rem;color:var(--pizarra)}
+.header-right{display:flex;align-items:center;gap:12px}
+#email-label{font-size:.82rem;color:var(--pizarra)}
+.btn-sm{background:none;border:1.5px solid var(--borde);border-radius:7px;padding:6px 14px;font:600 13px var(--sans);cursor:pointer;color:var(--pizarra);transition:border-color .15s,color .15s}
+.btn-sm:hover{border-color:var(--rojo);color:var(--rojo)}
+
+/* ── Layout ── */
+.layout{display:flex;flex:1;min-height:0}
+nav{width:220px;background:var(--blanco);border-right:1px solid var(--borde);padding:16px 0;flex-shrink:0}
+.nav-section{padding:4px 12px 2px;font-size:.7rem;font-weight:700;letter-spacing:.06em;color:var(--pizarra);text-transform:uppercase;margin-top:8px}
+.nav-link{display:flex;align-items:center;gap:10px;padding:9px 16px;font-size:.88rem;font-weight:500;color:var(--pizarra);cursor:pointer;border-radius:0;transition:background .12s,color .12s;border:none;background:none;width:100%;text-align:left}
+.nav-link:hover{background:var(--niebla);color:var(--tinta)}
+.nav-link.active{background:#FEF0EE;color:var(--rojo);font-weight:600}
+.nav-link .icon{font-size:16px;width:20px;text-align:center;flex-shrink:0}
+
+main{flex:1;padding:28px 32px;overflow-y:auto;min-width:0}
+@media(max-width:700px){
+  nav{display:none}
+  main{padding:20px 16px}
+}
+
+/* ── Page header ── */
+.page-header{margin-bottom:24px}
+.page-header h1{font-size:1.4rem;font-weight:800;margin-bottom:2px}
+.page-header p{font-size:.88rem;color:var(--pizarra)}
+
+/* ── KPI row ── */
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:28px}
+@media(max-width:600px){.kpis{grid-template-columns:1fr 1fr}}
+.kpi{background:var(--blanco);border-radius:12px;border:1px solid var(--borde);padding:18px 20px}
+.kpi-label{font-size:.75rem;font-weight:600;color:var(--pizarra);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+.kpi-value{font-size:1.8rem;font-weight:800;line-height:1}
+.kpi-value.verde{color:var(--verde)}
+.kpi-value.rojo{color:var(--rojo)}
+.kpi-value.pizarra{color:var(--tinta)}
+
+/* ── Tabla negocios ── */
+.card{background:var(--blanco);border-radius:14px;border:1px solid var(--borde);overflow:hidden}
+.card-head{padding:18px 20px;border-bottom:1px solid var(--borde);display:flex;align-items:center;justify-content:space-between}
+.card-title{font-size:.95rem;font-weight:700}
+.search-wrap{position:relative}
+.search-wrap input{padding:7px 12px 7px 32px;border:1.5px solid var(--borde);border-radius:8px;font:400 13px var(--sans);color:var(--tinta);outline:none;width:200px;transition:border-color .15s}
+.search-wrap input:focus{border-color:var(--rojo)}
+.search-wrap::before{content:"🔍";position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:12px;pointer-events:none}
+
+table{width:100%;border-collapse:collapse}
+th{font-size:.75rem;font-weight:700;color:var(--pizarra);text-transform:uppercase;letter-spacing:.05em;padding:10px 16px;text-align:left;border-bottom:1px solid var(--borde);white-space:nowrap}
+td{padding:13px 16px;font-size:.875rem;border-bottom:1px solid #F2F4F7;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#FAFBFC}
+
+.chip{display:inline-flex;align-items:center;gap:5px;border-radius:99px;padding:3px 10px;font-size:.75rem;font-weight:600;white-space:nowrap}
+.chip-activo{background:#ECFDF5;color:#15803D}
+.chip-prueba{background:#FFF7ED;color:#C2410C}
+.chip-suspendido{background:#FEF2F2;color:#991B1B}
+.chip::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor}
+
+.slug{font-family:ui-monospace,monospace;font-size:.8rem;background:#F3F4F6;border-radius:4px;padding:2px 6px;color:var(--pizarra)}
+.plan-name{font-weight:500}
+
+.empty-state{text-align:center;padding:60px 20px;color:var(--pizarra)}
+.empty-state .e-icon{font-size:40px;margin-bottom:12px}
+.empty-state h3{font-size:1rem;font-weight:600;margin-bottom:4px;color:var(--tinta)}
+.empty-state p{font-size:.85rem}
+
+.loading{text-align:center;padding:48px;color:var(--pizarra);font-size:.9rem}
+
+/* ── Btn nuevo negocio ── */
+.btn-primary{background:var(--rojo);color:#fff;border:none;border-radius:8px;padding:8px 16px;font:600 13px var(--sans);cursor:pointer;display:flex;align-items:center;gap:6px;transition:background .15s}
+.btn-primary:hover{background:#cf2a18}
+
+/* ── Vista detalle (oculta por defecto) ── */
+#vista-detalle{display:none}
+.back-link{display:inline-flex;align-items:center;gap:6px;font-size:.85rem;color:var(--pizarra);cursor:pointer;margin-bottom:20px;border:none;background:none;padding:0}
+.back-link:hover{color:var(--tinta)}
+.detalle-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:24px}
+@media(max-width:500px){.detalle-grid{grid-template-columns:1fr}}
+.detalle-card{background:var(--blanco);border-radius:12px;border:1px solid var(--borde);padding:18px 20px}
+.detalle-label{font-size:.75rem;font-weight:700;color:var(--pizarra);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+.detalle-val{font-size:.95rem;font-weight:500}
+
+/* ── Tabs de sección ── */
+.section-tabs{display:flex;gap:0;border-bottom:2px solid var(--borde);margin-bottom:20px}
+.stab{font-size:.88rem;font-weight:600;color:var(--pizarra);padding:8px 18px;cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;margin-bottom:-2px;transition:color .15s,border-color .15s}
+.stab.active{color:var(--rojo);border-bottom-color:var(--rojo)}
 </style>
 </head>
 <body>
 <header>
   <span class="logo">EXTIN<span>360</span></span>
-  <button class="btn-salir" id="salir">Cerrar sesión</button>
+  <div class="header-right">
+    <span id="email-label"></span>
+    <button class="btn-sm" id="btn-salir">Cerrar sesión</button>
+  </div>
 </header>
-<main>
-  <div class="icon">🔥</div>
-  <h1>Panel en construcción</h1>
-  <p>El login funciona correctamente. Estamos construyendo el panel de administración.</p>
-  <span class="badge">✓ Sesión activa</span>
-  <p id="email-label"></p>
-</main>
+
+<div class="layout">
+  <nav>
+    <div class="nav-section">Principal</div>
+    <button class="nav-link active" data-view="negocios">
+      <span class="icon">🏢</span>Negocios
+    </button>
+    <button class="nav-link" data-view="planes">
+      <span class="icon">📋</span>Planes
+    </button>
+    <div class="nav-section" style="margin-top:16px">Cuenta</div>
+    <button class="nav-link" data-view="config">
+      <span class="icon">⚙️</span>Configuración
+    </button>
+  </nav>
+
+  <main>
+    <!-- Vista: Negocios -->
+    <div id="vista-negocios">
+      <div class="page-header">
+        <h1>Negocios</h1>
+        <p>Clientes activos en la plataforma Extin360</p>
+      </div>
+
+      <div class="kpis" id="kpis">
+        <div class="kpi"><div class="kpi-label">Total</div><div class="kpi-value pizarra" id="k-total">—</div></div>
+        <div class="kpi"><div class="kpi-label">Activos</div><div class="kpi-value verde" id="k-activos">—</div></div>
+        <div class="kpi"><div class="kpi-label">Prueba</div><div class="kpi-value" id="k-prueba" style="color:var(--pizarra)">—</div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">Todos los negocios</span>
+          <div style="display:flex;align-items:center;gap:10px">
+            <div class="search-wrap">
+              <input type="text" id="search" placeholder="Buscar…" oninput="filtrarNegocios()">
+            </div>
+          </div>
+        </div>
+        <div id="tabla-wrap">
+          <div class="loading">Cargando…</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Vista: Detalle negocio -->
+    <div id="vista-detalle">
+      <button class="back-link" onclick="mostrarVista('negocios')">← Volver a negocios</button>
+      <div class="page-header">
+        <h1 id="det-nombre">—</h1>
+        <p id="det-slug-label"></p>
+      </div>
+      <div class="detalle-grid">
+        <div class="detalle-card"><div class="detalle-label">Estado</div><div class="detalle-val" id="det-estado">—</div></div>
+        <div class="detalle-card"><div class="detalle-label">Plan</div><div class="detalle-val" id="det-plan">—</div></div>
+        <div class="detalle-card"><div class="detalle-label">Alta</div><div class="detalle-val" id="det-fecha">—</div></div>
+        <div class="detalle-card"><div class="detalle-label">Slug</div><div class="detalle-val" id="det-slug">—</div></div>
+      </div>
+
+      <div class="section-tabs">
+        <button class="stab active" onclick="mostrarTab('staff')">Staff</button>
+        <button class="stab" onclick="mostrarTab('docs')">Docs</button>
+      </div>
+
+      <div id="tab-staff">
+        <div class="card">
+          <div id="tabla-staff-wrap"><div class="loading">Cargando…</div></div>
+        </div>
+      </div>
+      <div id="tab-docs" style="display:none">
+        <div class="card">
+          <div id="tabla-docs-wrap"><div class="loading">Cargando…</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Vista: Planes -->
+    <div id="vista-planes" style="display:none">
+      <div class="page-header"><h1>Planes</h1><p>Opciones de suscripción disponibles</p></div>
+      <div class="card">
+        <div id="tabla-planes-wrap"><div class="loading">Cargando…</div></div>
+      </div>
+    </div>
+
+    <!-- Vista: Config -->
+    <div id="vista-config" style="display:none">
+      <div class="page-header"><h1>Configuración</h1><p>Ajustes de la plataforma</p></div>
+      <div class="card" style="padding:32px;text-align:center;color:var(--pizarra)">
+        <div style="font-size:36px;margin-bottom:12px">🛠️</div>
+        <p>Próximamente</p>
+      </div>
+    </div>
+  </main>
+</div>
+
 <script>
 (function(){
   var sb = window.supabase.createClient(SUPA_URL, SUPA_KEY);
+  var todosNegocios = [];
+  var negocioActual = null;
+
+  // ── Auth guard ──────────────────────────────────────────────────────────────
   sb.auth.getSession().then(function(r){
     if(!r.data || !r.data.session){ location.replace('/app'); return; }
     document.getElementById('email-label').textContent = r.data.session.user.email;
+    cargarNegocios();
   });
-  document.getElementById('salir').addEventListener('click', async function(){
+
+  document.getElementById('btn-salir').addEventListener('click', async function(){
     await sb.auth.signOut();
     location.replace('/app');
   });
+
+  // ── Navegación ───────────────────────────────────────────────────────────────
+  document.querySelectorAll('.nav-link[data-view]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      document.querySelectorAll('.nav-link').forEach(function(b){ b.classList.remove('active') });
+      btn.classList.add('active');
+      mostrarVista(btn.dataset.view);
+    });
+  });
+
+  window.mostrarVista = function(nombre){
+    ['negocios','detalle','planes','config'].forEach(function(v){
+      var el = document.getElementById('vista-' + v);
+      if(el) el.style.display = 'none';
+    });
+    document.getElementById('vista-' + nombre).style.display = 'block';
+    if(nombre !== 'detalle'){
+      document.querySelectorAll('.nav-link').forEach(function(b){
+        b.classList.toggle('active', b.dataset.view === nombre);
+      });
+    }
+    if(nombre === 'planes') cargarPlanes();
+  };
+
+  // ── Tabs detalle ──────────────────────────────────────────────────────────────
+  window.mostrarTab = function(tab){
+    ['staff','docs'].forEach(function(t){
+      document.getElementById('tab-' + t).style.display = t === tab ? 'block' : 'none';
+      document.querySelectorAll('.stab').forEach(function(b){
+        b.classList.toggle('active', b.textContent.toLowerCase() === tab);
+      });
+    });
+    if(tab === 'staff' && negocioActual) cargarStaff(negocioActual);
+    if(tab === 'docs' && negocioActual)  cargarDocs(negocioActual);
+  };
+
+  // ── Negocios ──────────────────────────────────────────────────────────────────
+  async function cargarNegocios(){
+    var { data, error } = await sb
+      .from('negocios')
+      .select('*, plan:planes(nombre, precio_mensual)')
+      .order('created_at', { ascending: false });
+
+    if(error){
+      document.getElementById('tabla-wrap').innerHTML =
+        '<div class="empty-state"><div class="e-icon">⚠️</div><h3>Error al cargar</h3><p>' + error.message + '</p></div>';
+      return;
+    }
+
+    todosNegocios = data || [];
+    actualizarKPIs(todosNegocios);
+    renderTablaNegocios(todosNegocios);
+  }
+
+  function actualizarKPIs(lista){
+    document.getElementById('k-total').textContent   = lista.length;
+    document.getElementById('k-activos').textContent = lista.filter(function(n){ return n.estado === 'activo' }).length;
+    document.getElementById('k-prueba').textContent  = lista.filter(function(n){ return n.estado === 'prueba' }).length;
+  }
+
+  function renderTablaNegocios(lista){
+    if(lista.length === 0){
+      document.getElementById('tabla-wrap').innerHTML =
+        '<div class="empty-state"><div class="e-icon">🏢</div><h3>Sin negocios aún</h3><p>Agrega el primer cliente desde Supabase.</p></div>';
+      return;
+    }
+    var rows = lista.map(function(n){
+      var nombre = (n.config && n.config.nombre) ? n.config.nombre : n.slug;
+      var plan   = n.plan ? n.plan.nombre : '—';
+      var fecha  = new Date(n.created_at).toLocaleDateString('es-MX', {day:'2-digit',month:'short',year:'numeric'});
+      return '<tr style="cursor:pointer" onclick="verDetalle(\'' + n.id + '\')">' +
+        '<td><strong>' + esc(nombre) + '</strong></td>' +
+        '<td><span class="slug">' + esc(n.slug) + '</span></td>' +
+        '<td><span class="chip chip-' + n.estado + '">' + n.estado + '</span></td>' +
+        '<td class="plan-name">' + esc(plan) + '</td>' +
+        '<td style="color:var(--pizarra);font-size:.82rem">' + fecha + '</td>' +
+        '</tr>';
+    }).join('');
+
+    document.getElementById('tabla-wrap').innerHTML =
+      '<div style="overflow-x:auto"><table>' +
+      '<thead><tr>' +
+      '<th>Nombre</th><th>Slug</th><th>Estado</th><th>Plan</th><th>Alta</th>' +
+      '</tr></thead><tbody>' + rows + '</tbody></table></div>';
+  }
+
+  window.filtrarNegocios = function(){
+    var q = document.getElementById('search').value.toLowerCase();
+    if(!q){ renderTablaNegocios(todosNegocios); return; }
+    var filtrados = todosNegocios.filter(function(n){
+      var nombre = (n.config && n.config.nombre) ? n.config.nombre : '';
+      return n.slug.includes(q) || nombre.toLowerCase().includes(q) || n.estado.includes(q);
+    });
+    renderTablaNegocios(filtrados);
+  };
+
+  // ── Detalle negocio ───────────────────────────────────────────────────────────
+  window.verDetalle = function(id){
+    var n = todosNegocios.find(function(x){ return x.id === id });
+    if(!n) return;
+    negocioActual = n;
+    var nombre = (n.config && n.config.nombre) ? n.config.nombre : n.slug;
+    document.getElementById('det-nombre').textContent   = nombre;
+    document.getElementById('det-slug-label').textContent = 'extin360.com/app/' + n.slug;
+    document.getElementById('det-estado').innerHTML     = '<span class="chip chip-' + n.estado + '">' + n.estado + '</span>';
+    document.getElementById('det-plan').textContent     = n.plan ? n.plan.nombre + ' — $' + n.plan.precio_mensual + '/mes' : '—';
+    document.getElementById('det-fecha').textContent    = new Date(n.created_at).toLocaleDateString('es-MX', {day:'2-digit',month:'long',year:'numeric'});
+    document.getElementById('det-slug').innerHTML       = '<span class="slug">' + n.slug + '</span>';
+    mostrarVista('detalle');
+    mostrarTab('staff');
+  };
+
+  async function cargarStaff(n){
+    document.getElementById('tabla-staff-wrap').innerHTML = '<div class="loading">Cargando…</div>';
+    var { data, error } = await sb.from('staff').select('*').eq('negocio_id', n.id).order('nombre');
+    if(error || !data || data.length === 0){
+      document.getElementById('tabla-staff-wrap').innerHTML =
+        '<div class="empty-state"><div class="e-icon">👥</div><h3>Sin staff</h3><p>No hay usuarios en este negocio.</p></div>';
+      return;
+    }
+    var rows = data.map(function(s){
+      return '<tr><td>' + esc(s.nombre || '—') + '</td><td>' + esc(s.email) + '</td>' +
+        '<td><span class="chip ' + (s.activo ? 'chip-activo' : 'chip-suspendido') + '">' + (s.activo ? 'activo' : 'inactivo') + '</span></td></tr>';
+    }).join('');
+    document.getElementById('tabla-staff-wrap').innerHTML =
+      '<div style="overflow-x:auto"><table><thead><tr><th>Nombre</th><th>Correo</th><th>Estado</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
+  }
+
+  async function cargarDocs(n){
+    document.getElementById('tabla-docs-wrap').innerHTML = '<div class="loading">Cargando…</div>';
+    var { data, error } = await sb.from('docs').select('col, id, updated_at').eq('negocio_id', n.id).order('updated_at', { ascending: false }).limit(50);
+    if(error || !data || data.length === 0){
+      document.getElementById('tabla-docs-wrap').innerHTML =
+        '<div class="empty-state"><div class="e-icon">📄</div><h3>Sin docs</h3><p>No hay registros en este negocio.</p></div>';
+      return;
+    }
+    var rows = data.map(function(d){
+      var fecha = new Date(d.updated_at).toLocaleDateString('es-MX', {day:'2-digit',month:'short',year:'numeric'});
+      return '<tr><td><span class="slug">' + esc(d.col) + '</span></td><td style="font-size:.82rem;color:var(--pizarra)">' + esc(d.id) + '</td><td style="font-size:.82rem;color:var(--pizarra)">' + fecha + '</td></tr>';
+    }).join('');
+    document.getElementById('tabla-docs-wrap').innerHTML =
+      '<div style="overflow-x:auto"><table><thead><tr><th>Colección</th><th>ID</th><th>Actualizado</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
+  }
+
+  // ── Planes ────────────────────────────────────────────────────────────────────
+  async function cargarPlanes(){
+    if(document.getElementById('tabla-planes-wrap').querySelector('table')) return;
+    var { data, error } = await sb.from('planes').select('*').order('precio_mensual');
+    if(error || !data || data.length === 0){
+      document.getElementById('tabla-planes-wrap').innerHTML =
+        '<div class="empty-state"><div class="e-icon">📋</div><h3>Sin planes</h3><p>Agrega planes desde Supabase.</p></div>';
+      return;
+    }
+    var rows = data.map(function(p){
+      var feats = Object.entries(p.features || {}).map(function(kv){ return kv[0] + ': ' + kv[1] }).join(' · ');
+      return '<tr><td><strong>' + esc(p.nombre) + '</strong></td>' +
+        '<td style="font-weight:700;color:var(--tinta)">$' + Number(p.precio_mensual).toLocaleString('es-MX') + '<span style="font-size:.75rem;font-weight:400;color:var(--pizarra)">/mes</span></td>' +
+        '<td style="font-size:.82rem;color:var(--pizarra)">' + esc(feats) + '</td></tr>';
+    }).join('');
+    document.getElementById('tabla-planes-wrap').innerHTML =
+      '<div style="overflow-x:auto"><table><thead><tr><th>Plan</th><th>Precio</th><th>Características</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
+  }
+
+  // ── Utilidades ────────────────────────────────────────────────────────────────
+  function esc(s){
+    return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
 })();
 </script>
 </body>
